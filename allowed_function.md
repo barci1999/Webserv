@@ -1,21 +1,21 @@
 # Archivo de funciones permitidas
 
  - ## gestion de procesos:
-	**-fork:** funcion la cual crea un nuevo proceso duplicando el actual, este nuevo proceso comparte inicialmente codigo y datos por eso es iportante tener en cuenta herencia de memoria dinamica alocada y fds abiertos.
+	**- fork:** funcion la cual crea un nuevo proceso duplicando el actual, este nuevo proceso comparte inicialmente codigo y datos por eso es iportante tener en cuenta herencia de memoria dinamica alocada y fds abiertos.
 	- prototipo: `pid_t fork(void);`
 	- valores de retorno: 
 		- ` > 0` proceso padre;
 		- ` = 0 ` proceso hijo;
 		- ` = -1 ` error no se pudo creear el proceso;
 
-	**-execve:** ejecuta un programa atraves que se encuentra en el pathname,si cuando se ejecuta execve se realiza correctamente cuando termina la ejecucion del programa designado se termina el proceso automanticamente,mientras que si falla la ejecucion se deber terminar el proceso de forma manual
+	**- execve:** ejecuta un programa atraves que se encuentra en el pathname,si cuando se ejecuta execve se realiza correctamente cuando termina la ejecucion del programa designado se termina el proceso automanticamente,mientras que si falla la ejecucion se deber terminar el proceso de forma manual
 	- prototipo: `int execve(const char *pathname, char *const argv[],char *const envp[]);`
 	- parametros:
 		- `const char *pathname`: ruta de archivos del programa a ejecutar.
 		- ` char **const argv`: matriz de argumentos para el programa a ejecutar.
 		- ` char **const envp`: matriz de string que trabajara conmo environment del programa.
 	
-	**-waitpid:** funcion que se utiliza en el proceso padre para esperar al resultado del proceso hijo ya sea exitosa la ejecucion de lo que haga o no.
+	**- waitpid:** funcion que se utiliza en el proceso padre para esperar al resultado del proceso hijo ya sea exitosa la ejecucion de lo que haga o no.
 	- protptipo: `pid_t waitpid(pid_t pid, int *wstatus, int options);`
 	- parametros:
 		- `pid_t pid`: id del proceso al que va a esperar:
@@ -38,4 +38,122 @@
 		- `= 0`:solo ocurre si se usa `WNOHAN` indica que el hijo sigue ejecutandose.
 		- `= -1`:Error se produce cuando no hay hijos,el pid es invalido o cuando se produce un error en el sistema.
 
-	**-kill**:
+	**- kill**: funcion utilizada para mandar una señal a un proceso (no necesariamente se mata al proceso depende de la señal qie se mande).
+	- prototipo: `int kill(pid_t pid, int sig);`
+	- parametros:
+		- `pid_t pid`:proceso al que se le envia la señal.
+			- `pid > 0`: se envia la señal a ese proceso en concreto.
+			- `pid == 0`:se envia la señal a todos los procesos del grupo que el proceso llamador.
+			- `pid == -1`:se envia la señal a todos los procesos a los que el proceso tenga ermiso.
+			- `pid < -1`:se encia la señar al grupo de procesos `-pid`.
+		- `int sing`:señal que se envia.
+			-`SIGTERM`:terminacion limpia.
+			-`SIGKILL`:matar inmediatamente al proceso.
+			-`SIGINT`:interrupcion como por ejemplo `Ctrl+c`.
+			-`SIGQUIT`:termina el proceso y genera un `core dump`.
+			-`0`:no envia señal simplemente comprueba si el proceso existe y tiene permiso.
+	- valores de retorno:
+		- `0`:todo bien y funciono correctamente.
+		- `-1`:algo no funciono correctamente y se modifico el valor de `enrro`:
+			-`ESRCH`: el proceso no existe.
+			-`EPERM`: no tienes permisos para enviar la señal.
+			-`EINVAL`: señal invalida.
+	
+	**- signal**:permite definir como un proceso maneja una señal se puede(capturar la señal,ignorarla,restaurar su comportamiento por defecto).Se usa para gestionar eventos asincronos como interrupciones o la terminacion de procesos hijos.
+	- prototipo: `void (*signal(int sig, void (*handler)(int)))(int);`.
+	- parametros:
+		- `sig`: la señal que se quiere manejar.
+			-`SIGINT`:interrupcion (ctrl + c).
+			-`SIGTERM`:terminacion ordenada.
+			-`SIGQUIT`:salida con core dump.
+			-`SIGCHLD`:un proceso hijo termino.
+		- `handler`:funcion que se ejecutara cuando el proceso reciba la señal.
+			-`SIG_DFL`:comportamiento por defecto.
+			-`SIG_IGN`:ignorar señal.
+			-`handler`: fucion definida por el usuario.
+	- valor de retorno:
+		- `handler anterior`:en caso de ejcucion exitosa devuelve el handler anterior.
+		- `SIG_ERR`:retornado cuando se produce un error y se modifica enrro.
+			- `EINVAL`:señal invalida.
+	
+	**- pipe**:crea un canal de comunicacion unidireccional entre procesos,permite que un proceso escriba datos y otro los lea usando descriptores de archivos.
+	- prototipo:`int pipe(int fd[2]);`.
+	- parametros:
+		- `fd[0]`:extremo de lectura.
+		- `fd[1]`:extremo de escritura.
+	- valores de retorno:
+		- `0`: ejecucion exitosa.
+		- `-1`: Error(modifica enrro).
+			- `modificacion de errno`
+				- `EMFILE`: el proceso tiene demasiados fds abiertos.
+				- `ENFILE`:el sistema alcanzo el limite de fds.
+				- `EFAULT`:fd apunta a una direccion invalida.
+ 
+ - ## gestion de sockets
+	- **creacion y comunicacion**
+		- **socket**:crea un endpoint de comunicacion y devuelve un descriptor de archivo que representa a un socket.
+			- prototipo:`int socket(int domain, int type, int protocol)`;
+			- parametros:
+				- `domain`:especifica la familia de direcciones.
+					- `AF_INET`:IPv4.
+					- `AF_INET6`:IPv6.
+					- `AF_UNIX`:sockets locales.
+				- `type`:define el tipo de comunicacion.
+					- `SOCK_STREAM`:comunicacion orientada a conexion(TCP).(HTTP usa SOCK_STREAM).
+					- `SOCK_DGRAM`:Datagramas(UDP).
+				- `protocol`:protocolo especifico dentro del dominio.
+					- `0`:el sistema elige el protocolo por defecto.
+					- `IPPROTO_TCP`:para TCP.
+			- valores de retorno:
+				- `>= 0`:exito.
+				- `-1`:Error modifica errno.
+					- `EACCES`:Permiso denegado.
+					- `EMFILE`: demasiados fds abiertos.
+					- `ENFILE`: limite del sistema alcanzado.
+					- `EINVAL`: parametros invalidos.
+					- `ENOBUFS`: memoria insuficiente.
+		- **socketpair**
+		- **bind**
+		- **listen**
+		- **accept**
+		- **connect**
+		- **send**
+		- **recv**
+	- **configuracion y utilidades de red**
+		- **setsockopt**
+		- **getsockname**
+		- **getprotobyname**
+		- **htons**
+		- **htonl**
+		- **ntohs**
+		- **ntohl**
+	- **resolucion de direcciones**
+		- **getaddrinfo**
+		- **freeaddrinfo**
+		- **gai_strerror**
+ - ## Multiplexación de I/O
+	- **select**
+	- **poll**
+	- **epoll**
+		- **epoll_create**
+		- **epoll_ctl**
+		- **epoll_wait**
+	- **kqueue**
+	- **kevent**
+ - ## Gestión de ficheros y sistema
+	- **open**
+	- **close**
+	- **read**
+	- **write**
+	- **stat**
+	- **access**
+	- **opendir** 
+	- **readdir**
+	- **closedir**
+	- **fcntl**
+	- **dup**
+	- **dup2**
+	- **chdir**
+ - ## Utilidades y errores
+	- **errno**
+	- **strerror**
