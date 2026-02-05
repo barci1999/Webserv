@@ -250,19 +250,152 @@
 		- **kqueue**
 		- **kevent**
 	- ## Gestión de ficheros y sistema
-		- **open**: HOLA QUE TL
-		- **close**
-		- **read**
-		- **write**
-		- **stat**
-		- **access**
-		- **opendir** 
-		- **readdir**
-		- **closedir**
-		- **fcntl**
-		- **dup**
-		- **dup2**
-		- **chdir**
+		- **open**: esta funcion se utiliza para abrir un archivo y obtener un file descriptor(fd) que luego se usará para leer o escribir en él.
+			- prototipo: `int open(const char *pathname, int flags, mode_t mode);`
+			- parametros:
+				- `const char *pathname`: ruta de archivo a abrir.
+				- `flags`: cómo se abre el archivo.
+					- `O_RDONLY`: solo lectura.
+					- `O_WRONLY`: solo escritura.
+					- `O_RDWR`: lectura y escritura.
+					- `O_CREAT`: crea el archivo si no existe.
+					- `O_TRUNC`: trunca el archivo.
+				- `mode_t mode`: permisos del archivo(solo si se usa `O_CREAT`).
+			- valores de retorno:
+				- `>= 0`: file descriptor válido.
+				- `= -1`: error al abrir o crear el archivo.
+
+		- **close**: esta función cierra un file descriptor, se utiliza para cerrarlos y asi no provocar fugas de recursos.
+			- prototipo: `int close(int fd);`
+			- pparametros:
+				- `fd`: file descriptor a cerrar.
+			- valores de retorno:
+				- `0`: cerrado correctamente.
+				- `1`:error al cerrar.
+
+		- **read**: esta funcion lee datos desde un file descriptor (archivo, socket, pipe, etc.) y los guarda en un buffer. En este proyecto si se usa `read`en sockets se debe usar antes `poll()`.
+			- prototipo: ` ssize_t read(int fd, void *buf, size_t count);`
+			- parametros:
+				- `fd`: file descriptor desde el que se lee.
+				- `buf`: buffer donde se guardan los datos.
+				- `count`: número maximo de bytes a leer.
+			- valores de retorno:
+				-`> 0`: número de bytes leídos.
+				-`= 0`: fin de archivos(EOF).
+				-`= -1`: error de lectura.
+
+		- **write**: esta funcion escribe datos desde un buffer a un file descriptor.
+			- prototipo: `ssize_t write(int fd, const void *buf, size_t count);`
+			- parametros:
+				- `fd`: file descriptor donde se escribe.
+				- `buf`: buffer con los datos.
+				- `count`: numero de bytes a escribir.
+			- valores de retorno:
+				- `> 0`: bytes escritos.
+				- `= 0`: no se escribio nada.
+				- `= -1`: error,
+
+		- **stat**: esta funcion btiene información sobre un archivo o directorio (tipo, tamaño, permisos, etc.), se puede usar para saber si una ruta es un archivo, o si el directorio existe.
+			- prototipo: `int stat(const char *pathname, struct stat *buf);`
+			- parametros:
+				- `pathname`: ruta del archivo.
+				- `buf`: estructura donde se guarda la informacion
+			- valores de retorno:
+				- `0`: permitido.
+				- `-1`: no permitido.
+
+		- **access**: esta funcion comprueba permisos sobre un archivo sin abrirlo.
+			- prototipo: `int access(const char *pathname, int mode);`
+			- parametros:
+				- `pathname`: ruta del archivo.
+				- `mode`: permiso a comprobar:
+					- `F_OK`: existe.
+					- `R_OK`: lectura.
+					- `W_OK`: escritura.
+					- `X_OK`: ejecucion.
+			- valores de retorno:
+				-`0`: permitido.
+				-`-1`: no permitido o no existente.
+
+		- **opendir** : esta funcion abre un directorio para poder leer su contenido.
+			- prototipo: `DIR *opendir(const char *name);`
+			- parametros:
+				- `name`: ruta del directorio.
+			- valores de retorno:
+				- puntero `DIR*`: éxito.
+				- `NULL`: error.
+
+		- **readdir** : esta funion lee una entrada (archivo o subdirectorio) dentro de un directorio abierto.
+			- prototipo: `struct dirent *readdir(DIR *dirp);`
+			- parametros:
+				- `dirp`: directorio abierto con `opendir`.
+			- valores de retorno:
+				- puntero a `struct direct`: entrada leída.
+				- `NULL`: no hay mas archivos o error.
+
+		- **closedir**: esta funcion cierra un directorio abierto con `opendir`
+			- prototipo: `int closedir(DIR *dirp);`
+			- parametros:
+				- `dirp`: directorio a cerrar.
+			- valores de retorno:
+				- `0`: cerrado correctamente.
+				- `-1`: error.
+
+		- **fcntl**: esta funcion permite modificar o consultar propiedades de un file descriptor.
+			- prototipo: `int fcntl(int fd, int cmd, ...);`
+			- parametros:
+				- `fd`: file descriptor sobre el que se quiere actuar.
+				- `cmd`: comando que indica la operacion a realizar.
+				- `...`: argumentos adicionales dependientes del comando.
+			- comandos permitidos en webserv (macOS):
+				- `F_SETFL`: establece flags de estado del fd.
+					- `O_NONBLOCK`: pone el fd en modo no bloqueante.
+				- `FD_CLOEXEC`: cierra automaticamente el fd al ejecutar `execve`.
+			- valores de retorno:
+				- `>= 0`: operacion realizada con exito.
+				- `-1`: error.
+			- uso en webserv:
+				- configurar sockets en modo no bloqueante.
+				- evitar herencia de file descriptors en CGI.
+
+		- **dup**: esta funcion duplica un file descriptor existente, creando una nueva referencia al mismo recurso (archivo, socket, pipe, etc).
+			- prototipo: `int dup(int oldfd);`
+			- parametros:
+				- `oldfd`: file descriptor que se desea duplicar.
+			- valores de retorno:
+				- `>= 0`: nuevo file descriptor que apunta al mismo recurso que `oldfd`.
+				- `-1`: error, file descriptor invalido o error del sistema.
+			- detalles:
+				- el nuevo fd comparte el mismo offset de lectura/escritura.
+				- cerrar uno no cierra el otro.
+
+		- **dup2**: esta funcion duplica un file descriptor en uno especifico, cerrando previamente el file descriptor destino si estaba abierto.
+			- prototipo: `int dup2(int oldfd, int newfd);`
+			- parametros:
+				- `oldfd`: file descriptor original que se quiere duplicar.
+				- `newfd`: file descriptor destino (por ejemplo `STDIN_FILENO` o `STDOUT_FILENO`).
+			- valores de retorno:
+				- `>= 0`: devuelve `newfd` si la duplicacion fue exitosa.
+				- `-1`: error.
+			- uso en webserv:
+				- se usa en CGI para redirigir la entrada y salida estandar.
+
+		- **chdir**: esta funcion permite modificar o consultar propiedades de un file descriptor.
+			- prototipo: `int fcntl(int fd, int cmd, ...);`
+			- parametros:
+				- `fd`: file descriptor sobre el que se quiere actuar.
+				- `cmd`: comando que indica la operacion a realizar.
+				- `...`: argumentos adicionales dependientes del comando.
+			- comandos permitidos en webserv (macOS):
+				- `F_SETFL`: establece flags de estado del fd.
+					- `O_NONBLOCK`: pone el fd en modo no bloqueante.
+				- `FD_CLOEXEC`: cierra automaticamente el fd al ejecutar `execve`.
+			- valores de retorno:
+				- `>= 0`: operacion realizada con exito.
+				- `-1`: error.
+			- uso en webserv:
+				- configurar sockets en modo no bloqueante.
+				- evitar herencia de file descriptors en CGI.
 	- ## Utilidades y errores
 		- **errno**
 		- **strerror**
