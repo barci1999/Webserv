@@ -354,9 +354,6 @@
 			- valores de retorno:
 				- `>= 0`: operacion realizada con exito.
 				- `-1`: error.
-			- uso en webserv:
-				- configurar sockets en modo no bloqueante.
-				- evitar herencia de file descriptors en CGI.
 
 		- **dup**: esta funcion duplica un file descriptor existente, creando una nueva referencia al mismo recurso (archivo, socket, pipe, etc).
 			- prototipo: `int dup(int oldfd);`
@@ -369,7 +366,7 @@
 				- el nuevo fd comparte el mismo offset de lectura/escritura.
 				- cerrar uno no cierra el otro.
 
-		- **dup2**: esta funcion duplica un file descriptor en uno especifico, cerrando previamente el file descriptor destino si estaba abierto.
+		- **dup2**: esta funcion duplica un file descriptor en uno especifico, cerrando previamente el file descriptor destino si estaba abierto, en este proyecto se usa en CGI para redirigir la entrada y salida estandar.
 			- prototipo: `int dup2(int oldfd, int newfd);`
 			- parametros:
 				- `oldfd`: file descriptor original que se quiere duplicar.
@@ -377,25 +374,16 @@
 			- valores de retorno:
 				- `>= 0`: devuelve `newfd` si la duplicacion fue exitosa.
 				- `-1`: error.
-			- uso en webserv:
-				- se usa en CGI para redirigir la entrada y salida estandar.
 
-		- **chdir**: esta funcion permite modificar o consultar propiedades de un file descriptor.
-			- prototipo: `int fcntl(int fd, int cmd, ...);`
+		- **chdir**: esta funcion cambia el directorio de trabajo actual del proceso. A partir de este momento, todas las rutas relativas se interpretan desde el nuevo directorio, en este proyecto se utiliza antes de ejecutar un CGI para que el programa se ejecute en el directorio correcto.
+			- prototipo: `int chdir(const char *path);`
 			- parametros:
-				- `fd`: file descriptor sobre el que se quiere actuar.
-				- `cmd`: comando que indica la operacion a realizar.
-				- `...`: argumentos adicionales dependientes del comando.
-			- comandos permitidos en webserv (macOS):
-				- `F_SETFL`: establece flags de estado del fd.
-					- `O_NONBLOCK`: pone el fd en modo no bloqueante.
-				- `FD_CLOEXEC`: cierra automaticamente el fd al ejecutar `execve`.
+				- `path`: ruta del directorio al que se quiere cambiar. Puede ser absoluta o relativa.
 			- valores de retorno:
-				- `>= 0`: operacion realizada con exito.
-				- `-1`: error.
-			- uso en webserv:
-				- configurar sockets en modo no bloqueante.
-				- evitar herencia de file descriptors en CGI.
+				- `0`: el cambio de directorio se realizo correctamente.
+				- `-1`: error, el directorio no existe, no hay permisos o la ruta no es valida.
+
+
 	- ## Utilidades y errores
 		- **errno**
 		- **strerror**
