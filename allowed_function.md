@@ -112,9 +112,58 @@
 					- `ENFILE`: limite del sistema alcanzado.
 					- `EINVAL`: parametros invalidos.
 					- `ENOBUFS`: memoria insuficiente.
-		- **socketpair**
-		- **bind**
-		- **listen**
+		- **socketpair**:crea dos sockets conectaddos entre si ,permite la comunicacion bidireccional entre dos procesos(o dentro del mismo proceso) sin usar una red.
+			- prototipo: `int socketpair(int domain, int type, int protocol, int sv[2])`;
+			- parametros:
+				- `domain`: familia de direcciones.
+					- `AF_UNIX`: sockets locales (socket pair solo funciona con `AF_UNIX`.).
+				- `type`: tipo de socket.
+					- `SOCK_STREAM`: flujo bidireccional.
+					- `SOCK_DGRAM`: datagramas.
+				- `protocol`:protocolo especifico (siempre `0`).
+				- `sv`:array de dos esnteros que rtecibe los sockets (ambos sockets pueden leer y escribir).
+					- `sv[0]`: primer socket.
+					- `sv[1]`: segundo socket.
+			- valor de retorno:
+				- `0`:exito.
+				- `-1`:Error (se modifica errno)
+					- `EAFNOSUPPORT`:dominio no soportado.
+					- `EMFILE`:demasiados fd abiertos.
+					- `ENFILE`:limite del sistema.
+					- `EINVAL`:parametros invalidos.
+		- **bind**:asocia un socket a una direccion(IP + puerto).En un servidor,indica en que puerto y direccion ca a escuchar.
+			- prototipo: `int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen`;
+			- parametros:
+				- `sockfd`: descriptor del archivo del socket creado previamente con `socket()`.
+				- `addr`: estructura la cual indica la direccion a la que se asocia el socket.
+					- `struct de addr`
+						- `sa_family_t    sin_family`: indica a familia de direcciones (siempre `AF_INET` para IPv4) debe coincidir con el `domain` usado en el socket.
+						- `in_port_t      sin_port;` puerto en el que el servidor va a escuchar.el puerto debe ir en el network byte order por eso se usa `htons()`.
+						- `struct in_addr sin_addr;`estructura que contiene un `uint32_t`en el que se guarda la direccion IP.
+				- `addrlen`:tamaño de la estructura `addr`.
+			- valores de retorno:
+				- `0`: Exito.
+				- `-1`: Error (se modifica errno).
+					- `EADDRINUSE`: el puerto ya esta en uso.
+					- `EACCES`: permiso denegado (puertos < 1024).
+					- `EINVAL`:Socket ya esta enlazado.
+					- `EBADF`:sockfd invalido.
+					- `EADDRNOTAVAIL`:ip no valida en el sistema.
+		- **listen**:marca un socket como pasico(lo prepara para aceptar conexiones entrantes).convierte un socket TCP ya bineado en un socket de escucha.
+			- protipo: `int listen(int sockfd, int backlog)`;
+			- parametros:
+				- `sockfd`: descriptor del socket previamente creado con `socket()`y asociado con `bind()`.
+				- `backlog`: numero maximo de conexiones pendientes en la cola de espera.
+					- Define cuántos clientes pueden estar esperando a que el servidor haga `accept()`.
+					- El sistema puede limitar o ajustar este valor.
+			- valores de retorno:
+				- `0`:exito.
+				- `-1`:error (se modifica errno).
+					- `EBADF`: `sockfd` invalido.
+					- `EINVAL`: el socket no esta bindeado.
+					- `EOPNOTSUPP`: el socket no soporta `listen()`.
+					- `ENOTSOCK`: `sockfd`no es un socket.
+				
 		- **accept**
 		- **connect**
 		- **send**
