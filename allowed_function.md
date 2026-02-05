@@ -383,7 +383,6 @@
 				- `0`: el cambio de directorio se realizo correctamente.
 				- `-1`: error, el directorio no existe, no hay permisos o la ruta no es valida.
 
-
 	- ## Utilidades y errores
 		- **errno**
 		- **strerror**
