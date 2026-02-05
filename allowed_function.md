@@ -240,29 +240,29 @@
 		- **getaddrinfo**
 		- **freeaddrinfo**
 		- **gai_strerror**
- - ## Multiplexación de I/O
-	- **select**
-	- **poll**
-	- **epoll**
-		- **epoll_create**
-		- **epoll_ctl**
-		- **epoll_wait**
-	- **kqueue**
-	- **kevent**
- - ## Gestión de ficheros y sistema
-	- **open**
-	- **close**
-	- **read**
-	- **write**
-	- **stat**
-	- **access**
-	- **opendir** 
-	- **readdir**
-	- **closedir**
-	- **fcntl**
-	- **dup**
-	- **dup2**
-	- **chdir**
- - ## Utilidades y errores
-	- **errno**
-	- **strerror**
+	 - ## Multiplexación de I/O
+		- **select**
+		- **poll**
+		- **epoll**
+			- **epoll_create**
+			- **epoll_ctl**
+			- **epoll_wait**
+		- **kqueue**
+		- **kevent**
+	- ## Gestión de ficheros y sistema
+		- **open**: HOLA QUE TL
+		- **close**
+		- **read**
+		- **write**
+		- **stat**
+		- **access**
+		- **opendir** 
+		- **readdir**
+		- **closedir**
+		- **fcntl**
+		- **dup**
+		- **dup2**
+		- **chdir**
+	- ## Utilidades y errores
+		- **errno**
+		- **strerror**
