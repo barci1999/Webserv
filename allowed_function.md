@@ -164,10 +164,70 @@
 					- `EOPNOTSUPP`: el socket no soporta `listen()`.
 					- `ENOTSOCK`: `sockfd`no es un socket.
 				
-		- **accept**
-		- **connect**
-		- **send**
-		- **recv**
+		- **accept**: acepta un  conexion entrante en una socket de escucha,crea un nuevo socket dedicado exclusivamente a ese cliente(este socket no se usa para comunicar datos solo para aceptar conexiones).
+			- prototipo: `int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)`;
+			- parametros:
+				- `socketfd`: socket en modo escucha previamente configurado con: `socket()`,`bind()`,`listen()`.
+				- `addr`: estructura donde se almacena la direccion del cliente (puede ser `NULL`si no interesa la informacion).(se suele usar `struct sockaddr_in`).
+				- `addrlen`: tamaño de ña estructura `addr`,se pasa como puntero ,el kernel lo actualiza con el tamaño real.
+			- valores de retorno:
+				- `client_fd`: nuevo socket de escucha del cliente.
+				- `-1`: Error (se modifica errno).
+					- `EAGAIN` / `EWOULDBLOCK`: no hay conexiones pendientes (socket no bloqueante).
+					- `EBADF`: sockfd invalido.
+					- `EINVAL`: el socket no esta en modo escucha.
+					- `EMFILE`: demasiados fds abiertos.
+					- `ENOTSOCK`: no es un socket.
+
+		- **connect**: inicia una conexion desde un socket hacia una direccion remota. en TCP: establece la conexion con un servidor,debe llamarse antes de `send()`/`recv`.
+			- prototipo: `int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)`;
+			- parametros:
+				- `sockfd`: descriptor del socket creado por `socket()`.
+				- `addr`: estructura que es la direccion del servidor remoto (IP + puerto).
+				- `addrlen`: tamaño de la estructura apuntada por `addr`.
+			- valores de retorno:
+				- `0`:conexion establecida.
+				- `-1`:Error (se modifica errno).
+					- `ECONNREFUSED`: el servidor rechazo a conexion.
+					- `ETIMEDOUT`: tiempo de espera agotado.
+					- `EINPROGRESS`: conecsion en curso(socket no bloqueante).
+					- `EADDRNOTAVAIL`: direccion invalida.
+					- `ENETUNREACH`: red no alcanzable.
+		- **send**: envia datos a traves de un sicket conectado. se usa para enviar informacion al cliente o al servidor, normalmente despues de `accept()`o `connect()`.
+			- prototipo: `ssize_t send(int sockfd, const void *buf, size_t len, int flags)`;
+			- parametros:
+				- `sockfd`: socket conectado -> devuelto por `accept()` o usado con `connect()`.
+				- `buf`: buffer que contiene los datos a enviar.
+				- `len`: numero de bytes a enviar desde `buff`.
+				- `flags`: opciones de envio.
+					- `0`:envio normal.
+					- `MSG_NOSIGNAL`: evita el `SIGPIPE`si el socket esta cerrado.
+			- valores de retorno:
+				- `n`: bytes enviados.
+				- `-1`: Error (se modificar errno).
+					- `EPIPE`: socket cerrado por el otro lado.
+					- `ECONNRESET`: conexion reiniciada.
+					- `EAGAIN`/ `EWOULDBLOCK`:socket no bloqueante,no se puede enviar ahora.
+					- `EBADF`:`sockfd` invalido.
+				
+		- **recv**: redibe datos desde un socket conectado y los copia en un buffer. se usa para leer peticiones HTTP u otros datos enviados por el cliente o servidor.
+			- prototipo: `ssize_t recv(int sockfd, void *buf, size_t len, int flags);`
+			- parametros:
+				- `sockfd`: socket conectado -> devuelto por `accept()` o usado con `connect()`.
+				- `buf`: buffer donde se almacenaran los daros recibidos.
+				- `len`: numero maximo de bytes a recibir.
+				- `flags`: opciones de recepcion.
+					- `0`: recepcion normal.
+					- `MSG_DONTWAIT`: no bloquea.
+					- `MSG_PEEK`: lee sin consumir datos.
+			- valores de retorno:
+				- `n`: bytes recibidos. 
+				- `0`: conexion cerrada ordenadamente.
+				- `-1`: Error (se modifica errno).
+					- `EAGAIN`/`EWOULDBLOCK`: no hay datos disponibles (no bloqueante).
+					- `ECONNRESET`: conexion reiniciada.
+					- `EBADF`: `sockfd`invalido.
+					- `ENOTCONN`: socket no conectado.
 	- **configuracion y utilidades de red**
 		- **setsockopt**
 		- **getsockname**
