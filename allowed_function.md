@@ -229,13 +229,78 @@
 					- `EBADF`: `sockfd`invalido.
 					- `ENOTCONN`: socket no conectado.
 	- **configuracion y utilidades de red**
-		- **setsockopt**
-		- **getsockname**
-		- **getprotobyname**
-		- **htons**
-		- **htonl**
-		- **ntohs**
-		- **ntohl**
+		- **setsockopt**: configura opciones de una socket y modifica su comportamiento se usa para: reutilizar puertos ,configurar timeouts, Activar/desactivar opciones del socket.
+			- prototipo: `int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)`.
+			- parametros:
+				- `sockfd`: descriptor del socket creado por `socket()`.
+				- `level`: Nivel al que pertenece la opcion:
+					- `SOL_SOCKET`: opciones generales del socket.
+					- `IPPROTO_TCP`: opciones especificas del TCP.
+				- `optname`: opcion que se quiere modificar:
+					- `SO_REUSEADDR`: reutilizar direccion /puerto (nivel -> `SOL_SOCKET`).
+					- `SO_REUSEPORT`: reutilizar puerto si esta disponible (nivel -> `SOL_SOCKET`).
+					- `SO_RCVTIMEO`: timeout de recepcion (nivel -> `SOL_SOCKET`).
+					- `SO_SNDTIMEO`: timeout de envio (nivel -> `SOL_SOCKET`).
+				- `optval`: puntero al calor de la opcion.
+				- `optlen`: tamaño de optval.
+			- valores de retorno:
+				- `0`: exito.
+				- `-1`: Error (se modifica errno).
+					- `EBADF`: sockfd invalido.
+					- `ENOPROTOOPT`: opcion no soportada.
+					- `EINVAL`: Parametros ivalidos.
+					- `EFAULT`: optval invalido.
+
+		- **getsockname**: obtiene la direccion llocal asociada a un socket: permite sbaer su ip local y su puerto asignado real.
+			- prototipo: `int getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen)`;
+			- parametros:
+				- `sockfd`: descriptor del socket del cual se quiere obtener la informacion.
+				- `addr`: estructura donde se almacenara la direccion local de socket.
+				- `addrlen`: tamaño de addr.
+			- valores de retorno:
+				- `0`: Exito.
+				- `-1`: Error (se modifica errno).
+					- `EBADF`: sockfd invalido. 
+					- `ENOTSOCK`: no es un socket.
+					- `EFAULT`: `addr`o `addrlen` invalidos.
+					- `EINVAL`: socket no tiene una direccion asociada.
+		- **getprotobyname**: obtiene informacion sobre un protocolo de red a partir de su nombre,se usa para convertir un nombre como `"tcp"` o `"udp"` en su numero de protocolo.
+			- prototipo: `struct protoent *getprotobyname(const char *name)`;
+			- parametros:
+				- `name`: nombre del protocolo. (comunes `"tcp"` o `"udp"`).
+			- valores de retorno:
+				- `NULL`: Error.
+				- `struct proent *`:exito.
+					- esta structura tiene:
+						- `char *p_name`: nombre oficial del protocolo.
+						- `char **p_aliases`: Alias.
+						- `int p_proto`: numero de protocolo.
+		- **htons**: convierte un entero de 16 bits de `host byte order`a `network byte order`,se usa principalmente para convertir puertos antes de enviarlos por red.
+			- prototipo: `uint16_t htons(uint16_t hostshort)`;
+			- parametros:
+				- `hostshort`: Numero de 16 bist en orden de bytes del host.
+			- valores de retorno:
+				- `networkshort`: valor en nerwork byte order (importante esta funcion no falla).
+		
+		- **htonl**; convierte un entero de 32 bits de `host byte order` a `network byte order`, se usa priincipalmente para direcciones IPv4 y otros valores de 32 bits enviados por red.
+			- prototipo: `uint32_t htonl(uint32_t hostlong)`;
+			- parametros:
+				- `hostlong`: entero de 32 bites en order de bytes de host.
+			- valores de retorno:
+				- `networklong`: valoer en network byte order (importante esta funcion no falla).
+
+		- **ntohs**: convierte un entero de 16 bits de `networl byte order` a `host byte order`,se usa principalmente para leer numeros de puerto recibidos desde la red.
+			- prototipo : `uint16_t ntohs(uint16_t netshort)`;
+				- `netshort` : Numero de 16 bits en network byte order.
+			- valores de retorno:
+				- `hostshort` : valor en host byte order (importante esta funcion no falla).
+
+		- **ntohl**: convierte un entero de 16 bits de `network byte order` a `host byte order`,se usa principalmente para leer numeros de puerto recibidos desde la red.
+			- prototipo : `uint32_t ntohl(uint32_t netlong);`;
+				- `netlong` : Numero de 16 bits en network byte order.
+			- valores de retorno:
+				- `hostlong` : valor en host byte order (importante esta funcion no falla).
+
 	- **resolucion de direcciones**
 		- **getaddrinfo**
 		- **freeaddrinfo**
