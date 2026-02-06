@@ -295,16 +295,36 @@
 			- valores de retorno:
 				- `hostshort` : valor en host byte order (importante esta funcion no falla).
 
-		- **ntohl**: convierte un entero de 16 bits de `network byte order` a `host byte order`,se usa principalmente para leer numeros de puerto recibidos desde la red.
+		- **ntohl**: convierte un entero de 32 bits de `network byte order` a `host byte order`,se usa principalmente para leer numeros de puerto recibidos desde la red.
 			- prototipo : `uint32_t ntohl(uint32_t netlong);`;
-				- `netlong` : Numero de 16 bits en network byte order.
+				- `netlong` : Numero de 32 bits en network byte order.
 			- valores de retorno:
 				- `hostlong` : valor en host byte order (importante esta funcion no falla).
 
 	- **resolucion de direcciones**
-		- **getaddrinfo**
-		- **freeaddrinfo**
-		- **gai_strerror**
+		- **getaddrinfo**: resuelve direcciones de red. convierte un host(`localhost`,`127.0.0.1`,`NULL`) y un servicio (`8080`) en una lista de estructuras `addrinfo`listas para unsar con `socket()`,`bind()`,`conect()`,etc.
+			- prototipo: `int getaddrinfo(const char *node,const char *service,const struct addrinfo *hints,struct addrinfo **res)`;
+			- parametros:
+				- `node` : nombre del host o direccion.
+				- `service`: servicion o puerto como string.
+				- `hints`: estructura que indica qie tipo de dicecciones quieres (tipo de struct addrinfo).
+				- `res`: puntero a una lista enlazada de `struct addrinfo`.
+			- valores de retorno:
+				- `= 0`: exito.
+				- `!= 0`: Error. (no modifica errno)
+					- los errores se interpretan `gai_strerror()`.
+		- **freeaddrinfo**: libera la memoria reservada con `getaddrinfo()`(`getaddrinfo` crea una lista elazada dinamica de estructuras addrinfo).
+			- prototipo: `void freeaddrinfo(struct addrinfo *res)`;
+			- parametros: 
+				- `res`: puntero a la lista de `struct addrinfo`devuelta por detaddrinfo().
+			- valores de retorno :
+				- no devuelve nada.
+		- **gai_strerror**: convierte los codigos de error de `getaddrinfo()`en mensajes legibles (no usa errno)
+			- prototipo: `const char *gai_strerror(int errcode)`;
+			- parametros:
+				- `errcode` : condigo devuelto por `getaddrinfo()` o `getnameinfo()`.
+			- valor de retorno
+				- `mensaje`: mensaje de error devuelto.
 	 - ## Multiplexación de I/O
 		- **select**
 		- **poll**
