@@ -313,7 +313,7 @@
 				- `= 0`: exito.
 				- `!= 0`: Error. (no modifica errno)
 					- los errores se interpretan `gai_strerror()`.
-		- **freeaddrinfo**: libera la memoria reservada con `getaddrinfo()`(`getaddrinfo` crea una lista elazada dinamica de estructuras addrinfo).
+		- **freeaddrinfo**: libera la memoria reservada con `getaddrinfo()`(`getaddrinfo()` crea una lista elazada dinamica de estructuras addrinfo).
 			- prototipo: `void freeaddrinfo(struct addrinfo *res)`;
 			- parametros: 
 				- `res`: puntero a la lista de `struct addrinfo`devuelta por detaddrinfo().
@@ -326,14 +326,104 @@
 			- valor de retorno
 				- `mensaje`: mensaje de error devuelto.
 	 - ## Multiplexación de I/O
-		- **select**
-		- **poll**
-		- **epoll**
-			- **epoll_create**
-			- **epoll_ctl**
-			- **epoll_wait**
-		- **kqueue**
-		- **kevent**
+		- **select**: permite vugilar multiples doscriptoes de archivo(sockets,pipes,ficheros) y esperar hasta que alguno este listo para:leer,escribir o tenga una exepcion .Evita bloquear el servidor en un solo cliente.
+			- prototipo: `int select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,struct timeval *timeout)`;
+			- parametros:
+				- `nfds`: numeros del descriptor mas alto `+1`que quieres vigilar.
+				- `readfds`: conjunto de descriptores a vigilar para lectura.
+					- un fd estara listo si:
+						- `recv()` no lo bloquearia.
+						- hay una conexion pendiaente (`accept()`).
+				- `writefds`:conjunto de descriptores listos para escritura.
+					- un fd estara listo si:
+						- `send()`: no bloquearia.
+				- `exceptfd`: conjunto para condiciones execpcionales.
+				- `timeout`: tiempo maximo de espera
+					- valores:
+						- `NULL`: espera indefinida.
+						- `{0,0}`: no espera (polling).
+						- `valores positivos`: espera limitada.
+			- valores de retorno:
+				- ` > 0`: numero de fds listos.
+				- ` == 0`:timeout.
+				- ` == -1`: Error (modifica errno). 
+					- `EBADF`: fd invalido.
+					- `EINTR`: señal recibida.
+					- `EINVAL`: argumentos erroneos.
+					- `ENOMEM`: falta de memoria.
+
+		- **poll**: monitoriza multiples descriptores de archivo y espera hasta que alguno este listo para realizar operaciones de E/S.a diferencia de `select()`no tiene limite fijo de fds no usa bitmasks ,no necesita recalcular `nfds`.
+			- prototipo: `int poll(struct pollfd *fds, nfds_t nfds, int timeout)`;
+			- parametros:
+				- `fds`: Array de estructuras `struct pollfd` que describe que fds vigilar y que eventos interesan.
+				- `nfds`: numero de elementos en el array `fds` (no es el fd maximo , es el tamaño del array).
+				- `timeout`: tiempo de espera maximo en milisegundos
+					- `-1`: espera indefinida.
+					- `0`: no bloquea.
+					- `> 0`: espera limitada.
+			- valores de retorno:
+				- `> 0`: numero de fds con enventos.
+				- `== 0`: timeout.
+				- `== -1`: Error (se modifica errno).
+					- `EBADF`: fd invalido.
+					- `EINTR`: señal recibida.
+					- `EINVAL`: argumentos invalidos.
+					- `ENOMEM`: falta memoria.
+		- **epoll**: (NO ES UNA FUNCION COMO TAL ES UN CONJUNTO DE LLAMADAS A OTRAS  FUNCIONES.)es un mecanismo de multiplexacion eficiente y escalable ,diseñado para manejar muchisimos descriptores . A diferencia de `select` y `poll`no recorre los fds, funciona por eventos,es O(1) por evento.
+			- **epoll_create**: crea una instancia de epoll y devuelve un descriptor:
+				- prototipo: `int epoll_create(int size)`;
+				- parametros:
+					`size`: actualmente no sirve de mucho en esta funcion simplemente a funcion comprueba que sea mayor que 0.(en el pasa era el numero maximo estimado e descriptores que ibas a monitorizar).
+				- valores de retorno:
+					- `>= 0`: epoll fd.
+					- `== -1`: Error (se modifica errno).
+						- `EINVAL` : argumentos invalidos.
+						- `EMFILE`/ `ENFILE`: limite de fds.
+						- `ENOMEM`: si memoria.
+
+			- **epoll_ctl**:Añade ,modifica o elimina la instancia de `epoll`.
+				- prototipo: `int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)`;
+				- parametros:
+					- `epfd`: descriptor e la instancia de epoll devuelta por `epoll_create()`.
+					- `op`: operaciones a realizar:
+						- `EPOLL_CTL_ADD`: añadir fd a eppoll.
+						- `EPOLL_CTL_MOD`: modificar eventos.
+						- `EPOLL_CTL_DEL`: eliminar fd.
+					- `fd`: descriptor que quieres controlar (socket del servidor,socket del cliente,pipe,etc.).
+					- `event`:describle que eventos te interesan y que dato asociar al fd:
+						- dentro de la estructura envents encontramos:
+							- `uint32_t events`: eventos que quieres monitorizar:
+								- `EPOLLIN`: listo para leer.
+								- `EPOLLOUT`: listo para escribir.
+								- `EPOLLERR`: error.
+								- `EPOLLHUP`: cierre.
+								- `EPOLLET`: edge-triggered (avanzado).
+							- `epoll_data_t data`: informacion asociada al fd.
+				- valores de retorno:
+					- `== 0`: exito.
+					- `== -1`: Error (se modificar errno)
+						- `EBADF`: `epfd`o `fd` invalido.
+						- `EEXIST`: `fd` ya añadido. 
+						- `ENOENT`: `fd` no existe (MOD/DEL).
+						- `EINVAL`: argumentos invalidos.
+						- `ENOMEM`: sin memoria.
+			- **epoll_wait**:bloquea el proceso hasta que uno o mas descriptores registrados en la instancia `epoll` reciban eventos.
+				- prototipo: `int epoll_wait(int epfd,struct epoll_event *events,int maxevents,int timeout)`;
+				- parametros:
+					- `epfd`: descriptor e la instancia de epoll devuelta por `epoll_create()`.
+					- `events`: Array donde el kernek escribe los enventos listos.
+					- `maxevents`: Numero maximo de eventos que puede contener el array de `events` (debe ser mayor que `0`).
+					- `timeout`: tiempo maximo en milisegundos.
+						- `-1`: esoera indefinida.
+						- `0`: no bloquea.
+						- `> 0`: esoera limitada.
+				- valores de retorno:
+					- ` > 0`: numero de eventos devueltos.
+					- `== 0`: time out.
+					- ` == -1`: Error (se modifica errno).
+						- `EBADF`: epdf invalido.
+						- `EINTR`: interrumpido por señal.
+						- `EINVAL`: argumentos invalidos.
 	- ## Gestión de ficheros y sistema
 		- **open**: esta funcion se utiliza para abrir un archivo y obtener un file descriptor(fd) que luego se usará para leer o escribir en él.
 			- prototipo: `int open(const char *pathname, int flags, mode_t mode);`
@@ -469,5 +559,25 @@
 				- `-1`: error, el directorio no existe, no hay permisos o la ruta no es valida.
 
 	- ## Utilidades y errores
-		- **errno**
-		- **strerror**
+		- **errno**: variable global que indica el codigo de error de la ultima llamada del sitema que fallo.
+			- porsibles valores e enrro con fallos en webserver (estos son algunos ejemplos las fuciones suelen definir que valores de errno usan):
+				- `EBADF`: descriptor invalido.
+				- `EINTR`: llamada interrumpida por señal.
+				- `EINVAL`: argumentos invalidos.
+				- `EACCES`: permiso denegado.
+				- `EMFILE`: limite de ficheros abiertos por porceso.
+				- `ENFILE`: limite global de gicheros abiertos.
+			
+			- ejemplo de comprobacion con errno en caso de fallo con un fichero
+				- **incorrecto**:
+					- `if (errno == EBADF) { ... } `.
+				- **correcto**:
+					- `if (close(fd) == -1 && errno == EBADF) { ... }`.
+
+		- **strerror**: convierte un codigo de error(`errno`) en un mensaje legible para el usuario. (esta funcion solo devuelve el mensaje de `errno` pero no lo modifica)
+			- protoripo: `char *strerror(int errnum)`;
+			- parametros:
+				- `errnum`: codigo de error de la variale de global `errno`.
+			- valor de retorno:
+				- puntero a string descriptivo del error.
+				- no hay que librear la memoria que devuelve..
