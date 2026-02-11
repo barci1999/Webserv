@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Block.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:14:57 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/11 01:43:58 by pablo            ###   ########.fr       */
+/*   Updated: 2026/02/11 16:23:06 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,10 @@ public:
     const std::string& getName() const;
     const std::vector<Directive>& getDirectives() const;
     const std::list<Block>& getBlocks();
+    
+    
+
+    void print(int indent = 0) const;
 };
 
 
