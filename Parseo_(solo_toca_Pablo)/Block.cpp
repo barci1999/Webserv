@@ -1,35 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   file_block.hpp                                     :+:      :+:    :+:   */
+/*   Block.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/10 20:11:22 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/10 20:12:38 by pablalva         ###   ########.fr       */
+/*   Created: 2026/02/11 01:45:12 by pablo             #+#    #+#             */
+/*   Updated: 2026/02/11 01:45:13 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FILE_BLOCK_HPP
-# define FILE_BLOCK_HPP
-# include <iostream>
-
-class file_block
-{
-private:
-	/* data */
-public:
-	file_block(/* args */);
-	~file_block();
-};
-
-file_block::file_block(/* args */)
-{
-}
-
-file_block::~file_block()
-{
-}
-
-
-#endif
