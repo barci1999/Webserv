@@ -7,7 +7,11 @@ int main()
     try
     {
         Parser parser;
-        Block root = parser.parseFile("prueba.conf");
+        Block root = parser.parseFile("hola.conf");
+        for(std::list<Block>::const_iterator it = root.getBlocks().begin(); it != root.getBlocks().end(); ++it)
+        {
+            std::cout << it->getName() << std::endl;
+        }
         root.print();
     }
     catch (std::exception& e)
