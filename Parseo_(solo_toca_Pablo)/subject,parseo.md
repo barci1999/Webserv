@@ -61,3 +61,12 @@
 	   root /var/www;
        client_max_body_size 50M;  
 	}`
+
+-el servidor debe poder ejecutar un cgi que significa esto basicamente que cuabdo se haga una peticon de un archivo ejecutable por ejemplo un .php o .py este debe ejecutarlo y mandar la salida a la pagina
+    ejemplo:
+
+    `location ~ \.php$ 
+    {
+        fastcgi_pass 127.0.0.1:9000;
+    }`
+    la diferencia entre cgi y fast_cgi es que en el primero ser hace un nuevo proceso y se ejecuta el script cada vez que se hace una peticion de  este tipo mientras que con fast_cgi se hace la ejecucion desde un inicio y el proceso de esa ejecucion queda es espera por si hacen las peticiones para devolver la respuesta 
