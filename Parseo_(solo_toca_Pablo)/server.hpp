@@ -6,16 +6,25 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/16 19:28:08 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/16 19:54:11 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
+# include "Directive.hpp"
+# include <vector>
+# include <iostream>
+# include <string>
 
 class server
 {
 private:
+	std::vector<Directive> _srvPorts;
+	std::string _srvName;
+	std::string _srvRoot;
+	std::vector<std::string> _srvIndex;
+	std::vector<Directive> _srvErrorPage;
 	// atributos listen para los puertos
 	// gestion del nombre del servidor
 	// root de inicio del propio server 
