@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/16 19:54:11 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/17 18:32:28 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,19 @@
 # include <vector>
 # include <iostream>
 # include <string>
+# include "Block.hpp"
+# include <exception>
 
 class server
 {
 private:
-	std::vector<Directive> _srvPorts;
+	
+	Directive _srvPorts;
 	std::string _srvName;
-	std::string _srvRoot;
-	std::vector<std::string> _srvIndex;
-	std::vector<Directive> _srvErrorPage;
+	Directive _srvRoot;
+	Directive _srvIndex;
+	Directive _srvErrorPage;
+	std::list<Block> _srvLocations;
 	// atributos listen para los puertos
 	// gestion del nombre del servidor
 	// root de inicio del propio server 
@@ -39,20 +43,16 @@ private:
 		(en el caso de peticiones de post se debe gestiona el tamaño maximo de archivo)
 		- gestion de formato para los cgi
 	}*/
+	bool server::check_location_block(Block to_check);
+	bool check_locations(const std::list<Block>);
+	Directive check_directives(std::string to_serch, const Block& to_check);
 
-	
 public:
-	server(/* args */);
+	server(const Block& block);
 	~server();
 };
 
-server::server(/* args */)
-{
-}
 
-server::~server()
-{
-}
 
 
 #endif

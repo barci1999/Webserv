@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:14:57 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/11 16:23:06 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/17 17:27:52 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ public:
     
     const std::string& getName() const;
     const std::vector<Directive>& getDirectives() const;
-    const std::list<Block>& getBlocks();
+    const std::list<Block>& getBlocks() const;
     
     
 
