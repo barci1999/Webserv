@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/14 15:32:35 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/17 15:34:40 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ Directive Parser::parseDirective(const std::string& line)
 	}
 	std::istringstream iss(to_check);
 	std::string token;
+	if (iss >> token)
+    	result.name = token;
 	while (iss >> token)
 	{
 		result.args.push_back(token);
