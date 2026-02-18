@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/18 15:50:57 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/18 19:28:04 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 class server
 {
 private:
-	
+//valores para konrad:	
 	std::string _srvName;
 	Directive _srvPorts;
 	Directive _srvRoot;
@@ -32,6 +32,14 @@ private:
 	std::list<Block> _srvLocations;
 	size_t _srvClientMaxBody;
 	bool _srvAutoIndex;
+
+	
+//valores para rodri:
+
+
+	int socket_fd; 
+	// añadir struct soxket_addr	
+
 	
 	// atributos listen para los puertos
 	// gestion del nombre del servidor
