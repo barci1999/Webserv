@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/18 19:28:04 by pablo            ###   ########.fr       */
+/*   Updated: 2026/02/18 21:07:18 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@
 class server
 {
 private:
-//valores para konrad:	
+//valores para konrad:
+
 	std::string _srvName;
 	Directive _srvPorts;
 	Directive _srvRoot;
@@ -37,17 +38,15 @@ private:
 //valores para rodri:
 
 
-	int socket_fd; 
-	// añadir struct soxket_addr	
+	//una vector de clases  (listeners) que tenga dentro int socket_fd / struct socket_addre / un solo puerto de la variable _srvPorts 
+			// el costructor de esta clase tiene que recibir el puerto y el resto se inicializa a 0;
+	//std::map de clases (client) que estas tienen que tener : int fd(iniciar como -1) , puntero al tipo de clase del array antrerior ,
 
+
+	// crear dos clases nuevas para rodrigo con los vlores de arriba
 	
-	// atributos listen para los puertos
-	// gestion del nombre del servidor
-	// root de inicio del propio server 
-	// gestion del archivo defaut del servidor cuando arracnque
-	// gestion de paginas de error por default
-	// gestion de tamaño maximo de las peticiones de los clientes 
-	// gestion de autoindex
+	
+	
 	/*bloques location {
 		- comprobacion de si autoindex on o off
 		- gestion de index para archivos por default
@@ -64,8 +63,5 @@ public:
 	server(const Block& block);
 	~server();
 };
-
-
-
 
 #endif
