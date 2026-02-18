@@ -52,7 +52,7 @@ Ejemplo esperado:
 
 Para poder funcionar correctamente, el módulo CGI necesita recibir:
 
-### 1️⃣ Un objeto Request completamente parseado
+### 1️⃣ Un objeto  completamente parseado
 
 Debe contener como mínimo:
 
@@ -159,8 +159,8 @@ Por lo tanto:
 - No debemos usar waitpid() bloqueante.
 - Los pipes del CGI deben integrarse en el poll principal.
 
-Primera versión recomendada:
-- Implementar versión funcional aunque sea bloqueante.
+Primera versión:
+- Implementar versión funcional aunque sea bloqueante (mientras el CGI se está ejecutando, el servidor se queda esperando y no puede hacer nada más).
 - Luego adaptarla al modelo non-blocking del servidor.
 
 ---
