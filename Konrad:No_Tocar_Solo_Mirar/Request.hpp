@@ -1,26 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   CGIProces.hpp                                      :+:      :+:    :+:   */
+/*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/18 16:55:57 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/02/19 12:24:30 by ksudyn           ###   ########.fr       */
+/*   Created: 2026/02/19 17:00:37 by ksudyn            #+#    #+#             */
+/*   Updated: 2026/02/19 17:17:51 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "unistd.h"
+#include <string>
+#include <map>
 
-class CGIProces
+class Request
 {
     private:
-        int _inputPipe[2];
-        int _uotputPippe[2];
-        pid_t _pid;
-    public:
-        pid_t getPid() const;
-};
 
+    public:
+        std::string method;
+        std::string path;
+        std::string query;
+        std::string version;
+        std::map<std::string, std::string> headers;
+        std::string body;
+
+        Request() {};
+};
