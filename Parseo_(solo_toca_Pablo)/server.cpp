@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/19 12:51:32 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/19 14:53:10 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,17 @@ bool server::check_autoindex(const Block& to_check)
 }
 bool server::check_location_block(Block to_check)
 {
-	
+    const std::vector<Directive>& directives = to_check.getDirectives();
+    check_directives("root",to_check);
+    for (std::vector<Directive>::const_iterator it = directives.begin();it != directives.end(); it++)
+    {
+        if (it->name.empty())
+            throw std::runtime_error("directives need a name.");
+        else if (it->args.size() < 1)
+            throw std::runtime_error("directives need a minimun of one argument.");
+    }
+    
+    
 }
 size_t server::check_client_max_body(const Block& to_check)
 {
