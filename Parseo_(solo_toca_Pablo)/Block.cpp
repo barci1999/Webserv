@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:45:12 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/17 17:24:24 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/19 11:08:21 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ const std::vector<Directive>& Block::getDirectives() const
 {
 	return  this->_directives;
 }
-const std::list<Block>& Block::getBlocks()
+const std::list<Block>& Block::getBlocks() const
 {
 	return this->_children;
 }

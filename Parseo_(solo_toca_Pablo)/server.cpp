@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/18 15:50:35 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/19 12:51:32 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ server::server(const Block& to_check)
 	check_locations(this->_srvLocations);
 	this->_srvAutoIndex = check_autoindex(to_check);
     this->_srvClientMaxBody = check_client_max_body(to_check);
+    for (size_t i = 0; i < this->_srvPorts.args.size(); i++)
+    {
+        this->_srvListeners.push_back(listener(this->_srvPorts.args[i]));
+    }
+    
 }
 Directive server::check_directives(std::string to_search, const Block& to_check)
 {
