@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/18 21:07:18 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/19 10:55:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@
 # include "Block.hpp"
 # include <exception>
 # include <sstream>
+# include "client.hpp"
+# include "listener.hpp"
+# include <map>
 
 class server
 {
@@ -37,7 +40,8 @@ private:
 	
 //valores para rodri:
 
-
+	std::vector<listener> _srvListeners;
+	std::map<int,client> _srvClients; 
 	//una vector de clases  (listeners) que tenga dentro int socket_fd / struct socket_addre / un solo puerto de la variable _srvPorts 
 			// el costructor de esta clase tiene que recibir el puerto y el resto se inicializa a 0;
 	//std::map de clases (client) que estas tienen que tener : int fd(iniciar como -1) , puntero al tipo de clase del array antrerior ,
@@ -59,6 +63,7 @@ private:
 	Directive check_directives(std::string to_serch, const Block& to_check);
 	bool check_autoindex(const Block& to_check);
 	size_t check_client_max_body(const Block& to_check);
+
 public:
 	server(const Block& block);
 	~server();
