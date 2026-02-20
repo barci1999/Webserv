@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/02/19 21:26:44 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/02/20 20:49:02 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,11 @@ std::string RequestParser::trim(const std::string& str)
 }
 
 
-
+// istringstream lee un string como si fuera un archivo, sin esto se tenfria que buscar el \n, cortar substring
+// divides asi el headersText y lo metes en stream para usar el getine y trabajar linea por linea.
+// find busca la posicion de lo que le pases, en este caso : dentro de line y lo guardamos en colon
+// extraemos la clave - valor y guardamos dentro de key y value entre lo que hay antes y despies de : y con trim quitamos espacios
+// Y con headers 
 void RequestParser::parseHeaders(const std::string& headersText, Request& request)
 {
     std::istringstream stream(headersText);
@@ -53,6 +57,35 @@ void RequestParser::parseHeaders(const std::string& headersText, Request& reques
         }
     }
 }
+
+// Convertimos la línea completa "GET /test.py?name=juan HTTP/1.1" en un flujo para poder leer palabra por palabra.
+//El operador >> lee desde la posición actual del stream, ignora los espacios iniciales, y guarda en la variable todos los caracteres hasta el siguiente espacio
+// Buscamos si la URL contiene un '?', find devuelve la posición donde está el carácter, si no se encuentra devuelve std::string::npos.
+//  SI HAY '?' se extrae desde el inicio hasta antes del '?' y eso seria el PATH puro
+// Luego s extrae desde la posicion del '?' hasta el final y eso es la QUERY
+// Si no hay '?', toda la URL es solo path.
+void RequestParser::parseRequestLine(const std::string& line, Request& request)
+{
+    std::istringstream stream(line);
+    stream >> request.method;
+    std::string fullPath;
+    stream >> fullPath;
+    stream >> request.version;
+
+    size_t queryPos = fullPath.find('?');
+
+    if (queryPos != std::string::npos)
+    {
+        request.path = fullPath.substr(0, queryPos);
+        request.query = fullPath.substr(queryPos + 1);
+    }
+    else
+    {
+        request.path = fullPath;
+        request.query = "";
+    }
+}
+
 
 Request RequestParser::parse(const std::string& rawRequest)
 {
