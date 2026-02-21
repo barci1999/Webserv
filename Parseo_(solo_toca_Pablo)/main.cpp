@@ -1,18 +1,19 @@
 #include"Block.hpp"
 #include"Directive.hpp"
 #include"Parser.hpp"
-
+#include"server.hpp"
+#include"client.hpp"
+#include"listener.hpp"
 int main()
 {
     try
     {
         Parser parser;
         Block root = parser.parseFile("hola.conf");
-        for(std::list<Block>::const_iterator it = root.getBlocks().begin(); it != root.getBlocks().end(); ++it)
-        {
-            std::cout << it->getName() << std::endl;
-        }
-        root.print();
+        const std::list<Block> hola = root.getBlocks();
+        Block prueba(hola.begin());
+        server general(prueba);
+        std::cout << "hola se instancion bien la clase" << std::endl;
     }
     catch (std::exception& e)
     {

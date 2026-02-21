@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   listener.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:36:03 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/19 11:21:29 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/21 20:31:17 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,6 @@ void listener::parse_input(const std::string& input)
         throw std::runtime_error("Port out of valid range (0-65535)");
     this->_lstPort = static_cast<int>(port);
 }
+listener::~listener(){}
 
 
