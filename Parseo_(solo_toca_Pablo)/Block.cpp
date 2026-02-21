@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Block.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:45:12 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/19 11:08:21 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/21 21:02:54 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,12 @@ Block& Block::operator=(const Block& other)
 	this->_children = other._children;
 	this->_directives = other._directives;
 	return *this;
+}
+Block::Block(std::list<Block>::const_iterator hola)
+{
+	this->_name = hola->getName();
+	this->_directives = hola->getDirectives();
+	this->_children = hola->getBlocks();
 }
 Block::~Block(){}
 

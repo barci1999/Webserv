@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:02:23 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/19 14:03:10 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/21 20:31:34 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,3 +17,4 @@ client::client()
 	this->ptr = NULL;
 	this->fd = -1;
 }
+client::~client(){}

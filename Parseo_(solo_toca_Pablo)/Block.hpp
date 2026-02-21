@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Block.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:14:57 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/17 17:27:52 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/21 21:03:02 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ public:
     Block(/* args */);
     Block(const Block& other);
     Block& operator=(const Block& other);
+    Block(std::list<Block>::const_iterator hola);
     ~Block();
     
     Block(const std::string name);//costructor de la clae blocke donde el nombre sera el titulo del blocque

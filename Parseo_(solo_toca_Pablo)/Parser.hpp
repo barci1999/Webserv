@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:42 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/11 14:34:52 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/21 21:21:44 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ public:
     ~Parser();
     Block parseFile(const std::string& Filename);//nos retorna el arbol de bloques ya gestionados 
     static std::string trim(std::string input);
+    static std::vector<std::string> str_to_vector(const std::string& to_change);
 };
 
 #endif

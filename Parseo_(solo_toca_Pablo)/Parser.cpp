@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/17 15:34:40 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/21 21:21:48 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,4 +132,17 @@ Block Parser::parseFile(const std::string& file_name)
 		}
 	}
 	return result;
+}
+std::vector<std::string> Parser::str_to_vector(const std::string& to_change)
+{
+    std::string to_check = trim(to_change);
+    std::vector<std::string> result;
+
+    std::istringstream iss(to_check);
+    std::string token;
+
+    while (iss >> token)
+        result.push_back(token);
+
+    return result;
 }
