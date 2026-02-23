@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/21 19:40:25 by pablo            ###   ########.fr       */
+/*   Updated: 2026/02/23 13:51:44 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,31 +43,29 @@ private:
 
 	std::vector<listener> _srvListeners;
 	std::map<int,client> _srvClients; 
-	//una vector de clases  (listeners) que tenga dentro int socket_fd / struct socket_addre / un solo puerto de la variable _srvPorts 
-			// el costructor de esta clase tiene que recibir el puerto y el resto se inicializa a 0;
-	//std::map de clases (client) que estas tienen que tener : int fd(iniciar como -1) , puntero al tipo de clase del array antrerior ,
 
-
-	// crear dos clases nuevas para rodrigo con los vlores de arriba
 	
-	
-	
-	/*bloques location {
-		- comprobacion de si autoindex on o off
-		- gestion de index para archivos por default
-		- gestion de root para inicio de ruta en el location
-		(en el caso de peticiones de post se debe gestiona el tamaño maximo de archivo)
-		- gestion de formato para los cgi
-	}*/
 	bool check_location_block(const Block& to_check);
 	bool check_locations(const std::list<Block>);
 	Directive check_directives(std::string to_serch, const Block& to_check);
 	bool check_autoindex(const Block& to_check);
 	size_t check_client_max_body(const Block& to_check);
 
+
 public:
 	server(const Block& block);
 	~server();
+
+	const	std::string get_srvName()	const;
+	const	Directive get_srvPorts()	const;
+	const	Directive get_srvRoot()		const;
+	const	Directive get_srvIndex()	const;
+	const	Directive get_srvErrorPage()	const;
+	const	std::list<Block> get_srvLocations() const;
+	const	size_t get_srvClientMaxBody()	const;
+	const	bool get_srvAutoIndex()		const;
+	const	std::vector<listener> get_srvListeners()	const;
+	const	std::map<int,client> get_srvClients()	const;
 };
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   listener.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:36:03 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/21 20:31:17 by pablo            ###   ########.fr       */
+/*   Updated: 2026/02/23 11:24:37 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,31 @@ void listener::parse_input(const std::string& input)
     this->_lstPort = static_cast<int>(port);
 }
 listener::~listener(){}
+
+const int listener::get_lstPort() const
+{
+    return this->_lstPort;
+}
+const int listener::get_lstSocket_fd() const
+{
+    return this->_lstSocket_fd;
+}
+const sockaddr listener::get_lstSocketAddr() const
+{
+    return this->_lstSocketAddr;
+}
+
+void listener::set_lstPort(int _lstPort)
+{
+    this->_lstPort = _lstPort;
+}
+void listener::set_lstSocket_fd(int _lstSocket_fd)
+{
+    this->_lstSocket_fd = _lstSocket_fd;
+}
+void listener::set_lstSocketAddr(sockaddr _lstSocketAddr)
+{
+    this->_lstSocketAddr = _lstSocketAddr;
+}
 
 

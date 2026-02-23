@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:02:23 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/21 20:31:34 by pablo            ###   ########.fr       */
+/*   Updated: 2026/02/23 11:40:05 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,3 +18,20 @@ client::client()
 	this->fd = -1;
 }
 client::~client(){}
+
+const listener* client::get_ptr() const
+{
+	return this->ptr;
+}
+const int client::get_fd() const
+{
+	return this->fd;
+}
+void client::set_ptr(listener* ptr)
+{
+	this->ptr = ptr;
+}
+void client::set_fd(int fd)
+{
+	this->fd = fd;
+}
