@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/21 21:27:52 by pablo            ###   ########.fr       */
+/*   Updated: 2026/02/23 13:53:49 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,6 +156,43 @@ size_t server::check_client_max_body(const Block& to_check)
     return number * multiplier;
 }
 server::~server(){}
-
-
-
+const std::string server::get_srvName() const
+{
+    return this->_srvName;
+}
+const Directive server::get_srvPorts() const
+{
+    return this->_srvPorts;
+}
+const Directive server::get_srvRoot() const
+{
+    return this->_srvRoot;
+}
+const Directive server::get_srvIndex() const
+{
+    return this->_srvIndex;   
+}
+const Directive server::get_srvErrorPage() const
+{
+    return this->_srvErrorPage;
+}
+const std::list<Block> server::get_srvLocations() const
+{
+    return this->_srvLocations;
+}
+const size_t server::get_srvClientMaxBody() const
+{
+    return this->_srvClientMaxBody;
+}
+const bool server::get_srvAutoIndex() const
+{
+    return this->_srvAutoIndex;
+}
+const std::vector<listener> server::get_srvListeners()  const
+{
+    return this->_srvListeners;
+}
+const std::map<int,client> server::get_srvClients() const
+{
+    return this->_srvClients;
+}
