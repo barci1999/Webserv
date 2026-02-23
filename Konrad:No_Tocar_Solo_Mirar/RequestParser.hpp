@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:28:06 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/02/19 21:26:25 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/02/23 19:55:07 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@
 class RequestParser
 {
     private:
-        void parseRequestLine(const std::string& line, Request& request);
-        void parseHeaders(const std::string& headersText, Request& request);
-        void parseBody(const std::string& bodyContent, Request& request);
+        void ParseRequestLine(const std::string& line, Request& request);
+        void ParseHeaders(const std::string& headersText, Request& request);
+        void ParseBody(const std::string& bodyContent, Request& request);
 
-        std::string trim(const std::string& str);
+        std::string Trim(const std::string& str);
     public:
         Request parse(const std::string& rawRequest);
     
