@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/23 13:51:44 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/24 14:23:33 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,16 +56,30 @@ public:
 	server(const Block& block);
 	~server();
 
-	const	std::string get_srvName()	const;
-	const	Directive get_srvPorts()	const;
-	const	Directive get_srvRoot()		const;
-	const	Directive get_srvIndex()	const;
-	const	Directive get_srvErrorPage()	const;
-	const	std::list<Block> get_srvLocations() const;
-	const	size_t get_srvClientMaxBody()	const;
-	const	bool get_srvAutoIndex()		const;
-	const	std::vector<listener> get_srvListeners()	const;
-	const	std::map<int,client> get_srvClients()	const;
+	const	std::string& get_srvName()	const	{return this->_srvName;}
+	const	Directive& get_srvPorts()	const	{return this->_srvPorts;}
+	const	Directive& get_srvRoot()	const	{return this->_srvRoot;}
+	const	Directive& get_srvIndex()	const	{return this->_srvIndex;}
+	const	Directive& get_srvErrorPage()	const	{return this->_srvErrorPage;}
+	const	std::list<Block>& get_srvLocations()	const	{return this->_srvLocations;}
+	const	size_t get_srvClientMaxBody()	const	{return this->_srvClientMaxBody;}
+	const	bool get_srvAutoIndex()	const	{return this->_srvAutoIndex;}
+	std::vector<listener>& get_srvListeners()	{return this->_srvListeners;}
+	std::map<int,client>& get_srvClients()	{return this->_srvClients;}
+
+	void	set_srvName(std::string& srvname)	{this->_srvName = srvname;}
+	void	set_srvPorts(Directive& srvports)	{this->_srvPorts = srvports;}
+	void	set_srvRoot(Directive& srvroot)	{this->_srvRoot = srvroot;}
+	void	set_srvIndex(Directive& srvindex)	{this->_srvIndex = srvindex;}
+	void	set_srvErrorPage(Directive& srverrorpage)	{this->_srvErrorPage = srverrorpage;}
+	void	set_srvLocations(std::list<Block>& srvlocations)	{this->_srvLocations = srvlocations;}
+	void	set_srvClientMaxBody(size_t srvclientmaxbody)	{this->_srvClientMaxBody = srvclientmaxbody;}
+	void	set_srvAutoIndex(bool srvautoindex)	{this->_srvAutoIndex = srvautoindex;}
+	void	set_srvListeners(std::vector<listener>& srvlisteners)	{this->_srvListeners = srvlisteners;}
+	void	set_srvClients(std::map<int,client>& srvclients)	{this->_srvClients  = srvclients;}
+
+
+	
 };
 
 #endif
