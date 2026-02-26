@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/26 19:21:16 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/26 19:34:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,12 +63,12 @@ bool server::check_locations(std::list<Block> to_check)
 }
 bool server::cmp_name_directives(const Block& to_check)
 {
-    std::string level[] = {"listen","root","index","error_page","client_max_body_size","autoindex","cgi_extension","upload_enable","upload_store"};
+    std::string level[] = {"listen","root","index","error_page","client_max_body_size","autoindex","cgi_extension","upload_enable","upload_store","cgi_pass"};
     std::vector<Directive>::const_iterator it = to_check.getDirectives().begin();
     while (it != to_check.getDirectives().end())
     {
         bool result = false;
-        for (size_t i = 0; i < 9; i++)
+        for (size_t i = 0; i < 10; i++)
         {
             if (it->name == level[i])
             {
