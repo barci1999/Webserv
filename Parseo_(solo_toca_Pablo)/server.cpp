@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/24 12:22:17 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/26 19:21:16 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,7 @@ Directive server::check_directives(std::string to_search, const Block& to_check)
         else if (it->name == to_search && !it->args.empty())
         {
             throw std::runtime_error("Empty directive.");
-            /* code */
         }
-        
     }
     std::cout << to_search << to_check.getName() <<std::endl;
     throw std::runtime_error("Directive not found");
@@ -58,8 +56,34 @@ bool server::check_locations(std::list<Block> to_check)
 	{
 		if(!check_location_block(*it))
 			throw std::runtime_error("invalid location block.");
+        else if (!cmp_name_directives(*it))
+            throw std::runtime_error("invalid directive block.");
 	}
 	return true;
+}
+bool server::cmp_name_directives(const Block& to_check)
+{
+    std::string level[] = {"listen","root","index","error_page","client_max_body_size","autoindex","cgi_extension","upload_enable","upload_store"};
+    std::vector<Directive>::const_iterator it = to_check.getDirectives().begin();
+    while (it != to_check.getDirectives().end())
+    {
+        bool result = false;
+        for (size_t i = 0; i < 9; i++)
+        {
+            if (it->name == level[i])
+            {
+                result = true;
+                break;
+            }
+        }
+        if (!result)
+        {
+            return false;
+        }
+        ++it;
+    }
+    return true;
+    
 }
 bool server::check_autoindex(const Block& to_check)
 {

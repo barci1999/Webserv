@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/24 14:23:33 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/02/26 16:27:09 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ private:
 	Directive check_directives(std::string to_serch, const Block& to_check);
 	bool check_autoindex(const Block& to_check);
 	size_t check_client_max_body(const Block& to_check);
+	bool	cmp_name_directives(const Block& to_check);
 
 
 public:
