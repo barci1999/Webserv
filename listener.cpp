@@ -11,12 +11,20 @@
 /* ************************************************************************** */
 
 #include "listener.hpp"
+#include <cerrno>
+#include <stdlib.h>
+
 
 listener::listener(std::string port)
 {
+    int opt = 1;
+
 	parse_input(port);
-	this->_lstSocket_fd = -1;
-	std::memset(&this->_lstSocketAddr,0,sizeof(this->_lstSocketAddr));
+	this->_lstSocket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    setsockopt(this->_lstSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    init_lstSocketAddr();
+    bind(this->_lstSocket_fd,(struct sockaddr*) &this->_lstSocketAddr, sizeof(this->_lstSocketAddr));
+    listen(this->_lstSocket_fd,3);
 }
 void listener::parse_input(const std::string& input)
 {
@@ -43,7 +51,7 @@ const int listener::get_lstSocket_fd() const
 {
     return this->_lstSocket_fd;
 }
-const sockaddr listener::get_lstSocketAddr() const
+const sockaddr_in listener::get_lstSocketAddr() const
 {
     return this->_lstSocketAddr;
 }
@@ -56,8 +64,16 @@ void listener::set_lstSocket_fd(int _lstSocket_fd)
 {
     this->_lstSocket_fd = _lstSocket_fd;
 }
-void listener::set_lstSocketAddr(sockaddr _lstSocketAddr)
+void listener::set_lstSocketAddr(sockaddr_in _lstSocketAddr)
 {
+    this->_lstSocketAddr = _lstSocketAddr;
+}
+
+void listener::init_lstSocketAddr(void)
+{
+    this->_lstSocketAddr.sin_family = AF_INET;
+    this->_lstSocketAddr.sin_port = htons(this->_lstPort);
+    this->_lstSocketAddr.sin_addr.s_addr = INADDR_ANY;
     this->_lstSocketAddr = _lstSocketAddr;
 }
 

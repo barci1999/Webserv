@@ -1,31 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.hpp                                         :+:      :+:    :+:   */
+/*   pollLoop.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/19 10:22:31 by pablalva          #+#    #+#             */
-/*   Updated: 2026/02/23 11:39:50 by pablalva         ###   ########.fr       */
+/*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
+/*   Updated: 2026/02/18 21:07:18 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-# define CLIENT_HPP
-# include "listener.hpp"
-class client
-{
-private:
-	listener *ptr;
-	int fd;
-public:
-	client();
-	~client();
-	
-	const listener* get_ptr() const;
-	const int get_fd() const;
+#ifndef POLLLOOP_HPP
+# define POLLLOOP_HPP
+# include <vector>
+# include <iostream>
+# include <string>
+# include <exception>
+# include <sstream>
 
-	void set_ptr(listener *ptr);
-	void set_fd(int fd);
-};
 #endif
