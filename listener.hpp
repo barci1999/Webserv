@@ -14,30 +14,32 @@
 # define LISTENER_HPP
 # include <string>
 # include <sys/socket.h>
-# include  <cstring>
+# include <netinet/in.h>
+# include <arpa/inet.h>
+# include <cstring>
 # include <exception>
 # include <iostream>
+
 class listener
 {
 private:
 	int _lstPort;
 	int _lstSocket_fd;
-	sockaddr _lstSocketAddr;
+	sockaddr_in _lstSocketAddr;
 	
 	void parse_input(const std::string& input);
-	
+	void init_lstSocketAddr();
 public:
 	listener(std::string port);
 	~listener();
 
 	const int get_lstPort() const;
 	const int get_lstSocket_fd() const;
-	const sockaddr get_lstSocketAddr() const;
+	const sockaddr_in get_lstSocketAddr() const;
 
 	void set_lstPort(int _lstPort);
 	void set_lstSocket_fd(int _lstSocket_fd);
-	void set_lstSocketAddr(sockaddr _lstSocketAddr);
-	
+	void set_lstSocketAddr(sockaddr_in _lstSocketAddr);
 };
 
 #endif

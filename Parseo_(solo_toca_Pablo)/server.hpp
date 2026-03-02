@@ -20,8 +20,6 @@
 # include "Block.hpp"
 # include <exception>
 # include <sstream>
-# include "client.hpp"
-# include "listener.hpp"
 # include <map>
 
 class server
