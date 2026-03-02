@@ -2,8 +2,7 @@
 #include"Directive.hpp"
 #include"Parser.hpp"
 #include"server.hpp"
-#include"client.hpp"
-#include"listener.hpp"
+
 int main()
 {
     try
@@ -14,6 +13,14 @@ int main()
         Block prueba(hola.begin());
         server general(prueba);
         std::cout << "hola se instancion bien la clase" << std::endl;
+
+        Directive crocqueta;
+        std::string *haa  = crocqueta.args.data();
+        if (haa)
+        {
+            /* code */
+        }
+        
     }
     catch (std::exception& e)
     {
