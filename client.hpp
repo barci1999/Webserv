@@ -21,6 +21,7 @@ private:
 	std::string request;
 public:
 	client();
+	client(int fd);
 	~client();
 	
 	const listener* get_ptr() const;

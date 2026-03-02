@@ -42,16 +42,34 @@ int pollLoop(void)
     for (std::vector<listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
         std::cout << it->get_lstPort() << std::endl;
         fds.fd = it->get_lstSocket_fd();
+        std::cout << "fds listeners " << fds.fd <<std::endl;
         pollFds.push_back(fds);
     }
     while (1)
     {
-        eventFd=poll(pollFds.data(), pollFds.size(),500);
+        eventFd=poll(pollFds.data(), pollFds.size(),5000);
+        std::cout << "evet " << eventFd << std::endl;
         if (srvClients.find(eventFd) != srvClients.end())
             std::cout << "hola" << std::endl;
         else
-            std::cout << "else" << std::endl; 
-
+        {
+            sockaddr_in test;
+            int test_socketfd;
+            pollfd test_poll;
+            for (std::vector<listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
+                if (it->get_lstSocket_fd() == eventFd){
+                    test_socketfd=it->get_lstSocket_fd();
+                    std::cout << "tests socket fd " << test_socketfd << std::endl;
+                    test=it->get_lstSocketAddr();
+                }
+            }
+            socklen_t client_len = sizeof(test);
+            client clnt(accept(test_socketfd,(struct sockaddr*)&test,&client_len));
+            srvClients[clnt.get_fd()] = clnt;
+            test_poll.fd=clnt.get_fd();
+            std::cout << "client_fd " << test_poll.fd << std::endl;
+            pollFds.push_back(test_poll);
+        }
     }
     return (0);
 }

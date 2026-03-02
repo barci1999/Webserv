@@ -17,6 +17,13 @@ client::client()
 	this->ptr = NULL;
 	this->fd = -1;
 }
+
+client::client(int fd)
+{
+	this->ptr = NULL;
+	this->fd = fd;
+}
+
 client::~client(){}
 
 const listener* client::get_ptr() const
