@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/02 21:21:19 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/03 18:04:09 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,24 +23,26 @@ std::string CGIProcess::extractExtension(const std::string& path)
     return path.substr(dotPos);
 }
 
-//Se busca cgi_extension y cgi_pass y se guarda en la variables
+//Se busca cgi_extension y cgi_pass y se guarda en la variables, al principio las inicializo vacias
+//Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
 void CGIProcess::extractCGIConfig(const Block& location)
 {
-    const std::vector<Directive>& dirs = location.getDirectives();
+    const std::vector<Directive>& vect_directie = location.getDirectives();
 
     _cgiExtension = "";
     _cgiPass = "";
 
-    for (size_t i = 0; i < dirs.size(); i++)
+    for (size_t i = 0; i < vect_directie.size(); i++)
     {
-        if (dirs[i].name == "cgi_extension" && !dirs[i].args.empty())
-            _cgiExtension = dirs[i].args[0];
+        if (vect_directie[i].name == "cgi_extension" && !vect_directie[i].args.empty())
+            _cgiExtension = vect_directie[i].args[0];
 
-        if (dirs[i].name == "cgi_pass" && !dirs[i].args.empty())
-            _cgiPass = dirs[i].args[0];
+        if (vect_directie[i].name == "cgi_pass" && !vect_directie[i].args.empty())
+            _cgiPass = vect_directie[i].args[0];
     }
 }
 
+// Aquí verifico que si el contenido del request es el mismo que la extension del location
 bool CGIProcess::isCGI(const Request& request, const Block& location)
 {
     extractCGIConfig(location);
@@ -58,3 +60,7 @@ bool CGIProcess::isCGI(const Request& request, const Block& location)
 
     return false;
 }
+
+//A partir de aqui empieza la ejecucion.
+
+
