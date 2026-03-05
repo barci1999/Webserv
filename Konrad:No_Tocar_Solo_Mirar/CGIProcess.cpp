@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/03 18:04:09 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/05 15:33:24 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,24 @@ bool CGIProcess::isCGI(const Request& request, const Block& location)
     return false;
 }
 
-//A partir de aqui empieza la ejecucion.
+//CREAMOS EL FULLPATH
 
+std::string CGIProcess::buildFullPath(const Request& request, const Block& location)
+{
+    std::string root;
+
+    const std::vector<Directive>& dirs = location.getDirectives();
+
+    for (size_t i = 0; i < dirs.size(); i++)
+    {
+        if (dirs[i].name == "root" && !dirs[i].args.empty())
+            root = dirs[i].args[0];
+    }
+    Directive hola = location.ch
+    std::string locationPrefix = location.getName(); 
+    std::string relativePath = request.path.substr(locationPrefix.length());
+
+    return root + "/" + relativePath;
+}
+//Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
 

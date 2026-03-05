@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/03 18:12:21 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/05 15:09:27 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ class CGIProcess
         void extractCGIConfig(const Block& location);
         std::string extractExtension(const std::string& path);
 
+        std::string buildFullPath(const Request& request, const Block& location);
+
         void createPipes();
         void forkProcess();
         void setupChildProcess(const Request& request);
@@ -38,7 +40,7 @@ class CGIProcess
     public:
         bool isCGI(const Request& request, const Block& location);
 
-        std::string execute(const Request& request, const std::string& fullPath);
+        std::string execute(const Request& request, const Block& location);
 
         pid_t getPid() const;
 };
