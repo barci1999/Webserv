@@ -3,6 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
+/*   Updated: 2026/03/05 15:37:11 by ksudyn           ###   ########.fr       */
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
