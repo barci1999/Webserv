@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rodralva <rodralva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/02/18 15:50:35 by rodralva         ###   ########.fr       */
+/*   Updated: 2026/03/04 14:29:37 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,9 +74,9 @@ int pollLoop(void)
     return (0);
 }
 
-int main()
-{
-    pollLoop();
+// int main()
+// {
+//     pollLoop();
 
-    return(0);
-}
+//     return(0);
+// }
