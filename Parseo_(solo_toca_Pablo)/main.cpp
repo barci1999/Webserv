@@ -12,14 +12,10 @@ int main()
         const std::list<Block> hola = root.getBlocks();
         Block prueba(hola.begin());
         server general(prueba);
-        std::cout << "hola se instancion bien la clase" << std::endl;
+        std::cout << std::endl <<"hola se instancion bien la clase" << std::endl;
+        root.print();
 
         Directive crocqueta;
-        std::string *haa  = crocqueta.args.data();
-        if (haa)
-        {
-            /* code */
-        }
         
     }
     catch (std::exception& e)
