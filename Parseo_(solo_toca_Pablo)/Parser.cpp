@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/21 21:21:48 by pablo            ###   ########.fr       */
+/*   Updated: 2026/03/05 14:36:57 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,8 +97,8 @@ Block Parser::parseBlock(std::ifstream& file, const std::string& block_name)
             result.addChild(parseBlock(file, temp));
         else if (type == ERROR)
 		{
-			std::cout << file_line<< std::endl;
-            throw std::runtime_error("Syntax error detected");
+			std::string except = "invalid line -> " + temp;
+            throw std::runtime_error(except.c_str());
 		}
     }
 
@@ -145,4 +145,16 @@ std::vector<std::string> Parser::str_to_vector(const std::string& to_change)
         result.push_back(token);
 
     return result;
+}
+std::string Parser::vector_to_str(const std::vector<std::string> to_change)
+{
+	std::string result = "";
+	for (std::vector<std::string>::const_iterator it = to_change.begin(); it != to_change.end(); it++)
+	{
+		if (it == to_change.begin())
+			result += *it;
+		else
+			result += " "  + *it;
+	}
+	return result;
 }

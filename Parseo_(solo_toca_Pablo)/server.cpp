@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/02 19:51:18 by pablo            ###   ########.fr       */
+/*   Updated: 2026/03/05 15:07:01 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 server::server(const Block& to_check)
 {
 	this->_srvName = to_check.getName();
-    std::cout<<this->_srvName<<std::endl;
 	this->_srvPorts = check_directives(std::string("listen"),to_check);
 	this->_srvRoot = check_directives(std::string("root"),to_check);
 	this->_srvIndex = check_directives(std::string("index"),to_check);
@@ -40,8 +39,7 @@ Directive server::check_directives(std::string to_search, const Block& to_check)
             throw std::runtime_error("Empty directive.");
         }
     }
-    std::cout << to_search << to_check.getName() <<std::endl;
-    throw std::runtime_error("Directive not found");
+    throw std::runtime_error("Directive not found: " + to_search);
 	return *it;
 }
 bool server::check_locations(std::list<Block> to_check)
@@ -52,7 +50,9 @@ bool server::check_locations(std::list<Block> to_check)
 		if(!check_location_block(*it))
 			throw std::runtime_error("invalid location block.");
         else if (!cmp_name_directives(*it))
+        {
             throw std::runtime_error("invalid directive block.");
+        }
 	}
 	return true;
 }
@@ -107,7 +107,7 @@ bool server::check_location_block(const Block& to_check)
         if (it->name.empty())
             throw std::runtime_error("directives need a name");
         if (it->args.empty())
-            throw std::runtime_error("directives need at least one argument");
+            throw std::runtime_error("directives need at least one argument -> " + it->name);
     }
     const std::list<Block>& children = to_check.getBlocks();
     for (std::list<Block>::const_iterator bit = children.begin(); bit != children.end(); ++bit)
