@@ -6,11 +6,12 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/05 15:33:24 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/05 20:38:54 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGIProcess.hpp"
+#include "server.hpp"
 
 //Guarda lo que hay despues del . en la extension
 std::string CGIProcess::extractExtension(const std::string& path)
@@ -65,20 +66,18 @@ bool CGIProcess::isCGI(const Request& request, const Block& location)
 
 std::string CGIProcess::buildFullPath(const Request& request, const Block& location)
 {
-    std::string root;
 
-    const std::vector<Directive>& dirs = location.getDirectives();
-
-    for (size_t i = 0; i < dirs.size(); i++)
-    {
-        if (dirs[i].name == "root" && !dirs[i].args.empty())
-            root = dirs[i].args[0];
-    }
-    Directive hola = location.ch
+    Directive root = server::check_directives("root",location);
     std::string locationPrefix = location.getName(); 
     std::string relativePath = request.path.substr(locationPrefix.length());
 
-    return root + "/" + relativePath;
+    std::string rootPath = root.args[0];
+    
+    if (rootPath[rootPath.size() - 1] == '/')
+        return rootPath + relativePath;
+
+    return rootPath + "/" + relativePath;
 }
+//Si por algun casual el root ya termina en / no se añade uno.
 //Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
 
