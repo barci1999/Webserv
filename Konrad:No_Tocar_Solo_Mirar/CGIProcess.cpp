@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/05 20:38:54 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/09 21:15:22 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,3 +81,45 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& locat
 //Si por algun casual el root ya termina en / no se añade uno.
 //Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
 
+
+std::string CGIProcess::serveStaticFile(const Request& request, const Block& location)
+{
+    std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
+
+    std::ifstream file(fullPath.c_str());
+
+    if (!file.is_open())
+        return "404 Not Found";
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
+
+    return buffer.str();
+}
+
+std::string CGIProcess::execute(const Request& request, const Block& location)
+{
+    _fullPath = buildFullPath(request, location);
+
+    std::ifstream file(_fullPath.c_str());
+
+    if (!file.is_open())
+        return "404 CGI script not found";
+
+    return "CGI execution placeholder";
+}
+
+//Esta funcion decide que hacer en base a si es CGI o no
+std::string CGIProcess::handleRequest(Request& request, Block& location)
+{
+    CGIProcess cgi;
+
+    if (cgi.isCGI(request, location))
+    {
+        return execute(request, location);
+    }
+    else
+    {
+        return serveStaticFile(request, location);
+    }
+}
