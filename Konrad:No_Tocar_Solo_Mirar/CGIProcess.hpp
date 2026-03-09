@@ -6,13 +6,15 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/05 15:09:27 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/09 21:14:27 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "unistd.h"
+#include <fstream>
+#include <sstream>
 #include "RequestParser.hpp"
 #include "Block.hpp"
 
@@ -41,6 +43,9 @@ class CGIProcess
         bool isCGI(const Request& request, const Block& location);
 
         std::string execute(const Request& request, const Block& location);
+
+        std::string serveStaticFile(const Request& request, const Block& location);
+        std::string handleRequest(Request& request, Block& location);
 
         pid_t getPid() const;
 };
