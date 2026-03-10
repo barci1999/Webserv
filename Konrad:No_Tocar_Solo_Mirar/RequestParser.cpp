@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/04 14:30:13 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/10 15:12:30 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,34 +160,34 @@ Request RequestParser::parse(const std::string& rawRequest)
 
 #include <iostream>
 
-// int main()
-// {
-//     // Simulamos una request HTTP completa
-//     std::string rawRequest =
-//         "POST /test.py?name=juan HTTP/1.1\r\n"
-//         "Host: localhost\r\n"
-//         "Content-Length: 11\r\n"
-//         "Content-Type: text/plain\r\n"
-//         "\r\n"
-//         "Hola Mundo";
+int main()
+{
+    // Simulamos una request HTTP completa
+    std::string rawRequest =
+        "POST /test.py?name=juan HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "Content-Length: 11\r\n"
+        "Content-Type: text/plain\r\n"
+        "\r\n"
+        "Hola Mundo";
 
-//     RequestParser parser;
-//     Request req = parser.parse(rawRequest);
+    RequestParser parser;
+    Request req = parser.parse(rawRequest);
 
-//     // Mostramos resultados
-//     std::cout << "Method: " << req.method << std::endl;
-//     std::cout << "Path: " << req.path << std::endl;
-//     std::cout << "Query: " << req.query << std::endl;
-//     std::cout << "Version: " << req.version << std::endl;
+    // Mostramos resultados
+    std::cout << "Method: " << req.method << std::endl;
+    std::cout << "Path: " << req.path << std::endl;
+    std::cout << "Query: " << req.query << std::endl;
+    std::cout << "Version: " << req.version << std::endl;
 
-//     std::cout << "\nHeaders:\n";
-//     for (std::map<std::string, std::string>::iterator it = req.headers.begin();
-//          it != req.headers.end(); ++it)
-//     {
-//         std::cout << it->first << " => " << it->second << std::endl;
-//     }
+    std::cout << "\nHeaders:\n";
+    for (std::map<std::string, std::string>::iterator it = req.headers.begin();
+         it != req.headers.end(); ++it)
+    {
+        std::cout << it->first << " => " << it->second << std::endl;
+    }
 
-//     std::cout << "\nBody: " << req.body << std::endl;
+    std::cout << "\nBody: " << req.body << std::endl;
 
-//     return 0;
-// }
+    return 0;
+}
