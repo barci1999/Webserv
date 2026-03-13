@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/09 21:15:22 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/13 21:28:00 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,4 +122,39 @@ std::string CGIProcess::handleRequest(Request& request, Block& location)
     {
         return serveStaticFile(request, location);
     }
+}
+
+//Inicio de priueba de execute
+
+std::string CGIProcess::execute(const Request& request, const Block& location)
+{
+    _fullPath = buildFullPath(request, location);
+
+    createPipes();
+
+    forkProcess();
+
+    if (_pid == 0)
+        setupChildProcess(request);
+    else
+        return handleParentProcess(request);
+
+    return "";
+}
+
+void CGIProcess::createPipes()
+{
+    if (pipe(_inputPipe) < 0)
+        throw std::runtime_error("pipe failed");
+
+    if (pipe(_uotputPippe) < 0)
+        throw std::runtime_error("pipe failed");
+}
+
+void CGIProcess::forkProcess()
+{
+    _pid = fork();
+
+    if (_pid < 0)
+        throw std::runtime_error("fork failed");
 }
