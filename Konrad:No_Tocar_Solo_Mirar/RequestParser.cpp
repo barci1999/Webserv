@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/10 15:12:30 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/15 16:44:25 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void RequestParser::ParseBody(const std::string& bodyContent, Request& request)
 {
-    request.body =  bodyContent;
+    request.set_body(bodyContent);
 }
 
 // Para eliminar espacios al principio y al final de un texto
@@ -29,7 +29,7 @@ std::string RequestParser::Trim(const std::string& str)
     if(start ==  std::string::npos)
         return "";
     
-        return str.substr(start, end -start +1);
+    return str.substr(start, end -start + 1);
 }
 
 
@@ -53,7 +53,7 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
         {
             std::string key = Trim(line.substr(0, colon));
             std::string value = Trim(line.substr(colon + 1));
-            request.headers[key] = value;
+            request.set_a_header(key,value);
         }
     }
 }
@@ -67,22 +67,25 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 {
     std::istringstream stream(line);
-    stream >> request.method;
+    std::string temp;
+    stream >> temp;
+    request.set_method(temp);
     std::string fullPath;
     stream >> fullPath;
-    stream >> request.version;
+    stream >> temp;
+    request.set_version(temp);
 
     size_t queryPos = fullPath.find('?');
 
     if (queryPos != std::string::npos)
     {
-        request.path = fullPath.substr(0, queryPos);
-        request.query = fullPath.substr(queryPos + 1);
+        request.set_path(fullPath.substr(0, queryPos));
+        request.set_query(fullPath.substr(queryPos + 1));
     }
     else
     {
-        request.path = fullPath;
-        request.query = "";
+        request.set_path(fullPath);
+        request.set_query("");
     }
 }
 
@@ -158,36 +161,174 @@ Request RequestParser::parse(const std::string& rawRequest)
 }
 
 
-#include <iostream>
+// #include <iostream>
 
-int main()
+// int main()
+// {
+//     // Simulamos una request HTTP completa
+//     std::string rawRequest =
+//         "POST /test.py?name=juan HTTP/1.1\r\n"
+//         "Host: localhost\r\n"
+//         "Content-Length: 11\r\n"
+//         "Content-Type: text/plain\r\n"
+//         "\r\n"
+//         "Hola Mundo";
+
+//     RequestParser parser;
+//     Request req = parser.parse(rawRequest);
+
+//     // Mostramos resultados
+//     std::cout << "Method: " << req.get_method() << std::endl;
+//     std::cout << "Path: " << req.get_path() << std::endl;
+//     std::cout << "Query: " << req.get_query() << std::endl;
+//     std::cout << "Version: " << req.get_version() << std::endl;
+
+//     std::cout << "\nHeaders:\n";
+//     for (std::map<std::string, std::string>::iterator it = req.get_headers().begin(); it != req.get_headers().end(); ++it)
+//     {
+//         std::cout << it->first << " => " << it->second << std::endl;
+//     }
+
+//     std::cout << "\nBody: " << req.get_body() << std::endl;
+
+//     return 0;
+// }
+void RequestParser::set_error(Request& req, unsigned int code,const std::string error_phrase)
 {
-    // Simulamos una request HTTP completa
-    std::string rawRequest =
-        "POST /test.py?name=juan HTTP/1.1\r\n"
-        "Host: localhost\r\n"
-        "Content-Length: 11\r\n"
-        "Content-Type: text/plain\r\n"
-        "\r\n"
-        "Hola Mundo";
-
-    RequestParser parser;
-    Request req = parser.parse(rawRequest);
-
-    // Mostramos resultados
-    std::cout << "Method: " << req.method << std::endl;
-    std::cout << "Path: " << req.path << std::endl;
-    std::cout << "Query: " << req.query << std::endl;
-    std::cout << "Version: " << req.version << std::endl;
-
-    std::cout << "\nHeaders:\n";
-    for (std::map<std::string, std::string>::iterator it = req.headers.begin();
-         it != req.headers.end(); ++it)
+    req.set_final_status(error_phrase);
+    req.set_status_code(code);
+}
+bool RequestParser::valid_method( Request& to_check)
+{
+    std::string temp = to_check.get_method();
+    if (temp ==  "GET" || temp == "DELETE" || temp == "POST")
     {
-        std::cout << it->first << " => " << it->second << std::endl;
+        return true;
     }
+    RequestParser::set_error(to_check,405,"Method Not Allowed");
+    return false;
+}
+bool RequestParser::valid_path(Request& to_check)
+{
+    std::string temp = to_check.get_path();
 
-    std::cout << "\nBody: " << req.body << std::endl;
+    if (temp.empty() || temp[0] != '/')
+    {
+        RequestParser::set_error(to_check,400,"Bad Request");
+        return false;
+    }
+    if (temp.length() > 2048)
+    {
+        RequestParser::set_error(to_check,414,"URI Too Long");
+        return false;
+    }
+    if (temp.find(' ') != std::string::npos || temp.find('#') != std::string::npos)
+    {
+        RequestParser::set_error(to_check,400,"Bad Request");
+        return false;
+    }
+    for (size_t i = 0; i < temp.size(); i++)
+    {
+        unsigned char c = temp[i];
+        if (c <= 31 || c == 127)
+        {
+            RequestParser::set_error(to_check,400,"Bad Request");
+            return false;
+        }
+    }
+    return true;
+}
+bool RequestParser::valid_query(Request& to_check)
+{
+    const std::string& query = to_check.get_query();
+    if (query.length() > 2048)
+    {
+        RequestParser::set_error(to_check,414,"URI Too Long");
+        return false;
+    }
+    for (size_t i = 0; i < query.size(); ++i)
+    {
+        unsigned char c = query[i];
+        if (c <= 31 || c == 127)
+        {
+            RequestParser::set_error(to_check,400,"Bad Request");
+            return false;
+        }
+    }
+    return true;
+}
+bool RequestParser::valid_version(Request& to_check)
+{
+    std::string temp = to_check.get_version();
+    if (temp != "HTTP/1.1")
+    {
+        RequestParser::set_error(to_check,505,"HTTP Version Not Supported");
+        return false;
+    }
+    return true;
+    
+}
+bool RequestParser::valid_headers(Request& request)
+{
+    const std::map<std::string,std::string>& headers = request.get_headers();
+    if (headers.find("Host") == headers.end())
+    {
+        request.set_final_status("Bad Request");
+        request.set_status_code(400);
+        return false;
+    }
+    if (request.get_method() == "POST")
+    {
+        if (headers.find("Content-Length") == headers.end() ||
+            headers.find("Content-Type") == headers.end())
+        {
+            request.set_final_status("Bad Request");
+            request.set_status_code(400);
+            return false;
+        }
+    }
+    for (std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
+    {
+        const std::string& name = it->first;
+        for (size_t i = 0; i < name.size(); ++i)
+        {
+            unsigned char c = name[i];
+            if (c <= 31 || c == 127)
+            {
+                request.set_final_status("Bad Request");
+                request.set_status_code(400);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+bool RequestParser::valid_body(Request& to_check)
+{}
 
-    return 0;
+
+
+bool RequestParser::valid_request( Request& to_check)
+{
+    typedef bool (*validator)(Request&);
+
+    validator validators[] = {
+        valid_method,
+        valid_path,
+        valid_query,
+        valid_version,
+        valid_headers,
+        valid_body
+    };
+
+    size_t count = sizeof(validators) / sizeof(validators[0]);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (!validators[i](to_check))
+            return false;
+    }
+    to_check.set_final_status("OK");
+    to_check.set_status_code(200);
+    return true;
 }
