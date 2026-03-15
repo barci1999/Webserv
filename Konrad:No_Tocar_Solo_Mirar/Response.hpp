@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/12 11:46:08 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/14 19:08:50 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,4 +42,21 @@ public:
 	void addback_headers(std::string iterator,std::string value) {this->_headers[iterator] = value;}
 	void set_body(std::string body) {this->_body = body;}
 };
+
+
+/*
+Reason phrases comunes
+Código	Reason phrase
+200	OK
+201	Created
+204	No Content
+400	Bad Request
+403	Forbidden
+404	Not Found
+405	Method Not Allowed
+413	Payload Too Large
+500	Internal Server Error
+501	Not Implemented
+505	HTTP Version Not Supported
+*/
 
