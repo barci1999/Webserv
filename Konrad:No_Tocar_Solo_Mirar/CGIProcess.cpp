@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/13 21:28:00 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/16 12:55:01 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,50 +16,50 @@
 //Guarda lo que hay despues del . en la extension
 std::string CGIProcess::extractExtension(const std::string& path)
 {
-    size_t dotPos = path.find_last_of('.');
+	size_t dotPos = path.find_last_of('.');
 
-    if (dotPos == std::string::npos)
-        return "";
+	if (dotPos == std::string::npos)
+		return "";
 
-    return path.substr(dotPos);
+	return path.substr(dotPos);
 }
 
 //Se busca cgi_extension y cgi_pass y se guarda en la variables, al principio las inicializo vacias
 //Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
 void CGIProcess::extractCGIConfig(const Block& location)
 {
-    const std::vector<Directive>& vect_directie = location.getDirectives();
+	const std::vector<Directive>& vect_directie = location.getDirectives();
 
-    _cgiExtension = "";
-    _cgiPass = "";
+	_cgiExtension = "";
+	_cgiPass = "";
 
-    for (size_t i = 0; i < vect_directie.size(); i++)
-    {
-        if (vect_directie[i].name == "cgi_extension" && !vect_directie[i].args.empty())
-            _cgiExtension = vect_directie[i].args[0];
+	for (size_t i = 0; i < vect_directie.size(); i++)
+	{
+		if (vect_directie[i].name == "cgi_extension" && !vect_directie[i].args.empty())
+			_cgiExtension = vect_directie[i].args[0];
 
-        if (vect_directie[i].name == "cgi_pass" && !vect_directie[i].args.empty())
-            _cgiPass = vect_directie[i].args[0];
-    }
+		if (vect_directie[i].name == "cgi_pass" && !vect_directie[i].args.empty())
+			_cgiPass = vect_directie[i].args[0];
+	}
 }
 
 // Aquí verifico que si el contenido del request es el mismo que la extension del location
 bool CGIProcess::isCGI(const Request& request, const Block& location)
 {
-    extractCGIConfig(location);
+	extractCGIConfig(location);
 
-    if (_cgiExtension.empty() || _cgiPass.empty())
-        return false;
+	if (_cgiExtension.empty() || _cgiPass.empty())
+		return false;
 
-    std::string extension = extractExtension(request.path);
+	std::string extension = extractExtension(request.path);
 
-    if (extension == _cgiExtension)
-    {
-        _scriptPath = request.path;
-        return true;
-    }
+	if (extension == _cgiExtension)
+	{
+		_scriptPath = request.path;
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 //CREAMOS EL FULLPATH
@@ -67,16 +67,16 @@ bool CGIProcess::isCGI(const Request& request, const Block& location)
 std::string CGIProcess::buildFullPath(const Request& request, const Block& location)
 {
 
-    Directive root = server::check_directives("root",location);
-    std::string locationPrefix = location.getName(); 
-    std::string relativePath = request.path.substr(locationPrefix.length());
+	Directive root = server::check_directives("root",location);
+	std::string locationPrefix = location.getName(); 
+	std::string relativePath = request.path.substr(locationPrefix.length());
 
-    std::string rootPath = root.args[0];
-    
-    if (rootPath[rootPath.size() - 1] == '/')
-        return rootPath + relativePath;
+	std::string rootPath = root.args[0];
+	
+	if (rootPath[rootPath.size() - 1] == '/')
+		return rootPath + relativePath;
 
-    return rootPath + "/" + relativePath;
+	return rootPath + "/" + relativePath;
 }
 //Si por algun casual el root ya termina en / no se añade uno.
 //Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
@@ -84,77 +84,77 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& locat
 
 std::string CGIProcess::serveStaticFile(const Request& request, const Block& location)
 {
-    std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
+	std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
 
-    std::ifstream file(fullPath.c_str());
+	std::ifstream file(fullPath.c_str());
 
-    if (!file.is_open())
-        return "404 Not Found";
+	if (!file.is_open())
+		return "404 Not Found";
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
+	std::stringstream buffer;
+	buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
 
-    return buffer.str();
+	return buffer.str();
 }
 
 std::string CGIProcess::execute(const Request& request, const Block& location)
 {
-    _fullPath = buildFullPath(request, location);
+	_fullPath = buildFullPath(request, location);
 
-    std::ifstream file(_fullPath.c_str());
+	std::ifstream file(_fullPath.c_str());
 
-    if (!file.is_open())
-        return "404 CGI script not found";
+	if (!file.is_open())
+		return "404 CGI script not found";
 
-    return "CGI execution placeholder";
+	return "CGI execution placeholder";
 }
 
 //Esta funcion decide que hacer en base a si es CGI o no
 std::string CGIProcess::handleRequest(Request& request, Block& location)
 {
-    CGIProcess cgi;
+	CGIProcess cgi;
 
-    if (cgi.isCGI(request, location))
-    {
-        return execute(request, location);
-    }
-    else
-    {
-        return serveStaticFile(request, location);
-    }
+	if (cgi.isCGI(request, location))
+	{
+		return execute(request, location);
+	}
+	else
+	{
+		return serveStaticFile(request, location);
+	}
 }
 
 //Inicio de priueba de execute
 
 std::string CGIProcess::execute(const Request& request, const Block& location)
 {
-    _fullPath = buildFullPath(request, location);
+	_fullPath = buildFullPath(request, location);
 
-    createPipes();
+	createPipes();
 
-    forkProcess();
+	forkProcess();
 
-    if (_pid == 0)
-        setupChildProcess(request);
-    else
-        return handleParentProcess(request);
+	if (_pid == 0)
+		setupChildProcess(request);
+	else
+		return handleParentProcess(request);
 
-    return "";
+	return "";
 }
 
 void CGIProcess::createPipes()
 {
-    if (pipe(_inputPipe) < 0)
-        throw std::runtime_error("pipe failed");
+	if (pipe(_inputPipe) < 0)
+		throw std::runtime_error("pipe failed");
 
-    if (pipe(_uotputPippe) < 0)
-        throw std::runtime_error("pipe failed");
+	if (pipe(_uotputPippe) < 0)
+		throw std::runtime_error("pipe failed");
 }
 
 void CGIProcess::forkProcess()
 {
-    _pid = fork();
+	_pid = fork();
 
-    if (_pid < 0)
-        throw std::runtime_error("fork failed");
+	if (_pid < 0)
+		throw std::runtime_error("fork failed");
 }
