@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 15:26:58 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/15 14:59:01 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/16 12:54:33 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Request::Request(std::string req)
 }
 Request::Request()
 {
-	
+	this->_status_code = 0;
 }
 Request& Request::operator=(const Request& other)
 {

@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:00:37 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/15 14:22:46 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/16 12:54:29 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 class Request
 {
-    private:
+	private:
 
 		std::string _method;
 		std::string _path; // se compara con las rutas de los bloque location 
@@ -30,13 +30,15 @@ class Request
 		unsigned int _status_code;
 
 	public:
+	
 		Request();
 		Request(std::string req);
 		Request(const Request& other);
+
+		
 		Request& operator=(const Request& other);
 		~Request(){};
 
-		
 		const std::string get_method() const {return this->_method;}
 		const std::string get_path() const {return this->_path;}
 		const std::string get_query() const { return this->_query;}
@@ -44,7 +46,7 @@ class Request
 		const std::map<std::string,std::string>& get_headers() const {return this->_headers;}
 		const std::string get_body() const {return this->_body;}
 		const std::string get_final_status() const {return this->_final_status;}
-		const unsigned int get_status_code() const {return this->_status_code;}
+		unsigned int get_status_code() const {return this->_status_code;}
 
 		void set_method(std::string method) {this->_method = method;}
 		void set_path(std::string path) {this->_path = path;}

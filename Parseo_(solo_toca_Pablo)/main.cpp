@@ -5,23 +5,23 @@
 
 int main()
 {
-    try
-    {
-        Parser parser;
-        Block root = parser.parseFile("hola.conf");
-        const std::list<Block> hola = root.getBlocks();
-        Block prueba(hola.begin());
-        server general(prueba);
-        std::cout << std::endl <<"hola se instancion bien la clase" << std::endl;
-        root.print();
+	try
+	{
+		Parser parser;
+		Block root = parser.parseFile("hola.conf");
+		const std::list<Block> hola = root.getBlocks();
+		Block prueba(hola.begin());
+		server general(prueba);
+		std::cout << std::endl <<"hola se instancion bien la clase" << std::endl;
+		root.print();
 
-        Directive crocqueta;
-        
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
-    return 0;
+		Directive crocqueta;
+		
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		return 1;
+	}
+	return 0;
 }
