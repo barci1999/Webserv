@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:52 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/17 17:05:26 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ class CGIProcess
 
 		std::string buildFullPath(const Request& request, const Block& location);
 
+		char **buildEnv(const Request& request);
+		
 		void createPipes();
 		void forkProcess();
 		void setupChildProcess(const Request& request);

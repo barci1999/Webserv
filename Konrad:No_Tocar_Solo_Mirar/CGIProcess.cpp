@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/16 12:55:01 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/17 17:32:33 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,11 @@ bool CGIProcess::isCGI(const Request& request, const Block& location)
 	if (_cgiExtension.empty() || _cgiPass.empty())
 		return false;
 
-	std::string extension = extractExtension(request.path);
+	std::string extension = extractExtension(request.get_path());
 
 	if (extension == _cgiExtension)
 	{
-		_scriptPath = request.path;
+		_scriptPath = request.get_path();
 		return true;
 	}
 
@@ -69,7 +69,7 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& locat
 
 	Directive root = server::check_directives("root",location);
 	std::string locationPrefix = location.getName(); 
-	std::string relativePath = request.path.substr(locationPrefix.length());
+	std::string relativePath = request.get_path().substr(locationPrefix.length());
 
 	std::string rootPath = root.args[0];
 	
@@ -157,4 +157,43 @@ void CGIProcess::forkProcess()
 
 	if (_pid < 0)
 		throw std::runtime_error("fork failed");
+}
+
+// char **CGIProces::buildEnv(const Request& request)
+// {
+// 	std::vector<std::string> env;
+
+//     env.push_back("REQUEST_METHOD=" + request.method);
+//     env.push_back("QUERY_STRING=" + request.query);
+//     env.push_back("SCRIPT_FILENAME=" + _fullPath);
+
+//     if (request.headers.count("Content-Length"))
+//         env.push_back("CONTENT_LENGTH=" + request.headers.at("Content-Length"));
+
+//     char **envp = new char*[env.size() + 1];
+
+//     for (size_t i = 0; i < env.size(); i++)
+//         envp[i] = strdup(env[i].c_str());
+
+//     envp[env.size()] = NULL;
+
+//     return envp;
+// }
+
+void CGIProcess::setupChildProcess(const Request& request)
+{
+	dup2(_inputPipe[0], STDIN_FILENO);
+	dup2(_uotputPippe[1], STDOUT_FILENO);
+
+	close(_inputPipe[1]);
+	close(_uotputPippe[0]);
+
+	char *argv[3];
+
+	argv[0] = const_cast<char*>(_cgiPass.c_str());
+	argv[1] = const_cast<char*>(_fullPath.c_str());
+	argv[3] = NULL;
+
+	//char **env = buildEnv(request);
+	
 }
