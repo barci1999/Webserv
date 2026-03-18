@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/17 17:05:26 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/18 20:17:11 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class CGIProcess
 {
 	private:
 		int _inputPipe[2];
-		int _uotputPippe[2];
+		int _outputPippe[2];
 		pid_t _pid;
 
 		std::string _cgiExtension;

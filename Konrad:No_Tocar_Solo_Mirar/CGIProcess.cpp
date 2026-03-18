@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/17 17:32:33 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/18 20:18:11 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ void CGIProcess::createPipes()
 	if (pipe(_inputPipe) < 0)
 		throw std::runtime_error("pipe failed");
 
-	if (pipe(_uotputPippe) < 0)
+	if (pipe(_outputPippe) < 0)
 		throw std::runtime_error("pipe failed");
 }
 
@@ -159,34 +159,34 @@ void CGIProcess::forkProcess()
 		throw std::runtime_error("fork failed");
 }
 
-// char **CGIProces::buildEnv(const Request& request)
-// {
-// 	std::vector<std::string> env;
+char **CGIProcess::buildEnv(const Request& request)
+{
+	std::vector<std::string> env;
 
-//     env.push_back("REQUEST_METHOD=" + request.method);
-//     env.push_back("QUERY_STRING=" + request.query);
-//     env.push_back("SCRIPT_FILENAME=" + _fullPath);
+    env.push_back("REQUEST_METHOD=" + request.get_method());
+    env.push_back("QUERY_STRING=" + request.get_query());
+    env.push_back("SCRIPT_FILENAME=" + _fullPath);
 
-//     if (request.headers.count("Content-Length"))
-//         env.push_back("CONTENT_LENGTH=" + request.headers.at("Content-Length"));
+    if (request.get_headers().count("Content-Length"))
+        env.push_back("CONTENT_LENGTH=" + request.get_headers().at("Content-Length"));
 
-//     char **envp = new char*[env.size() + 1];
+    char **envp = new char*[env.size() + 1];
 
-//     for (size_t i = 0; i < env.size(); i++)
-//         envp[i] = strdup(env[i].c_str());
+    // for (size_t i = 0; i < env.size(); i++)
+    //     envp[i] = strdup(env[i].c_str());
 
-//     envp[env.size()] = NULL;
+    envp[env.size()] = NULL;
 
-//     return envp;
-// }
+    return envp;
+}
 
 void CGIProcess::setupChildProcess(const Request& request)
 {
 	dup2(_inputPipe[0], STDIN_FILENO);
-	dup2(_uotputPippe[1], STDOUT_FILENO);
+	dup2(_outputPippe[1], STDOUT_FILENO);
 
 	close(_inputPipe[1]);
-	close(_uotputPippe[0]);
+	close(_outputPippe[0]);
 
 	char *argv[3];
 
@@ -194,6 +194,6 @@ void CGIProcess::setupChildProcess(const Request& request)
 	argv[1] = const_cast<char*>(_fullPath.c_str());
 	argv[3] = NULL;
 
-	//char **env = buildEnv(request);
+	char **env = buildEnv(request);
 	
 }
