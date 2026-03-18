@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:25 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/18 16:14:09 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,25 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 //  SI HAY '?' se extrae desde el inicio hasta antes del '?' y eso seria el PATH puro
 // Luego s extrae desde la posicion del '?' hasta el final y eso es la QUERY
 // Si no hay '?', toda la URL es solo path.
+// static void imprimirEscapado(const std::string& s) {
+// 	for (size_t i = 0; i < s.size(); i++) {
+// 		switch (s[i]) {
+// 			case '\n': std::cout << "\\n"; break;
+// 			case '\t': std::cout << "\\t"; break;
+// 			case '\r': std::cout << "\\r"; break;
+// 			case '\b': std::cout << "\\b"; break;
+// 			case '\f': std::cout << "\\f"; break;
+// 			case '\v': std::cout << "\\v"; break;
+// 			case '\\': std::cout << "\\\\"; break;
+// 			default:
+// 				std::cout << s[i];
+// 		}
+// 	}
+// 	std::cout<<std::endl;
+// }
 void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 {
+	//imprimirEscapado(line);
 	std::istringstream stream(line);
 	std::string temp;
 	stream >> temp;
@@ -132,25 +149,31 @@ Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 	if (headerEnd == std::string::npos)
 	{
 		RequestParser::set_error(request,(unsigned int)400,"Bad Request");
-		std::cout << request.get_status_code()<<std::endl;
 		return request;
 	}
 	
 
 	std::string headerPart = rawRequest.substr(0, headerEnd);
 	std::string bodyPart;
-
 	if (headerEnd != std::string::npos)
 		bodyPart = rawRequest.substr(headerEnd + 4);
-
+	
 	std::istringstream stream(headerPart);
 	std::string line;
-
+	
 	std::getline(stream, line);
+	//imprimirEscapado(line);
+	size_t i = line.find("\r");
+	if(i == std::string::npos)
+	{
+		RequestParser::set_error(request,(unsigned int)400,"Bad Request");
+		return request;
+	}
 	if (!line.empty() && line[line.size()-1] == '\r')
 		line.erase(line.size()-1);
-
+		
 	ParseRequestLine(line, request);
+	
 
 	std::string headersOnly;
 	while (std::getline(stream, line))
@@ -323,9 +346,11 @@ bool RequestParser::valid_body(Request& to_check)
 		return false;
 	}
 	size_t content_length = std::atoi(it->second.c_str());
-	if (body.size() != content_length)
+	if (body.length() != content_length)
 	{
-		RequestParser::set_error(to_check,400,"Bad Request");
+		std::cout<< body.length()<<std::endl;
+		std::cout<<content_length<<std::endl;
+		RequestParser::set_error(to_check,400,"Bad Request     aaaaaaaa");
 		return false;
 	}
 	return true;
@@ -357,7 +382,9 @@ bool RequestParser::valid_request(Request& to_check)
 	for (size_t i = 0; i < count; ++i)
 	{
 		if (!validators[i](to_check))
+		{
 			return false;
+		}
 	}
 	to_check.set_final_status("OK");
 	to_check.set_status_code(200);

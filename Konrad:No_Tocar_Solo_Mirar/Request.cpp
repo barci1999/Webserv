@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 15:26:58 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:33 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/17 12:15:37 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,11 @@ Request::Request(std::string req)
 }
 Request::Request()
 {
+	this->_method = "";
+	this->_path = "";
+	this->_query = "";
+	this->_version ="";
+	this->_body = "";
 	this->_status_code = 0;
 }
 Request& Request::operator=(const Request& other)
@@ -37,6 +42,17 @@ Request& Request::operator=(const Request& other)
 	this->_body = other.get_body();
 	return *this;
 }
+Request::Request(const Request& other)
+{
+	this->_method = other.get_method();
+	this->_path = other.get_path();
+	this->_query = other.get_query();
+	this->_version = other.get_version();
+	this->_headers = other.get_headers();
+	this->_body = other.get_body();
+	this->_final_status = other.get_final_status();
+	this->_status_code = other.get_status_code();
+}
 std::ostream& operator<<(std::ostream& out ,const Request& other)
 {
 	out << "==================== Actual Request Values ====================" << std::endl;
@@ -52,5 +68,6 @@ std::ostream& operator<<(std::ostream& out ,const Request& other)
 	out << "Body -> "<<other.get_body() << std::endl;
 	out << "Final_status -> " << other.get_final_status() << std::endl;
 	out << "Status_code -> " << other.get_status_code() << std::endl;
+	out <<"==============================================================="<<std::endl;
 	return out;
 }
