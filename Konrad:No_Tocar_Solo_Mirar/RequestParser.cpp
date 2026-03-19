@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/18 16:14:09 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/19 17:39:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,22 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 		{
 			std::string key = Trim(line.substr(0, colon));
 			std::string value = Trim(line.substr(colon + 1));
+			if (key.empty() || value.empty())
+			{
+				RequestParser::set_error(request,400,"Bad Request");
+				return;
+			}
+			if(key == "Content-Length" || key == "Content-Type")
+			{
+				for (size_t i = 0; value[i]; i++)
+				{
+					if (!std::isdigit(value[i]))
+					{
+						RequestParser::set_error(request,400,"Bad Request");
+						return;
+					}
+				}
+			}
 			request.set_a_header(key,value);
 		}
 	}
@@ -162,7 +178,6 @@ Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 	std::string line;
 	
 	std::getline(stream, line);
-	//imprimirEscapado(line);
 	size_t i = line.find("\r");
 	if(i == std::string::npos)
 	{
@@ -184,6 +199,7 @@ Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 		headersOnly += line + "\n";
 	}
 
+	//std::cout << headersOnly<<std::endl;
 	ParseHeaders(headersOnly, request);
 	ParseBody(bodyPart, request);
 
@@ -308,8 +324,7 @@ bool RequestParser::valid_headers(Request& to_check)
 	}
 	if (to_check.get_method() == "POST")
 	{
-		if (headers.find("Content-Length") == headers.end() ||
-			headers.find("Content-Type") == headers.end())
+		if (headers.find("Content-Length") == headers.end())
 		{
 			RequestParser::set_error(to_check,400,"Bad Request");
 			return false;
@@ -318,6 +333,7 @@ bool RequestParser::valid_headers(Request& to_check)
 	for (std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
 	{
 		const std::string& name = it->first;
+		std::cout<<name<<std::endl;
 		for (size_t i = 0; i < name.size(); ++i)
 		{
 			unsigned char c = name[i];
@@ -345,12 +361,17 @@ bool RequestParser::valid_body(Request& to_check)
 		RequestParser::set_error(to_check,400,"Bad Request");
 		return false;
 	}
+	if (it->second.empty())
+	{
+		RequestParser::set_error(to_check,400,"Bad Request");
+		return false;
+	}
 	size_t content_length = std::atoi(it->second.c_str());
 	if (body.length() != content_length)
 	{
 		std::cout<< body.length()<<std::endl;
 		std::cout<<content_length<<std::endl;
-		RequestParser::set_error(to_check,400,"Bad Request     aaaaaaaa");
+		RequestParser::set_error(to_check,400,"Bad Request");
 		return false;
 	}
 	return true;
