@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/18 20:18:11 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/19 18:42:37 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,11 +135,12 @@ std::string CGIProcess::execute(const Request& request, const Block& location)
 	forkProcess();
 
 	if (_pid == 0)
+	{
 		setupChildProcess(request);
+		exit(1);
+	}
 	else
 		return handleParentProcess(request);
-
-	return "";
 }
 
 void CGIProcess::createPipes()
@@ -159,21 +160,41 @@ void CGIProcess::forkProcess()
 		throw std::runtime_error("fork failed");
 }
 
+
 char **CGIProcess::buildEnv(const Request& request)
 {
-	std::vector<std::string> env;
+    std::vector<std::string> env;
 
+    // 📜 CGI básico obligatorio
+    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     env.push_back("REQUEST_METHOD=" + request.get_method());
-    env.push_back("QUERY_STRING=" + request.get_query());
+    env.push_back("SERVER_PROTOCOL=" + request.get_version());
+
+    // 📍 Script info
     env.push_back("SCRIPT_FILENAME=" + _fullPath);
+    env.push_back("SCRIPT_NAME=" + request.get_path());
+    env.push_back("PATH_INFO=" + request.get_path());
 
-    if (request.get_headers().count("Content-Length"))
-        env.push_back("CONTENT_LENGTH=" + request.get_headers().at("Content-Length"));
+    // 📍 Query string (GET)
+    env.push_back("QUERY_STRING=" + request.get_query());
 
+    // 📍 Headers importantes
+    const std::map<std::string, std::string>& headers = request.get_headers();
+
+    if (headers.count("Content-Length"))
+        env.push_back("CONTENT_LENGTH=" + headers.at("Content-Length"));
+
+    if (headers.count("Content-Type"))
+        env.push_back("CONTENT_TYPE=" + headers.at("Content-Type"));
+
+    // 🔥 Muy importante para PHP
+    env.push_back("REDIRECT_STATUS=200");
+
+    // Convertir a char**
     char **envp = new char*[env.size() + 1];
 
-    // for (size_t i = 0; i < env.size(); i++)
-    //     envp[i] = strdup(env[i].c_str());
+    for (size_t i = 0; i < env.size(); i++)
+        envp[i] = strdup(env[i].c_str());
 
     envp[env.size()] = NULL;
 
@@ -192,8 +213,45 @@ void CGIProcess::setupChildProcess(const Request& request)
 
 	argv[0] = const_cast<char*>(_cgiPass.c_str());
 	argv[1] = const_cast<char*>(_fullPath.c_str());
-	argv[3] = NULL;
+	argv[2] = NULL;
 
 	char **env = buildEnv(request);
 	
+}
+
+std::string CGIProcess::handleParentProcess(const Request& request)
+{
+    // 🔹 1. Cerrar extremos que no usamos
+    close(_inputPipe[0]);     // el padre no lee de inputPipe
+    close(_outputPippe[1]);   // el padre no escribe en outputPipe
+
+    // 🔹 2. Si es POST → enviar body al CGI
+    if (request.get_method() == "POST")
+    {
+        const std::string& body = request.get_body();
+
+        write(_inputPipe[1], body.c_str(), body.size());
+    }
+
+    // 🔹 IMPORTANTE: cerrar después de escribir
+    close(_inputPipe[1]);
+
+    // 🔹 3. Leer salida del CGI
+    std::string output;
+    char buffer[4096];
+    ssize_t bytes;
+
+    while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)
+    {
+        output.append(buffer, bytes);
+    }
+
+    close(_outputPippe[0]);
+
+    // 🔹 4. Esperar al hijo
+    int status;
+    waitpid(_pid, &status, 0);
+
+    // 🔹 5. Devolver output (luego lo parsearás a HTTP)
+    return output;
 }
