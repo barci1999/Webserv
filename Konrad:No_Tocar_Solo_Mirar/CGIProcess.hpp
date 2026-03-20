@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/19 18:44:08 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/20 16:39:24 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <sstream>
 #include <cstring>
 #include <sys/wait.h>
+#include <cstdlib>
 #include "RequestParser.hpp"
 #include "Block.hpp"
 
