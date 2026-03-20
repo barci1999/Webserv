@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/19 18:42:37 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/20 16:40:31 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,6 +218,39 @@ void CGIProcess::setupChildProcess(const Request& request)
 	char **env = buildEnv(request);
 	
 }
+
+
+void CGIProcess::setupChildProcess(const Request& request)
+{
+    // 🔹 1. Redirigir stdin y stdout
+    dup2(_inputPipe[0], STDIN_FILENO);
+    dup2(_outputPippe[1], STDOUT_FILENO);
+
+    // 🔹 2. Cerrar pipes innecesarios
+    close(_inputPipe[1]);
+    close(_outputPippe[0]);
+    close(_inputPipe[0]);
+    close(_outputPippe[1]);
+
+    // 🔹 3. Preparar argv
+    char *argv[3];
+
+    argv[0] = const_cast<char*>(_cgiPass.c_str());   // ej: /usr/bin/python3
+    argv[1] = const_cast<char*>(_fullPath.c_str());  // script.py
+    argv[2] = NULL;
+
+    // 🔹 4. Crear entorno
+    char **env = buildEnv(request);
+
+    // 🔹 5. Ejecutar CGI
+    execve(_cgiPass.c_str(), argv, env);
+
+    // 🔴 Si llega aquí → error
+    perror("execve failed");
+    exit(1);
+}
+
+
 
 std::string CGIProcess::handleParentProcess(const Request& request)
 {
