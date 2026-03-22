@@ -29,7 +29,7 @@ int main(void)
     // tests.push_back("POST /test HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\n\r\n12345");
     // tests.push_back("\r\n");
     // tests.push_back("");
-// tests2.push_back("GET /path?key=value HTTP/1.1\r\nHost: example.com\r\n\r\n");  
+tests3.push_back("GET /path?key=value HTTP/1.1\r\nHost: example.com\r\n\r\n");  
 
 // tests2.push_back("GET /path?key= HTTP/1.1\r\nHost: example.com\r\n\r\n");
 
