@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/19 17:39:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/22 19:04:29 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 	{
 		if (line.empty())
 			continue;
-
 		size_t colon = line.find(':');
 		if (colon != std::string::npos)
 		{
@@ -58,6 +57,22 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 			{
 				RequestParser::set_error(request,400,"Bad Request");
 				return;
+			}
+			for (size_t i = 0; i < key.size(); ++i)
+			{
+				if (key[i] == '\n' || key[i] == '\r')
+				{
+					RequestParser::set_error(request,400,"Bad Request");
+					return;
+				}
+			}
+			for (size_t i = 0; i< value.size(); ++i)
+			{
+				if (value[i] == '\n' || value[i] == '\r')
+				{
+					RequestParser::set_error(request,400,"Bad Request");
+					return;
+				}
 			}
 			if(key == "Content-Length" || key == "Content-Type")
 			{
@@ -191,6 +206,7 @@ Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 	
 
 	std::string headersOnly;
+
 	while (std::getline(stream, line))
 	{
 		if (!line.empty() && line[line.size()-1] == '\r')
@@ -198,9 +214,8 @@ Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 
 		headersOnly += line + "\n";
 	}
-
-	//std::cout << headersOnly<<std::endl;
 	ParseHeaders(headersOnly, request);
+	//imprimirEscapado(headersOnly);
 	ParseBody(bodyPart, request);
 
 	return request;
