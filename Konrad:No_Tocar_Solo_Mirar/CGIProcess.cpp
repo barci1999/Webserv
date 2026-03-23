@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/20 16:40:31 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/23 18:04:02 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,18 +95,6 @@ std::string CGIProcess::serveStaticFile(const Request& request, const Block& loc
 	buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
 
 	return buffer.str();
-}
-
-std::string CGIProcess::execute(const Request& request, const Block& location)
-{
-	_fullPath = buildFullPath(request, location);
-
-	std::ifstream file(_fullPath.c_str());
-
-	if (!file.is_open())
-		return "404 CGI script not found";
-
-	return "CGI execution placeholder";
 }
 
 //Esta funcion decide que hacer en base a si es CGI o no
@@ -203,25 +191,6 @@ char **CGIProcess::buildEnv(const Request& request)
 
 void CGIProcess::setupChildProcess(const Request& request)
 {
-	dup2(_inputPipe[0], STDIN_FILENO);
-	dup2(_outputPippe[1], STDOUT_FILENO);
-
-	close(_inputPipe[1]);
-	close(_outputPippe[0]);
-
-	char *argv[3];
-
-	argv[0] = const_cast<char*>(_cgiPass.c_str());
-	argv[1] = const_cast<char*>(_fullPath.c_str());
-	argv[2] = NULL;
-
-	char **env = buildEnv(request);
-	
-}
-
-
-void CGIProcess::setupChildProcess(const Request& request)
-{
     // 🔹 1. Redirigir stdin y stdout
     dup2(_inputPipe[0], STDIN_FILENO);
     dup2(_outputPippe[1], STDOUT_FILENO);
@@ -274,11 +243,25 @@ std::string CGIProcess::handleParentProcess(const Request& request)
     char buffer[4096];
     ssize_t bytes;
 
-    while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)
+    while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)//ESTO ES BLOQEUANTE, AL FINCLA SE QUITARA
     {
         output.append(buffer, bytes);
     }
 
+	//ESTO ES NO BLOQUENATE Y SERA ASI AL FINAL
+	// poner pipe en no bloqueante
+	// fcntl(_outputPippe[0], F_SETFL, O_NONBLOCK);
+
+	// ssize_t bytes = read(_outputPippe[0], buffer, sizeof(buffer));
+
+	// if (bytes > 0)
+	// 	output.append(buffer, bytes);
+
+	// else if (bytes == -1 && errno == EAGAIN)
+	// {
+	// 	// 🔥 no hay datos aún → volver al poll()
+	// }
+		
     close(_outputPippe[0]);
 
     // 🔹 4. Esperar al hijo
@@ -286,5 +269,56 @@ std::string CGIProcess::handleParentProcess(const Request& request)
     waitpid(_pid, &status, 0);
 
     // 🔹 5. Devolver output (luego lo parsearás a HTTP)
-    return output;
+    Response res = parseCGIResponse(output);
+	return res.get_body(); // temporal
+}
+
+
+Response CGIProcess::parseCGIResponse(const std::string& output)
+{
+	Response response;
+
+	size_t pos = output.find("\r\n\r\n");
+
+	if (pos == std::string::npos)
+	{
+		response.set_statuscode(500);
+		response.set_reasonphrase("Internal Server Error");
+		response.set_body("CGI malformed response");
+		return response;
+	}
+
+	std::string headerPart = output.substr(0, pos);
+	std::string bodyPart = output.substr(pos + 4);
+
+	std::istringstream stream(headerPart);
+	std::string line;
+
+	while (std::getline(stream, line))
+	{
+		if (line.empty() || line == "\r")
+			continue;
+
+		size_t sep = line.find(':');
+
+		if (sep == std::string::npos)
+			continue;
+
+		std::string key = line.substr(0, sep);
+		std::string value = line.substr(sep + 1);
+
+		// limpiar espacio inicial
+		if (!value.empty() && value[0] == ' ')
+			value.erase(0, 1);
+
+		// limpiar \r
+		if (!value.empty() && value[value.size() - 1] == '\r')
+			value.erase(value.size() - 1);
+
+		response.addback_headers(key, value);
+	}
+
+	response.set_body(bodyPart);
+
+	return response;
 }
