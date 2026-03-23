@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/20 16:39:24 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/23 17:42:32 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include "RequestParser.hpp"
 #include "Block.hpp"
+#include "Response.hpp"
 
 class CGIProcess
 {
@@ -44,6 +45,7 @@ class CGIProcess
 		void forkProcess();
 		void setupChildProcess(const Request& request);
 		std::string handleParentProcess(const Request& request);
+		Response parseCGIResponse(const std::string& output);
 	public:
 		bool isCGI(const Request& request, const Block& location);
 
@@ -53,5 +55,5 @@ class CGIProcess
 		std::string handleRequest(Request& request, Block& location);
 
 		pid_t getPid() const;
-};
 
+};
