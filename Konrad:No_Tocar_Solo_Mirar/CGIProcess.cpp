@@ -6,14 +6,18 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/23 18:04:02 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/25 10:36:47 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGIProcess.hpp"
 #include "server.hpp"
 
-//Guarda lo que hay despues del . en la extension
+//////////////////////////////////////////////
+// 🔹 UTILIDADES (cosas simples)
+//////////////////////////////////////////////
+
+//Guarda lo que hay despues del . en la extension | Saca la extensión de un archivo (.php, .py)
 std::string CGIProcess::extractExtension(const std::string& path)
 {
 	size_t dotPos = path.find_last_of('.');
@@ -26,6 +30,7 @@ std::string CGIProcess::extractExtension(const std::string& path)
 
 //Se busca cgi_extension y cgi_pass y se guarda en la variables, al principio las inicializo vacias
 //Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
+//Lee del config (location) qué extensión y qué ejecutable CGI usar
 void CGIProcess::extractCGIConfig(const Block& location)
 {
 	const std::vector<Directive>& vect_directie = location.getDirectives();
@@ -44,6 +49,7 @@ void CGIProcess::extractCGIConfig(const Block& location)
 }
 
 // Aquí verifico que si el contenido del request es el mismo que la extension del location
+//Comprueba si la request es CGI comparando extensión
 bool CGIProcess::isCGI(const Request& request, const Block& location)
 {
 	extractCGIConfig(location);
@@ -62,8 +68,14 @@ bool CGIProcess::isCGI(const Request& request, const Block& location)
 	return false;
 }
 
-//CREAMOS EL FULLPATH
 
+//////////////////////////////////////////////
+// 🔹 PATHS Y ARCHIVOS
+//////////////////////////////////////////////
+
+
+//CREAMOS EL FULLPATH
+// Construye la ruta real del archivo en disco
 std::string CGIProcess::buildFullPath(const Request& request, const Block& location)
 {
 
@@ -81,7 +93,7 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& locat
 //Si por algun casual el root ya termina en / no se añade uno.
 //Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
 
-
+//Lee un archivo normal y devuelve su contenido
 std::string CGIProcess::serveStaticFile(const Request& request, const Block& location)
 {
 	std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
@@ -97,40 +109,80 @@ std::string CGIProcess::serveStaticFile(const Request& request, const Block& loc
 	return buffer.str();
 }
 
-//Esta funcion decide que hacer en base a si es CGI o no
-std::string CGIProcess::handleRequest(Request& request, Block& location)
-{
-	CGIProcess cgi;
 
-	if (cgi.isCGI(request, location))
-	{
-		return execute(request, location);
-	}
-	else
-	{
-		return serveStaticFile(request, location);
-	}
-}
+//////////////////////////////////////////////
+// 🔹 EJECUCION CGI (CORE)
+//////////////////////////////////////////////
+
+
+//Esta funcion decide que hacer en base a si es CGI o no
+// std::string CGIProcess::handleRequest(Request& request, Block& location)
+// {
+// 	CGIProcess cgi;
+
+// 	if (cgi.isCGI(request, location))
+// 	{
+// 		return execute(request, location);
+// 	}
+// 	else
+// 	{
+// 		return serveStaticFile(request, location);
+// 	}
+// }
+// YA NO SE UTILIZA AQUI, LO QUE HACE SE DEBE HACER EN EL SERVER
 
 //Inicio de priueba de execute
 
-std::string CGIProcess::execute(const Request& request, const Block& location)
+//Lanza el proceso CGI (fork + pipes) | ESta es la vieja, la dejo por si hay que revisar algo 
+// std::string CGIProcess::execute(const Request& request, const Block& location)
+// {
+// 	_fullPath = buildFullPath(request, location);
+
+// 	createPipes();
+
+// 	forkProcess();
+
+// 	if (_pid == 0)
+// 	{
+// 		setupChildProcess(request);
+// 		exit(1);
+// 	}
+// 	else
+// 		return handleParentProcess(request);
+// }
+
+//Nuevo execute, una version no bloqueante
+void CGIProcess::execute(const Request& request, const Block& location)
 {
-	_fullPath = buildFullPath(request, location);
+    _fullPath = buildFullPath(request, location);
+    _finished = false;
+    _buffer.clear();
 
-	createPipes();
+    createPipes();
+    forkProcess();
 
-	forkProcess();
+    if (_pid == 0)
+    {
+        setupChildProcess(request);
+        exit(1);
+    }
 
-	if (_pid == 0)
-	{
-		setupChildProcess(request);
-		exit(1);
-	}
-	else
-		return handleParentProcess(request);
+    close(_inputPipe[0]);
+    close(_outputPippe[1]);
+
+    if (request.get_method() == "POST")
+    {
+        const std::string& body = request.get_body();
+        write(_inputPipe[1], body.c_str(), body.size());
+    }
+
+    close(_inputPipe[1]);
+
+    // Esto lo hace no bloqueante
+    fcntl(_outputPippe[0], F_SETFL, O_NONBLOCK);
 }
 
+//Crea canales de comunicación entre padre e hijo
 void CGIProcess::createPipes()
 {
 	if (pipe(_inputPipe) < 0)
@@ -140,6 +192,7 @@ void CGIProcess::createPipes()
 		throw std::runtime_error("pipe failed");
 }
 
+//Duplica el proceso (padre e hijo)
 void CGIProcess::forkProcess()
 {
 	_pid = fork();
@@ -148,7 +201,7 @@ void CGIProcess::forkProcess()
 		throw std::runtime_error("fork failed");
 }
 
-
+//Construye variables de entorno para el CGI (muy importante para PHP)
 char **CGIProcess::buildEnv(const Request& request)
 {
     std::vector<std::string> env;
@@ -189,6 +242,7 @@ char **CGIProcess::buildEnv(const Request& request)
     return envp;
 }
 
+//Configura el hijo: redirige stdin/stdout y ejecuta el CGI
 void CGIProcess::setupChildProcess(const Request& request)
 {
     // 🔹 1. Redirigir stdin y stdout
@@ -219,61 +273,113 @@ void CGIProcess::setupChildProcess(const Request& request)
     exit(1);
 }
 
+//Configura el hijo: redirige stdin/stdout y ejecuta el CGI
+// std::string CGIProcess::handleParentProcess(const Request& request)
+// {
+//     // 🔹 1. Cerrar extremos que no usamos
+//     close(_inputPipe[0]);     // el padre no lee de inputPipe
+//     close(_outputPippe[1]);   // el padre no escribe en outputPipe
 
+//     // 🔹 2. Si es POST → enviar body al CGI
+//     if (request.get_method() == "POST")
+//     {
+//         const std::string& body = request.get_body();
 
-std::string CGIProcess::handleParentProcess(const Request& request)
-{
-    // 🔹 1. Cerrar extremos que no usamos
-    close(_inputPipe[0]);     // el padre no lee de inputPipe
-    close(_outputPippe[1]);   // el padre no escribe en outputPipe
+//         write(_inputPipe[1], body.c_str(), body.size());
+//     }
 
-    // 🔹 2. Si es POST → enviar body al CGI
-    if (request.get_method() == "POST")
-    {
-        const std::string& body = request.get_body();
+//     // 🔹 IMPORTANTE: cerrar después de escribir
+//     close(_inputPipe[1]);
 
-        write(_inputPipe[1], body.c_str(), body.size());
-    }
+//     // 🔹 3. Leer salida del CGI
+//     std::string output;
+//     char buffer[4096];
+//     ssize_t bytes;
 
-    // 🔹 IMPORTANTE: cerrar después de escribir
-    close(_inputPipe[1]);
+//     while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)//ESTO ES BLOQEUANTE, AL FINCLA SE QUITARA
+//     {
+//         output.append(buffer, bytes);
+//     }
 
-    // 🔹 3. Leer salida del CGI
-    std::string output;
-    char buffer[4096];
-    ssize_t bytes;
+// 	//ESTO ES NO BLOQUENATE Y SERA ASI AL FINAL
+// 	// poner pipe en no bloqueante
+// 	// fcntl(_outputPippe[0], F_SETFL, O_NONBLOCK);
 
-    while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)//ESTO ES BLOQEUANTE, AL FINCLA SE QUITARA
-    {
-        output.append(buffer, bytes);
-    }
+// 	// ssize_t bytes = read(_outputPippe[0], buffer, sizeof(buffer));
 
-	//ESTO ES NO BLOQUENATE Y SERA ASI AL FINAL
-	// poner pipe en no bloqueante
-	// fcntl(_outputPippe[0], F_SETFL, O_NONBLOCK);
+// 	// if (bytes > 0)
+// 	// 	output.append(buffer, bytes);
 
-	// ssize_t bytes = read(_outputPippe[0], buffer, sizeof(buffer));
-
-	// if (bytes > 0)
-	// 	output.append(buffer, bytes);
-
-	// else if (bytes == -1 && errno == EAGAIN)
-	// {
-	// 	// 🔥 no hay datos aún → volver al poll()
-	// }
+// 	// else if (bytes == -1 && errno == EAGAIN)
+// 	// {
+// 	// 	// 🔥 no hay datos aún → volver al poll()
+// 	// }
 		
-    close(_outputPippe[0]);
+//     close(_outputPippe[0]);
 
-    // 🔹 4. Esperar al hijo
-    int status;
-    waitpid(_pid, &status, 0);
+//     // 🔹 4. Esperar al hijo
+//     int status;
+//     waitpid(_pid, &status, 0);
 
-    // 🔹 5. Devolver output (luego lo parsearás a HTTP)
-    Response res = parseCGIResponse(output);
-	return res.get_body(); // temporal
+//     // 🔹 5. Devolver output (luego lo parsearás a HTTP)
+//     Response res = parseCGIResponse(output);
+// 	return res.get_body(); // temporal
+// }
+//En principio ya no se utiliza, el nuevo execute hace su trabajo de forma no bloqueante
+
+
+
+//////////////////////////////////////////////
+// 🔹 POLL READY (LO NUEVO)
+//////////////////////////////////////////////
+
+int CGIProcess::getFD() const
+{
+    return _outputPippe[0];
+}
+
+void CGIProcess::readFromPipe()
+{
+	char buffer[4096];
+	ssize_t bytes;
+
+	while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)
+	{
+		_buffer.append(buffer, bytes);
+	}
+
+	if( bytes == 0)
+	{
+		// EOF -> CGI terminó de escribir
+		_finished = true;
+		close(_outputPippe[0]);
+	}
+}
+bool CGIProcess::isFinished()
+{
+	if (_finished)
+		return true;
+	
+	int status;
+	pid_t result = waitpid(_pid, &status, WNOHANG);
+
+	if(result == 0);
+		return false;
+	
+	_finished = true;
+	return true;
+}
+Response CGIProcess::buildResponse()
+{
+	return parseCGIResponse(_buffer);
 }
 
 
+//////////////////////////////////////////////
+// 🔹 PARSEO CGI
+//////////////////////////////////////////////
+
+//Convierte la salida del CGI en una Response HTTP
 Response CGIProcess::parseCGIResponse(const std::string& output)
 {
 	Response response;
