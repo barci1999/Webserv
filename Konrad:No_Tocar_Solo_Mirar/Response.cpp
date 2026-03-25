@@ -6,11 +6,13 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:18 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:54:15 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include"Response.hpp"
+#include"server.hpp"
+#include<unistd.h>
 
 Response::Response(): _headers()
 {
@@ -35,6 +37,40 @@ Response::Response(const Response& other)
 	this->_headers = other.get_headers();
 	this->_body = other.get_body();
 }
+Response::Response(const Request to_check,const Block server_config)
+{
+	this->_version = to_check.get_version();
+	this->_statusCode = to_check.get_status_code();
+	this->_reasonPhrase = to_check.get_final_status();
+	this->_headers = to_check.get_headers();
+	this->_body = to_check.get_body();
+	if (to_check.get_status_code() == 200)
+	{
+		if (to_check.get_method() == "POST")
+		{
+			make_Post(to_check,server_config);
+		}
+		else if (to_check.get_method() == "GET")
+		{
+			make_Get(to_check,server_config);
+		}
+		else if (to_check.get_method() == "DELETE")
+		{
+			make_Delete(to_check,server_config);
+		}
+		else
+		{
+			this->_statusCode = 405;
+			this->_reasonPhrase = select_valuePhrase(405);
+		}
+	}
+	else
+	{
+		this->_statusCode = to_check.get_status_code();
+		this->_reasonPhrase = select_valuePhrase(to_check.get_status_code());
+		
+	}
+}
 Response& Response::operator=(const Response& other)
 {
 	if(this == &other)
@@ -45,5 +81,172 @@ Response& Response::operator=(const Response& other)
 	this->_headers = other.get_headers();
 	this->_body = other.get_body();
 	return *this;
+}
+std::string Response::select_valuePhrase(unsigned int status)
+{
+	switch (status)
+	{
+	case 200:
+		return("OK");
+	case 201:
+		return("Created");
+	case 204:
+		return("No Content");
+	case 400:
+		return("Bad Request");
+	case 403:
+		return("Forbidden");
+	case 404:
+		return("Not Found");
+	case 405:
+		return("Method Not Allowed");
+	case 413:
+		return("Payload Too Large");
+	case 414:
+		return("URI Too Long");
+	case 500:
+		return("Internal Server Error");
+	case 501:
+		return("Not Implemented");
+	case 505:
+		return("HTTP Version Not Supported");
+	default:
+		return("Not Implemented");
+	}
+}
+Directive Response::search_directive(std::string to_cheack,const Block block)
+{
+	Directive result;
+	result.name = "";
+	const std::vector<Directive>& directive = block.getDirectives();
+	std::vector<Directive>::const_iterator it = directive.begin();
+	for (; it != directive.end(); it++)
+	{
+		if (to_cheack == it->name)
+		{
+			result.name = it->name;
+			result.args = it->args;
+			return result;
+		}
+	}
+	return result;
+}
+void Response::make_Get(const Request to_check,const Block server_config)
+{    
+	std::string path = to_check.get_path();
+    if (path.empty())
+    {
+		set_error(*this,404);
+		return;
+	}
+    Block best_location;
+    size_t max_len = 0;
+
+    for (std::list<Block>::const_iterator it = server_config.getBlocks().begin();it != server_config.getBlocks().end(); ++it)
+    {
+        std::string loc = it->getName();
+
+        if (path.find(loc) == 0 && loc.length() > max_len)
+        {
+            best_location = *it;
+            max_len = loc.length();
+        }
+    }
+	if(max_len == 0)
+	{
+		set_error(*this,404);
+		return;
+	}
+	Directive root = search_directive("root",best_location);
+	if (root.name.empty() || root.args.empty())
+	{
+		root = search_directive("root",server_config);
+	}
+	std::string root_path = root.args[0];
+	std::string relative = path.substr(max_len);
+	std::string full_path = root_path + relative;
+	if (!file_exist(full_path))
+	{
+		set_error(*this,404);
+		return;
+	}
+	if (!can_read(full_path))
+	{
+		set_error(*this,403);
+		return;
+	}
+	if (is_directory(full_path))
+	{
+		Directive index = search_directive("index",best_location);
+		if ()
+		{
+			/* code */
+		}
+		else
+		
+	}
+	if (!is_file(full_path))
+	{
+		set_error(*this,403);
+		return;
+	}
+	std::string body;
+	if (!read_file(full_path,body))
+	{
+		set_error(*this,500);
+		return;
+	}
+	
+
+}
+void Response::set_error(Response modifi,unsigned int error)
+{
+	modifi.set_statuscode(error);
+	modifi.set_reasonphrase(select_valuePhrase(error));
+}
+
+bool Response::is_directory(const std::string& path)
+{
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0)
+        return false; // error, no existe o no accesible
+    return S_ISDIR(info.st_mode);
+}
+bool Response::file_exist(const std::string file)
+{
+	struct stat buffer;
+	return (stat(file.c_str(),&buffer) == 0);
+}
+bool Response::is_file(const std::string file)
+{
+	struct stat buffer;
+	if (stat(file.c_str(),&buffer) != 0)
+	{
+		return false;
+	}
+	return S_ISREG(buffer.st_mode);
+}
+bool Response::can_read(const std::string file)
+{
+	return (access(file.c_str(),R_OK) == 0);
+}
+bool read_file(const std::string& path, std::string& out)
+{
+    std::ifstream file(path.c_str());
+    if (!file.is_open())
+        return false;
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    out = buffer.str();
+    return true;
+}
+void Response::make_Delete(const Request to_check,const Block server_config)
+{
+
+}
+void Response::make_Post(const Request to_check,const Block server_config)
+{
+
 }
 

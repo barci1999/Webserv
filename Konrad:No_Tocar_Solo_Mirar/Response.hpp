@@ -6,13 +6,17 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/19 17:10:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/24 18:35:08 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include <iostream>
 #include<map>
+#include"Request.hpp"
+#include"server.hpp"
+#include"Block.hpp"
+#include<sys/stat.h>
 
 //cosas a comprobar a la hora de hacer la response:
 // en el parse recuest no se saca error en el query si se envuentra && asi que
@@ -26,8 +30,17 @@ private:
 	std::map<std::string,std::string> _headers;
 	std::string _body;
 	
+
+	bool file_exist(const std::string file);
+	bool is_file(const std::string file);
+	bool can_read(const std::string file);
+	bool read_file(const std::string file,std::string &out);
+	void set_error(Response modifi,unsigned int error);
+	bool is_directory(const std::string& path);
+	Directive search_directive(std::string to_search,const Block block);
 public:
 	Response();
+	Response(const Request to_check,const Block server_config);
 	Response(const Response& other);
 	Response(std::string,unsigned int,std::string,std::map<std::string,std::string>,std::string);
 	Response &operator=(const Response& other);
@@ -45,6 +58,12 @@ public:
 	void set_Headers(std::map<std::string,std::string> headers) {this->_headers = headers;}
 	void addback_headers(std::string iterator,std::string value) {this->_headers[iterator] = value;}
 	void set_body(std::string body) {this->_body = body;}
+
+	std::string response_to_string(const Response to_change);
+	void make_Post(const Request,const Block server_config);
+	void make_Get(const Request,const Block server_config);
+	void make_Delete(const Request,const Block server_config);
+	std::string select_valuePhrase(unsigned int);
 };
 
 
@@ -59,8 +78,11 @@ Código	Reason phrase
 404	Not Found
 405	Method Not Allowed
 413	Payload Too Large
+414 Uri Too Long
 500	Internal Server Error
 501	Not Implemented
 505	HTTP Version Not Supported
 */
 
+
+/*buscar informacion sobre el 413*/
