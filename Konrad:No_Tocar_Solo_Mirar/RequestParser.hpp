@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:28:06 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:22 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/22 21:56:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,6 @@ class RequestParser
 		static bool valid_headers( Request& to_check);
 		static bool valid_body( Request& to_check);
 		static void set_error(Request& req, unsigned int code,const std::string error_phrase);
-
-
-		
 		static std::string Trim(const std::string& str);
 	public:
 		static Request& parse(const std::string& rawRequest,Request &request);
