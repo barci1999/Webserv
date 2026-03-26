@@ -59,7 +59,7 @@ int main(void)
 	tests3.push_back("GET / HTTP/1.1\r\nHost:    example.com\r\n\r\n"); // muchos espacios
 	tests3.push_back("GET / HTTP/1.1\r\nHost: example.com:8080\r\n\r\n"); // con puerto
 	tests3.push_back("GET / HTTP/1.1\r\nhost: example.com\r\n\r\n"); // lowercase // comprobar 
-	tests3.push_back("GET    /path    HTTP/1.1\r\nHost: example.com\r\n\r\n");
+	tests3.push_back("GET    /path/file.php    HTTP/1.1\r\nHost: example.com\r\n\r\n");
 	tests3.push_back("GET /path HTTP/1.1\r\nHost: example.com\r\n   \r\n"); // línea rara
 	tests3.push_back("POST /test HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\n12345");
 	tests3.push_back("POST /test HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\n1234"); // menos body
@@ -77,17 +77,16 @@ int main(void)
 
     if (RequestParser::valid_request(req))
 	{
-		//std::cout<<req<<std::endl;
+		std::cout<<req<<std::endl;
         std::cout << "OK\n";
 	}
     else
 	{
-		//std::cout<<req<<std::endl;
+		std::cout<<req<<std::endl;
         std::cout << "ERROR " << req.get_status_code() << " " << req.get_final_status() << "\n";
 	}
 
 
     std::cout << "-----------------\n";
 }
-	
 }
