@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/24 18:54:15 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/26 19:09:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ Directive Response::search_directive(std::string to_cheack,const Block block)
 	return result;
 }
 void Response::make_Get(const Request to_check,const Block server_config)
-{    
+{     
 	std::string path = to_check.get_path();
     if (path.empty())
     {
@@ -165,6 +165,7 @@ void Response::make_Get(const Request to_check,const Block server_config)
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
 	std::string full_path = root_path + relative;
+	std::string body;
 	if (!file_exist(full_path))
 	{
 		set_error(*this,404);
@@ -177,27 +178,51 @@ void Response::make_Get(const Request to_check,const Block server_config)
 	}
 	if (is_directory(full_path))
 	{
-		Directive index = search_directive("index",best_location);
-		if ()
+		if(full_path[full_path.size() - 1] != '/')
 		{
-			/* code */
+			full_path += '/';
+		}
+		Directive index = search_directive("index",best_location);
+		if (!index.name.empty())
+		{
+			for (std::vector<std::string>::iterator it = index.args.begin(); it != index.args.end(); ++it)
+			{
+				std::string temp = full_path + *it;
+				if (file_exist(temp) && is_file(temp) && can_read(temp))
+				{
+					set_version("HTTP/1.1");
+					set_statuscode(200);
+					set_reasonphrase("OK");
+					addback_headers("Content-Type:","application/octet-stream");
+					addback_headers("Content-Length:",std::string(get_body().size()));
+                	// montar response
+                	//return; // salir
+				}
+			}
+		}
+		Directive autoindex = search_directive("autoindex",best_location);
+		if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on")
+		{
+			//hacer un listado de los archivos de la carpeta
+			//retornar la response
 		}
 		else
-		
+		{
+			set_error(*this,403);
+			return;
+		}
 	}
 	if (!is_file(full_path))
 	{
 		set_error(*this,403);
 		return;
 	}
-	std::string body;
+
 	if (!read_file(full_path,body))
 	{
 		set_error(*this,500);
 		return;
 	}
-	
-
 }
 void Response::set_error(Response modifi,unsigned int error)
 {
