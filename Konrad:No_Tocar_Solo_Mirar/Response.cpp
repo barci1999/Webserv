@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/26 19:09:12 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/28 20:57:17 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,12 @@ Directive Response::search_directive(std::string to_cheack,const Block block)
 	}
 	return result;
 }
+static std::string toString(unsigned int value) 
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
 void Response::make_Get(const Request to_check,const Block server_config)
 {     
 	std::string path = to_check.get_path();
@@ -194,7 +200,8 @@ void Response::make_Get(const Request to_check,const Block server_config)
 					set_statuscode(200);
 					set_reasonphrase("OK");
 					addback_headers("Content-Type:","application/octet-stream");
-					addback_headers("Content-Length:",std::string(get_body().size()));
+					read_file(temp,body);
+					addback_headers("Content-Length:",toString(body.size()));
                 	// montar response
                 	//return; // salir
 				}
