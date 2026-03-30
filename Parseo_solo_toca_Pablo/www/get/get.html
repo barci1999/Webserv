@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ver post</title>
+
+<style>
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#111827;
+    margin:0;
+}
+
+header{
+    background:#1f2937;
+    color:white;
+    padding:20px 40px;
+}
+
+header h1{
+    margin:0;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:40px;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+label{
+    font-weight:bold;
+    display:block;
+    margin-top:20px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+button{
+    margin-top:25px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.post{
+    margin-top:30px;
+    padding:20px;
+    border-left:5px solid #2563eb;
+    background:#f9fafb;
+}
+
+.info{
+    margin-top:30px;
+    background:#eef2ff;
+    padding:20px;
+    border-radius:8px;
+}
+
+code{
+    background:#e5e7eb;
+    padding:4px 6px;
+    border-radius:4px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>MiniForum</h1>
+<p>Ver hilo del foro</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Buscar Post</h2>
+
+<p>Introduce el ID del post para recuperarlo.</p>
+
+<label>ID del post</label>
+<input type="text" id="postId" placeholder="Ej: 42">
+
+<button onclick="getPost()">Buscar Post</button>
+
+<div id="postResult"></div>
+
+</div>
+
+<div class="info">
+
+<h3>Información para probar GET</h3>
+
+<p>La página enviará una petición:</p>
+
+<code>GET /get/post_id</code>
+
+<p>Ejemplo:</p>
+
+<code>GET /get/42</code>
+
+<p>También puedes probar desde terminal:</p>
+
+<pre>
+curl http://localhost:8080/get/42
+</pre>
+
+</div>
+
+</div>
+
+<script>
+
+function getPost(){
+
+    const id = document.getElementById("postId").value;
+
+    if(!id){
+        alert("Introduce un ID");
+        return;
+    }
+
+    fetch("/get/" + id)
+    .then(response => response.text())
+    .then(data => {
+
+        document.getElementById("postResult").innerHTML =
+        "<div class='post'>" +
+        "<h3>Post ID: " + id + "</h3>" +
+        "<p>" + data + "</p>" +
+        "</div>";
+
+    })
+    .catch(error => {
+
+        document.getElementById("postResult").innerHTML =
+        "<p>Error al obtener el post.</p>";
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>

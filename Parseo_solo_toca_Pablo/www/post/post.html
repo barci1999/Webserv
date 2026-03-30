@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Crear nuevo post</title>
+
+<style>
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#111827;
+    margin:0;
+}
+
+header{
+    background:#1f2937;
+    color:white;
+    padding:20px 40px;
+}
+
+header h1{
+    margin:0;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:40px;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+label{
+    font-weight:bold;
+    display:block;
+    margin-top:20px;
+}
+
+input, textarea, select{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+textarea{
+    min-height:150px;
+}
+
+button{
+    margin-top:25px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    font-size:16px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.info{
+    margin-top:30px;
+    background:#eef2ff;
+    padding:20px;
+    border-radius:8px;
+}
+
+code{
+    background:#e5e7eb;
+    padding:4px 6px;
+    border-radius:4px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>MiniForum</h1>
+<p>Crear nuevo hilo</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Nuevo Post</h2>
+
+<form action="/post/create" method="POST">
+
+<label>Nombre de usuario</label>
+<input type="text" name="username" placeholder="Tu nombre">
+
+<label>Título del post</label>
+<input type="text" name="title" placeholder="Título del hilo">
+
+<label>Categoría</label>
+<select name="category">
+<option value="general">General</option>
+<option value="webserv">Webserv</option>
+<option value="cpp">C++</option>
+<option value="random">Off Topic</option>
+
+</select>
+
+<label>Contenido</label>
+<textarea name="content" placeholder="Escribe tu mensaje..."></textarea>
+
+<button type="submit">Publicar post</button>
+
+</form>
+
+</div>
+
+<div class="info">
+
+<h3>Información para probar POST</h3>
+
+<p>Este formulario enviará una petición:</p>
+
+<code>POST /post/create</code>
+
+<p>Content-Type:</p>
+
+<code>application/x-www-form-urlencoded</code>
+
+<p>Campos enviados:</p>
+
+<ul>
+<li>username</li>
+<li>title</li>
+<li>category</li>
+<li>content</li>
+</ul>
+
+</div>
+
+</div>
+
+</body>
+</html>
