@@ -4,45 +4,68 @@
 #include "Parseo_solo_toca_Pablo/Block.hpp"
 #include "Konrad_No_Tocar_Solo_Mirar/Request.hpp"
 #include "Konrad_No_Tocar_Solo_Mirar/Response.hpp"
+#include "Konrad_No_Tocar_Solo_Mirar/RequestParser.hpp"
 #include <stdlib.h>
 
 int main()
 {
-    // 1️⃣ Crear carpeta y archivo de prueba
-    system("mkdir -p test");
-    std::ofstream("test/index.html") << "<h1>Hola mundo!</h1>";
+    // 🔹 1. Crear request desde string
+    std::string raw_request = "GET /get/hola HTTP/1.1\r\nHost: example.com\r\n\r\n";
+    Request req;
+	RequestParser::parse(raw_request,req);
+	RequestParser::valid_request(req);
+	std::cout << req<<std::endl;
 
-    // 2️⃣ Configurar Request
-    Request req("/test/"); // suponiendo que make_Get asume GET
+    // 🔹 2. Crear configuración del servidor (simulada)
+    Block server_root;
+	Block server;
 
-    // 3️⃣ Configurar Block
-    Block server("test");
-
-    // Crear root directive
+    // root = carpeta donde están tus archivos (ajusta si hace falta)
     Directive root;
     root.name = "root";
-    root.args.push_back("."); // carpeta actual
+    root.args.push_back("Parseo_solo_toca_Pablo/www");
+
+    // index = archivo por defecto
+    // Directive index;
+    // index.name = "index";
+    // index.args.push_back("index.html");
+
+    // autoindex off (opcional)
+    Directive autoindex;
+    autoindex.name = "autoindex";
+    autoindex.args.push_back("off");
+
+	server.setName("/");
     server.addDirective(root);
+    //server.addDirective(index);
+    server.addDirective(autoindex);
+	server_root.addChild(server);
 
-    // Crear index directive
-    Directive index;
-    index.name = "index";
-    index.args.push_back("index.html");
-    server.addDirective(index);
 
-    // 4️⃣ Crear Response
-    Response res;
-    res.make_Get(req, server);
+	server_root.print();
 
-    // 5️⃣ Imprimir resultado para verificar
-    std::cout << "HTTP version: " << res.get_version() << "\n";
-    std::cout << "Status code: " << res.get_statusCode() << "\n";
-    std::cout << "Reason phrase: " << res.get_reasonPhrase() << "\n";
-    std::cout << "Headers:\n";
-    std::map<std::string,std::string> headers = res.get_headers();
-    for (std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
-        std::cout << it->first << ": " << it->second << "\n";
-    std::cout << "Body:\n" << res.get_body() << "\n";
+	std::cout << "======================================================" <<std::endl;
+
+    // 🔹 3. Crear response
+    Response res(req,server_root);
+
+    // 🔹 4. Ejecutar GET
+
+
+    // 🔹 5. Imprimir resultado
+    std::cout << "HTTP version: " << res.get_version() << std::endl;
+    std::cout << "Status code: " << res.get_statusCode() << std::endl;
+    std::cout << "Reason phrase: " << res.get_reasonPhrase() << std::endl;
+
+    std::cout << "Headers:" << std::endl;
+    std::map<std::string, std::string> headers = res.get_headers();
+    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
+    {
+        std::cout << it->first << ": " << it->second << std::endl;
+    }
+
+    std::cout << "Body:" << std::endl;
+    std::cout << res.get_body() << std::endl;
 
     return 0;
 }
