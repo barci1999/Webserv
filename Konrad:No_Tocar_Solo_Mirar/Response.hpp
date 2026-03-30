@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/24 18:35:08 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/30 15:31:33 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,10 @@
 #include <iostream>
 #include<map>
 #include"Request.hpp"
-#include"server.hpp"
-#include"Block.hpp"
+#include"/home/pablalva/Documents/github/web_server_github/Parseo_(solo_toca_Pablo)/server.hpp"
+#include"/home/pablalva/Documents/github/web_server_github/Parseo_(solo_toca_Pablo)/Block.hpp"
 #include<sys/stat.h>
+#include <dirent.h>
 
 //cosas a comprobar a la hora de hacer la response:
 // en el parse recuest no se saca error en el query si se envuentra && asi que
@@ -45,6 +46,9 @@ public:
 	Response(std::string,unsigned int,std::string,std::map<std::string,std::string>,std::string);
 	Response &operator=(const Response& other);
 	~Response();
+
+	std::string getContentType(const std::string& to_check);
+	std::string generate_autoindex(const std::string& ful_path,const std::string& request_path);
 
 	const std::string get_version() const {	return this->_version ;}
 	unsigned int get_statusCode() const { return this->_statusCode ;}
