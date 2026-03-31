@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/30 16:38:00 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/30 18:00:25 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include <iostream>
 #include<map>
 #include"Request.hpp"
-#include"/home/pablalva/Documents/github/web_server_github/Parseo_solo_toca_Pablo/server.hpp"
-#include"/home/pablalva/Documents/github/web_server_github/Parseo_solo_toca_Pablo/Block.hpp"
+#include"../Parseo_solo_toca_Pablo/server.hpp"
+#include"../Parseo_solo_toca_Pablo/Block.hpp"
 #include<sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>

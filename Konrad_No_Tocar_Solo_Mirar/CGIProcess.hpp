@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/25 08:22:07 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/30 18:13:35 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,14 @@
 #include <cstdlib>
 # include <fcntl.h>
 #include "RequestParser.hpp"
-#include "Block.hpp"
+#include "../Parseo_solo_toca_Pablo/Block.hpp"
 #include "Response.hpp"
 
 class CGIProcess
 {
 	private:
 		int _inputPipe[2];
-		int _outputPippe[2];
+		int _outputPipe[2];
 		pid_t _pid;
 
 		std::string _cgiExtension;

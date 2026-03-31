@@ -6,12 +6,12 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/25 10:36:47 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/30 21:08:01 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGIProcess.hpp"
-#include "server.hpp"
+#include "../Parseo_solo_toca_Pablo/server.hpp"
 
 //////////////////////////////////////////////
 // 🔹 UTILIDADES (cosas simples)
@@ -85,7 +85,7 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& locat
 
 	std::string rootPath = root.args[0];
 	
-	if (rootPath[rootPath.size() - 1] == '/')
+	if (!rootPath.empty() && rootPath[rootPath.size() - 1] == '/')
 		return rootPath + relativePath;
 
 	return rootPath + "/" + relativePath;
@@ -168,8 +168,9 @@ void CGIProcess::execute(const Request& request, const Block& location)
     }
 
     close(_inputPipe[0]);
-    close(_outputPippe[1]);
+    close(_outputPipe[1]);
 
+	//Una vez que se haga no bloqueante esto desde aqui hasta el final se quitara de esta funcion.
     if (request.get_method() == "POST")
     {
         const std::string& body = request.get_body();
@@ -177,9 +178,6 @@ void CGIProcess::execute(const Request& request, const Block& location)
     }
 
     close(_inputPipe[1]);
-
-    // Esto lo hace no bloqueante
-    fcntl(_outputPippe[0], F_SETFL, O_NONBLOCK);
 }
 
 //Crea canales de comunicación entre padre e hijo
@@ -188,8 +186,17 @@ void CGIProcess::createPipes()
 	if (pipe(_inputPipe) < 0)
 		throw std::runtime_error("pipe failed");
 
-	if (pipe(_outputPippe) < 0)
+	if (pipe(_outputPipe) < 0)
 		throw std::runtime_error("pipe failed");
+	
+	// No se si poner los extremos de lectura en non-blocking es aqui, luego se vera.
+    int flags = fcntl(_outputPipe[0], F_GETFL, 0);
+    fcntl(_outputPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+    flags = fcntl(_inputPipe[1], F_GETFL, 0);
+    fcntl(_inputPipe[1], F_SETFL, flags | O_NONBLOCK);
+	//Esto lee del CGI y escribe en el CGI de forma no bloqueante usando el fcntl.
+	// DE esta manera se hace una vez, afecta a todos los usos.
 }
 
 //Duplica el proceso (padre e hijo)
@@ -247,14 +254,28 @@ void CGIProcess::setupChildProcess(const Request& request)
 {
     // 🔹 1. Redirigir stdin y stdout
     dup2(_inputPipe[0], STDIN_FILENO);
-    dup2(_outputPippe[1], STDOUT_FILENO);
+    dup2(_outputPipe[1], STDOUT_FILENO);
 
     // 🔹 2. Cerrar pipes innecesarios
     close(_inputPipe[1]);
-    close(_outputPippe[0]);
+    close(_outputPipe[0]);
     close(_inputPipe[0]);
-    close(_outputPippe[1]);
+    close(_outputPipe[1]);
 
+
+	// Extrae el directorio del script:
+	// Cambia el directorio de ejecución del proceso hijo
+	std::string dir = _fullPath.substr(0, _fullPath.find_last_of('/'));
+	if (chdir(dir.c_str()) != 0)
+	{
+		perror("chdir failed");
+		exit(1);
+	}
+	// Si NO haces chdir():
+	// Buscaría en el directorio donde lanzaste el server ❌
+	// Fallaría aunque el archivo exista ❌
+	
+	
     // 🔹 3. Preparar argv
     char *argv[3];
 
@@ -278,7 +299,7 @@ void CGIProcess::setupChildProcess(const Request& request)
 // {
 //     // 🔹 1. Cerrar extremos que no usamos
 //     close(_inputPipe[0]);     // el padre no lee de inputPipe
-//     close(_outputPippe[1]);   // el padre no escribe en outputPipe
+//     close(_outputPipe[1]);   // el padre no escribe en outputPipe
 
 //     // 🔹 2. Si es POST → enviar body al CGI
 //     if (request.get_method() == "POST")
@@ -296,16 +317,16 @@ void CGIProcess::setupChildProcess(const Request& request)
 //     char buffer[4096];
 //     ssize_t bytes;
 
-//     while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)//ESTO ES BLOQEUANTE, AL FINCLA SE QUITARA
+//     while ((bytes = read(_outputPipe[0], buffer, sizeof(buffer))) > 0)//ESTO ES BLOQEUANTE, AL FINCLA SE QUITARA
 //     {
 //         output.append(buffer, bytes);
 //     }
 
 // 	//ESTO ES NO BLOQUENATE Y SERA ASI AL FINAL
 // 	// poner pipe en no bloqueante
-// 	// fcntl(_outputPippe[0], F_SETFL, O_NONBLOCK);
+// 	// fcntl(_outputPipe[0], F_SETFL, O_NONBLOCK);
 
-// 	// ssize_t bytes = read(_outputPippe[0], buffer, sizeof(buffer));
+// 	// ssize_t bytes = read(_outputPipe[0], buffer, sizeof(buffer));
 
 // 	// if (bytes > 0)
 // 	// 	output.append(buffer, bytes);
@@ -315,7 +336,7 @@ void CGIProcess::setupChildProcess(const Request& request)
 // 	// 	// 🔥 no hay datos aún → volver al poll()
 // 	// }
 		
-//     close(_outputPippe[0]);
+//     close(_outputPipe[0]);
 
 //     // 🔹 4. Esperar al hijo
 //     int status;
@@ -335,26 +356,31 @@ void CGIProcess::setupChildProcess(const Request& request)
 
 int CGIProcess::getFD() const
 {
-    return _outputPippe[0];
+    return _outputPipe[0];
 }
 
+// Leer pipe sin bloquear
 void CGIProcess::readFromPipe()
 {
 	char buffer[4096];
 	ssize_t bytes;
 
-	while ((bytes = read(_outputPippe[0], buffer, sizeof(buffer))) > 0)
+	while ((bytes = read(_outputPipe[0], buffer, sizeof(buffer))) > 0)
 	{
 		_buffer.append(buffer, bytes);
 	}
 
 	if( bytes == 0)
 	{
-		// EOF -> CGI terminó de escribir
+		// EOF -> CGI terminó de escribir | No se hace nada con bytes < 0 por que EOF = 0 es que termino
+		// y -1 puede ser EAGAIN por lo que hay que ignoorar
 		_finished = true;
-		close(_outputPippe[0]);
+		close(_outputPipe[0]);
 	}
 }
+
+
+// Saber si terminó
 bool CGIProcess::isFinished()
 {
 	if (_finished)
@@ -363,12 +389,14 @@ bool CGIProcess::isFinished()
 	int status;
 	pid_t result = waitpid(_pid, &status, WNOHANG);
 
-	if(result == 0);
+	if(result == 0)
 		return false;
 	
 	_finished = true;
 	return true;
 }
+
+// Parsear output CGI a Response
 Response CGIProcess::buildResponse()
 {
 	return parseCGIResponse(_buffer);
@@ -421,7 +449,25 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 		if (!value.empty() && value[value.size() - 1] == '\r')
 			value.erase(value.size() - 1);
 
-		response.addback_headers(key, value);
+		// Manejo de Status
+        if (key == "Status")
+        {
+            size_t spacePos = value.find(' ');
+            if (spacePos != std::string::npos)
+            {
+                response.set_statuscode(std::stoi(value.substr(0, spacePos)));
+                response.set_reasonphrase(value.substr(spacePos + 1));
+            }
+            else
+            {
+                response.set_statuscode(std::stoi(value));
+                response.set_reasonphrase("");
+            }
+        }
+        else
+        {
+            response.addback_headers(key, value);
+        }
 	}
 
 	response.set_body(bodyPart);
