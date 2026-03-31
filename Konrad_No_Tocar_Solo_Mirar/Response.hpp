@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/30 18:00:25 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/30 18:59:40 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ private:
 	std::string _body;
 	
 
-	void set_error(Response modifi,unsigned int error);
+	void set_error(Response& modifi,unsigned int error);
 	bool is_directory(const std::string& path);
 	bool file_exist(const std::string file);
 	bool is_file(const std::string file);

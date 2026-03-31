@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/30 16:39:08 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/30 18:59:00 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ Response::Response(const Request to_check,const Block server_config)
 		else if (to_check.get_method() == "GET")
 		{
 			make_Get(to_check,server_config);
+			std::cout<<this->get_statusCode()<<std::endl;
 		}
 		else if (to_check.get_method() == "DELETE")
 		{
@@ -165,13 +166,15 @@ static std::string toString(unsigned int value)
     return oss.str();
 }
 void Response::make_Get(const Request to_check,const Block server_config)
-{     
+{  
+
 	std::string path = to_check.get_path();
     if (path.empty()) {	set_error(*this,404); return; }
     Block best_location;
     size_t max_len = 0;
     for (std::list<Block>::const_iterator it = server_config.getBlocks().begin();it != server_config.getBlocks().end(); ++it)
     {
+		
         std::string loc = it->getName();
 
         if (path.find(loc) == 0 && loc.length() > max_len)
@@ -180,6 +183,7 @@ void Response::make_Get(const Request to_check,const Block server_config)
             max_len = loc.length();
         }
     }
+	
 	if(max_len == 0){ set_error(*this,404); return; }
 	Directive root = search_directive("root",best_location);
 	if (root.name.empty() || root.args.empty())
@@ -192,7 +196,12 @@ void Response::make_Get(const Request to_check,const Block server_config)
 	}
 	std::string full_path = root_path + relative;
 	std::string body;
-	if (!file_exist(full_path)) { set_error(*this,404); return;}
+	if (!file_exist(full_path)) 
+	{
+		set_error(*this,404);
+		std::cout<<this->get_statusCode()<<std::endl;
+		return;
+	}
 	if (!can_read(full_path)) { set_error(*this,403); return;}
 	if (is_directory(full_path))
 	{
@@ -201,6 +210,7 @@ void Response::make_Get(const Request to_check,const Block server_config)
 		Directive index = search_directive("index",best_location);
 		if (!index.name.empty())
 		{
+			
 			for (std::vector<std::string>::iterator it = index.args.begin(); it != index.args.end(); ++it)
 			{
 				std::string temp = full_path + *it;
@@ -214,7 +224,7 @@ void Response::make_Get(const Request to_check,const Block server_config)
 					addback_headers("Content-Type",getContentType(temp));
 					addback_headers("Content-Length",toString(body.size()));
 					addback_headers("Connection","close");
-
+					set_body(body);
 					return;
 				}
 			}
@@ -231,10 +241,16 @@ void Response::make_Get(const Request to_check,const Block server_config)
 			addback_headers("Content-Type", "text/html");
 			addback_headers("Content-Length", toString(body.size()));
 			addback_headers("Connection", "close");
+			set_body(body);
 			
 			return;
 		}
-		else{set_error(*this,403);return;}
+		else
+		{
+			std::cout<<"HOLAAAAAAAAAAAAAAAAAA"<<std::endl;
+			set_error(*this,403);
+			return;
+		}
 	}
 	if (!is_file(full_path)){set_error(*this,403);return;}
 	if (!read_file(full_path,body)){set_error(*this,500);return;}
@@ -244,9 +260,10 @@ void Response::make_Get(const Request to_check,const Block server_config)
 	addback_headers("Content-Type",getContentType(full_path));
 	addback_headers("Content-Length",toString(body.size()));
 	addback_headers("Connection","close");
+	set_body(body);
 	return;
 }
-void Response::set_error(Response modifi,unsigned int error)
+void Response::set_error(Response& modifi,unsigned int error)
 {
 	modifi.set_statuscode(error);
 	modifi.set_reasonphrase(select_valuePhrase(error));

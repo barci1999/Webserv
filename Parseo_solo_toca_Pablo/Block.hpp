@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:14:57 by pablo             #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:00 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/30 17:52:41 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ public:
 	
 	void addDirective(const Directive& to_add);//se usara para añadir una directive al vector de la clase.
 	void addChild(const Block& to_add);//se usara para añadir un nuevo subbloque dentro del actual despues se resolvera todo de forma recursiva.
-	
+	void setName(std::string name){this->_name = name; return;}
 	const std::string& getName() const;
 	const std::vector<Directive>& getDirectives() const;
 	const std::list<Block>& getBlocks() const;
