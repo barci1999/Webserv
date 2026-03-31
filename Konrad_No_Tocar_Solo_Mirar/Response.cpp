@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/30 18:59:00 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/31 16:07:03 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,33 +37,26 @@ Response::Response(const Response& other)
 	this->_headers = other.get_headers();
 	this->_body = other.get_body();
 }
-Response::Response(const Request to_check,const Block server_config)
+Response::Response(const Request to_check, const Block server_config)
 {
-	this->_version = to_check.get_version();
-	this->_statusCode = to_check.get_status_code();
-	this->_reasonPhrase = to_check.get_final_status();
-	this->_headers = to_check.get_headers();
-	this->_body = to_check.get_body();
-	if (to_check.get_status_code() == 200)
-	{
-		if (to_check.get_method() == "POST")
-		{
-			make_Post(to_check,server_config);
-		}
-		else if (to_check.get_method() == "GET")
-		{
-			make_Get(to_check,server_config);
-			std::cout<<this->get_statusCode()<<std::endl;
-		}
-		else if (to_check.get_method() == "DELETE")
-		{
-			make_Delete(to_check,server_config);
-		}
-		else
-		{
-			set_error(*this,405);
-		}
-	}
+    this->_version = "HTTP/1.1";
+    this->_statusCode = to_check.get_status_code();
+    this->_reasonPhrase = to_check.get_final_status();
+
+    this->_headers.clear();
+    this->_body.clear();
+
+    if (this->_statusCode == 200)
+    {
+        if (to_check.get_method() == "POST")
+            make_Post(to_check, server_config);
+        else if (to_check.get_method() == "GET")
+            make_Get(to_check, server_config);
+        else if (to_check.get_method() == "DELETE")
+            make_Delete(to_check, server_config);
+        else
+            set_error(*this, 405);
+    }
 	else
 	{
 		this->_statusCode = to_check.get_status_code();
@@ -247,7 +240,6 @@ void Response::make_Get(const Request to_check,const Block server_config)
 		}
 		else
 		{
-			std::cout<<"HOLAAAAAAAAAAAAAAAAAA"<<std::endl;
 			set_error(*this,403);
 			return;
 		}
@@ -328,6 +320,20 @@ std::string Response::getContentType(const std::string& path)
 	if (ext == "pdf") return "application/pdf";
 
 	return "application/octet-stream";
+}
+std::string res_to_str(const Response& to_change)
+{
+	std::ostringstream res;
+	
+	res << to_change.get_version() << " " << to_change.get_statusCode() << " " << to_change.get_reasonPhrase() << "\r\n";
+	std::map<std::string, std::string> headers = to_change.get_headers();
+    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
+	{
+		res << it->first << ": " << it->second << "\r\n";
+	}
+	res << "\r\n";
+	res << to_change.get_body();
+	return res.str();
 }
 void Response::make_Delete(const Request to_check,const Block server_config)
 {
