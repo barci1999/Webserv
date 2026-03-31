@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/30 18:59:40 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/31 12:26:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ public:
 	void make_Delete(const Request,const Block server_config);
 	std::string select_valuePhrase(unsigned int);
 };
+std::string res_to_str(const Response& to_change);
 
 
 /*

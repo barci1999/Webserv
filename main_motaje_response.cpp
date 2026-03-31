@@ -10,7 +10,7 @@
 int main()
 {
     // 🔹 1. Crear request desde string
-    std::string raw_request = "GET /get/hola HTTP/1.1\r\nHost: example.com\r\n\r\n";
+    std::string raw_request = "GET /get/ HTTP/1.1\r\nHost: example.com\r\n\r\n";
     Request req;
 	RequestParser::parse(raw_request,req);
 	RequestParser::valid_request(req);
@@ -33,7 +33,7 @@ int main()
     // autoindex off (opcional)
     Directive autoindex;
     autoindex.name = "autoindex";
-    autoindex.args.push_back("off");
+    autoindex.args.push_back("on");
 
 	server.setName("/");
     server.addDirective(root);
