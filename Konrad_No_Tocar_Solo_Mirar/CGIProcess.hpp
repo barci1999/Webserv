@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/30 18:13:35 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/31 16:42:44 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,5 +65,7 @@ class CGIProcess
 		bool isFinished(); // lee sin bloquear
 		void readFromPipe(); //comprueba si el CGI terminó
 		Response buildResponse(); // construye la respuesta final
+
+		const std::string& getBuffer() const;
 
 };
