@@ -10,7 +10,7 @@
 int main()
 {
     // 🔹 1. Crear request desde string
-    std::string raw_request = "GET /get/ HTTP/1.1\r\nHost: example.com\r\n\r\n";
+    std::string raw_request = "GET / HTTP/1.1\r\nContent-Length: 0\r\nHost: example.com\r\n\r\n";
     Request req;
 	RequestParser::parse(raw_request,req);
 	RequestParser::valid_request(req);
@@ -47,25 +47,29 @@ int main()
 	std::cout << "======================================================" <<std::endl;
 
     // 🔹 3. Crear response
+	req.set_status_code(404);
     Response res(req,server_root);
 
     // 🔹 4. Ejecutar GET
 
 
     // 🔹 5. Imprimir resultado
-    std::cout << "HTTP version: " << res.get_version() << std::endl;
-    std::cout << "Status code: " << res.get_statusCode() << std::endl;
-    std::cout << "Reason phrase: " << res.get_reasonPhrase() << std::endl;
+    // std::cout << "HTTP version: " << res.get_version() << std::endl;
+    // std::cout << "Status code: " << res.get_statusCode() << std::endl;
+    // std::cout << "Reason phrase: " << res.get_reasonPhrase() << std::endl;
 
-    std::cout << "Headers:" << std::endl;
-    std::map<std::string, std::string> headers = res.get_headers();
-    for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
-    {
-        std::cout << it->first << ": " << it->second << std::endl;
-    }
+    // std::cout << "Headers:" << std::endl;
+    // std::map<std::string, std::string> headers = res.get_headers();
+    // for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
+    // {
+    //     std::cout << it->first << ": " << it->second << std::endl;
+    // }
 
-    std::cout << "Body:" << std::endl;
-    std::cout << res.get_body() << std::endl;
+    // std::cout << "Body:" << std::endl;
+    // std::cout << res.get_body() << std::endl;
+
+	std::cout << "=========================================================" <<std::endl;
+	std::cout << res_to_str(res) << std::endl;
 
     return 0;
 }
