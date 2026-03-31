@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/31 16:07:03 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/03/31 17:32:55 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ Response::Response(const Request to_check, const Block server_config)
 	else
 	{
 		this->_statusCode = to_check.get_status_code();
-		this->_reasonPhrase = select_valuePhrase(to_check.get_status_code());
+		set_error(*this,this->_statusCode);
 		
 	}
 }
@@ -257,15 +257,38 @@ void Response::make_Get(const Request to_check,const Block server_config)
 }
 void Response::set_error(Response& modifi,unsigned int error)
 {
-	modifi.set_statuscode(error);
-	modifi.set_reasonphrase(select_valuePhrase(error));
+
+    modifi.set_reasonphrase(select_valuePhrase(error));
+	if (modifi.get_reasonPhrase() == "Not Implemented")
+	{
+		modifi.set_statuscode(501);
+	}
+	else
+	{
+		modifi.set_statuscode(error);
+	}
+
+    std::ostringstream oss;
+    oss << "<html><body><h1>"
+        << modifi.get_statusCode() << " " << modifi.get_reasonPhrase()
+        << "</h1></body></html>";
+    std::string body = oss.str();
+    modifi.set_body(body);
+
+    modifi.addback_headers("Content-Type", "text/html");
+
+    std::ostringstream len;
+    len << body.size();
+    modifi.addback_headers("Content-Length", len.str());
+
+    modifi.addback_headers("Connection", "close");
 }
 
 bool Response::is_directory(const std::string& path)
 {
     struct stat info;
     if (stat(path.c_str(), &info) != 0)
-        return false; // error, no existe o no accesible
+        return false;
     return S_ISDIR(info.st_mode);
 }
 bool Response::file_exist(const std::string file)

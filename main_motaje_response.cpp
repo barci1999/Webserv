@@ -14,7 +14,7 @@ int main()
     Request req;
 	RequestParser::parse(raw_request,req);
 	RequestParser::valid_request(req);
-	std::cout << req<<std::endl;
+	//std::cout << req<<std::endl;
 
     // 🔹 2. Crear configuración del servidor (simulada)
     Block server_root;
@@ -42,12 +42,12 @@ int main()
 	server_root.addChild(server);
 
 
-	server_root.print();
+	//server_root.print();
 
-	std::cout << "======================================================" <<std::endl;
+	//std::cout << "======================================================" <<std::endl;
 
     // 🔹 3. Crear response
-	req.set_status_code(404);
+	req.set_status_code(201);
     Response res(req,server_root);
 
     // 🔹 4. Ejecutar GET
@@ -68,7 +68,7 @@ int main()
     // std::cout << "Body:" << std::endl;
     // std::cout << res.get_body() << std::endl;
 
-	std::cout << "=========================================================" <<std::endl;
+	//std::cout << "=========================================================" <<std::endl;
 	std::cout << res_to_str(res) << std::endl;
 
     return 0;
