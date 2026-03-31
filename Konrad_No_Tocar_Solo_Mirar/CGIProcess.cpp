@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/30 21:08:01 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/03/31 17:04:21 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,13 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& locat
 	std::string locationPrefix = location.getName(); 
 	std::string relativePath = request.get_path().substr(locationPrefix.length());
 
+	// ⚠️ quitar slash inicial si existe
+	if (!relativePath.empty() && relativePath[0] == '/')
+		relativePath.erase(0, 1);
+	//Verificr si esto es necesario del todo mientras se avanza, por que genra esto 
+	// CGI fullPath: [test/cgi-bin//test.py] y execve lo considera un error
+		
+		
 	std::string rootPath = root.args[0];
 	
 	if (!rootPath.empty() && rootPath[rootPath.size() - 1] == '/')
@@ -286,6 +293,9 @@ void CGIProcess::setupChildProcess(const Request& request)
     // 🔹 4. Crear entorno
     char **env = buildEnv(request);
 
+	// Es un mensaje para verificar un error
+	//std::cerr << "CGI fullPath: [" << _fullPath << "]" << std::endl;
+
     // 🔹 5. Ejecutar CGI
     execve(_cgiPass.c_str(), argv, env);
 
@@ -455,12 +465,12 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
             size_t spacePos = value.find(' ');
             if (spacePos != std::string::npos)
             {
-                response.set_statuscode(std::stoi(value.substr(0, spacePos)));
+				response.set_statuscode(std::atoi(value.substr(0, spacePos).c_str()));
                 response.set_reasonphrase(value.substr(spacePos + 1));
             }
             else
             {
-                response.set_statuscode(std::stoi(value));
+                response.set_statuscode(std::atoi(value.c_str()));
                 response.set_reasonphrase("");
             }
         }
@@ -473,4 +483,9 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 	response.set_body(bodyPart);
 
 	return response;
+}
+
+const std::string& CGIProcess::getBuffer() const
+{
+    return _buffer;
 }

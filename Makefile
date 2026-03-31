@@ -16,11 +16,12 @@ PARSEO_DIR := Parseo_solo_toca_Pablo
 MAIN_REQUEST := main_parseo_request
 MAIN_RESPONSE := main_motaje_response
 MAIN_CONF := main_parser_conf
+MAIN_CGI := main_cgi_test
 
 # -----------------------------
 # Fuentes Konrad (sin CGI)
 # -----------------------------
-KONRAD_SRC := $(filter-out $(KONRAD_DIR)/CGIProcess.cpp, $(wildcard $(KONRAD_DIR)/*.cpp))
+KONRAD_SRC := $(wildcard $(KONRAD_DIR)/*.cpp)
 KONRAD_OBJ := $(KONRAD_SRC:.cpp=.o)
 
 # -----------------------------
@@ -35,15 +36,17 @@ PARSEO_OBJ := $(PARSEO_SRC:.cpp=.o)
 MAIN_REQUEST_OBJ := main_parseo_request.o
 MAIN_RESPONSE_OBJ := main_motaje_response.o
 MAIN_CONF_OBJ := main_parser_conf.o
+MAIN_CGI_OBJ := main_cgi_test.o
 
 # ============================
 # Targets
 # ============================
-all: request response conf
+all: request response conf cgi
 
 request: $(MAIN_REQUEST)
 response: $(MAIN_RESPONSE)
 conf: $(MAIN_CONF)
+cgi: $(MAIN_CGI)
 
 # -----------------------------
 # Ejecutables
@@ -55,6 +58,9 @@ $(MAIN_RESPONSE): $(MAIN_RESPONSE_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(MAIN_CONF): $(MAIN_CONF_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(MAIN_CGI): $(MAIN_CGI_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # -----------------------------
@@ -80,6 +86,6 @@ $(PARSEO_DIR)/%.o: $(PARSEO_DIR)/%.cpp
 # -----------------------------
 clean:
 	rm -f *.o $(KONRAD_OBJ) $(PARSEO_OBJ) $(MAIN_REQUEST_OBJ) $(MAIN_RESPONSE_OBJ) $(MAIN_CONF_OBJ) \
-          $(MAIN_REQUEST) $(MAIN_RESPONSE) $(MAIN_CONF)
+          $(MAIN_REQUEST) $(MAIN_RESPONSE) $(MAIN_CONF) $(MAIN_CGI)
 
-.PHONY: all request response conf clean
+.PHONY: all request response conf cgi clean
