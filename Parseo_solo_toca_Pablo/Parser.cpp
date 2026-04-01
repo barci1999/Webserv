@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/21 21:21:48 by pablo            ###   ########.fr       */
+/*   Updated: 2026/03/16 12:53:49 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,10 @@ std::string Parser::trim(std::string input)
 {
    size_t start = 0;
    while (start < input.length() && std::isspace((unsigned char)input[start]))
-        start++;
+		start++;
    size_t end = input.length();
    while (end > start && std::isspace((unsigned char)input[end - 1]))
-        end--;
+		end--;
    return(input.substr(start,end - start));  
 }
 
@@ -63,7 +63,7 @@ Directive Parser::parseDirective(const std::string& line)
 	std::istringstream iss(to_check);
 	std::string token;
 	if (iss >> token)
-    	result.name = token;
+		result.name = token;
 	while (iss >> token)
 	{
 		result.args.push_back(token);
@@ -73,36 +73,36 @@ Directive Parser::parseDirective(const std::string& line)
 }
 Block Parser::parseBlock(std::ifstream& file, const std::string& block_name)
 {
-    std::string cleaned_name = trim(block_name);
-    if (!cleaned_name.empty() && cleaned_name[cleaned_name.length() - 1] == '{')
-        cleaned_name.erase(cleaned_name.length() - 1);
-    cleaned_name = trim(cleaned_name);
+	std::string cleaned_name = trim(block_name);
+	if (!cleaned_name.empty() && cleaned_name[cleaned_name.length() - 1] == '{')
+		cleaned_name.erase(cleaned_name.length() - 1);
+	cleaned_name = trim(cleaned_name);
 
-    Block result(cleaned_name);
-    std::string file_line;
+	Block result(cleaned_name);
+	std::string file_line;
 
-    while (std::getline(file, file_line))
-    {
-        std::string temp = trim(file_line);
-        if (temp.empty() || temp[0] == '#') 
+	while (std::getline(file, file_line))
+	{
+		std::string temp = trim(file_line);
+		if (temp.empty() || temp[0] == '#') 
 			continue;
 
-        tokens type = tokenize(temp);
+		tokens type = tokenize(temp);
 
-        if (type == BLOCK_END)
-            return result;
-        else if (type == DIRECTIVE)
-            result.addDirective(parseDirective(temp));
-        else if (type == BLOCK_START)
-            result.addChild(parseBlock(file, temp));
-        else if (type == ERROR)
+		if (type == BLOCK_END)
+			return result;
+		else if (type == DIRECTIVE)
+			result.addDirective(parseDirective(temp));
+		else if (type == BLOCK_START)
+			result.addChild(parseBlock(file, temp));
+		else if (type == ERROR)
 		{
-			std::cout << file_line<< std::endl;
-            throw std::runtime_error("Syntax error detected");
+			std::string except = "invalid line -> " + temp;
+			throw std::runtime_error(except.c_str());
 		}
-    }
+	}
 
-    throw std::runtime_error("Missing closing brace");
+	throw std::runtime_error("Missing closing brace");
 }
 Block Parser::parseFile(const std::string& file_name)
 {
@@ -135,14 +135,26 @@ Block Parser::parseFile(const std::string& file_name)
 }
 std::vector<std::string> Parser::str_to_vector(const std::string& to_change)
 {
-    std::string to_check = trim(to_change);
-    std::vector<std::string> result;
+	std::string to_check = trim(to_change);
+	std::vector<std::string> result;
 
-    std::istringstream iss(to_check);
-    std::string token;
+	std::istringstream iss(to_check);
+	std::string token;
 
-    while (iss >> token)
-        result.push_back(token);
+	while (iss >> token)
+		result.push_back(token);
 
-    return result;
+	return result;
+}
+std::string Parser::vector_to_str(const std::vector<std::string> to_change)
+{
+	std::string result = "";
+	for (std::vector<std::string>::const_iterator it = to_change.begin(); it != to_change.end(); it++)
+	{
+		if (it == to_change.begin())
+			result += *it;
+		else
+			result += " "  + *it;
+	}
+	return result;
 }

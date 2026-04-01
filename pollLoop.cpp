@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rodralva <rodralva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/02/18 15:50:35 by rodralva         ###   ########.fr       */
+/*   Updated: 2026/03/16 12:53:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,29 +106,9 @@ int pollLoop(server general)
     return (0);
 }
 
- int main()
- {
-     try
-     {
-         Parser parser;
-         Block root = parser.parseFile("hola.conf");
-         const std::list<Block> hola = root.getBlocks();
-         Block prueba(hola.begin());
-         server general(prueba);
-         std::cout << "hola se instancion bien la clase" << std::endl;
-         pollLoop(general);
-         Directive crocqueta;
-         std::string *haa  = crocqueta.args.data();
-         if (haa)
-         {
-             /* code */
-         }
-        
-     }
-     catch (std::exception& e)
-     {
-         std::cerr << "Error: " << e.what() << std::endl;
-         return 1;
-     }
-     return 0;
- }
+int main()
+{
+    pollLoop();
+
+    return(0);
+}
