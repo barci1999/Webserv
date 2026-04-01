@@ -19,6 +19,7 @@
 # include <cstring>
 # include <exception>
 # include <iostream>
+# include "Parseo_solo_toca_Pablo/server.hpp"
 
 class listener
 {
@@ -26,11 +27,13 @@ private:
 	int _lstPort;
 	int _lstSocket_fd;
 	sockaddr_in _lstSocketAddr;
+	server *originalsrv;
 	
 	void parse_input(const std::string& input);
 	void init_lstSocketAddr();
 public:
 	listener(std::string port);
+	listener(const listener& to_copy);
 	~listener();
 
 	const int get_lstPort() const;

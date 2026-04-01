@@ -11,35 +11,30 @@
 /* ************************************************************************** */
 
 #include "pollLoop.hpp"
-#include "./Parseo_solo_toca_Pablo/Block.hpp"
-#include "./Parseo_solo_toca_Pablo/Directive.hpp"
-#include "./Parseo_solo_toca_Pablo/Parser.hpp"
-#include "./Parseo_solo_toca_Pablo/server.hpp"
-#include "client.hpp"
-#include "listener.hpp"
-#include "poll.h"
-#include <unistd.h>
 
 
-int pollLoop(server general)
+int pollLoop(std::vector<server> general)
 {
     Directive srvPorts;
     std::vector<std::string> Ports;
-    std::vector<listener> srvListeners;
+    std::map<int,listener> srvListeners;
     std::map<int,client> srvClients;
     std::vector<pollfd> pollFds;
     pollfd fds;
     int eventFd;
     int active;
 
-    srvPorts=general.get_srvPorts();
-    Ports=srvPorts.args;
-    for (std::vector<std::string>::iterator it = Ports.begin(); it!=Ports.end();it++){
-        srvListeners.push_back(listener(*it));
+    for (std::vector<server>::iterator it = general.begin(); it!=general.end();it++){
+        srvPorts=it->get_srvPorts();
+        Ports=srvPorts.args;
+        for (std::vector<std::string>::iterator it2 = Ports.begin(); it2!=Ports.end();it2++){
+            listener temp(*it2);
+            srvListeners.insert(std::make_pair(temp.get_lstSocket_fd(), temp));
+        }
     }
-    for (std::vector<listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-        std::cout << it->get_lstPort() << std::endl;
-        fds.fd = it->get_lstSocket_fd();
+    for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
+        std::cout << it->second.get_lstPort() << std::endl;
+        fds.fd = it->second.get_lstSocket_fd();
         std::cout << "fds listeners " << fds.fd <<std::endl;
         pollFds.push_back(fds);
     }
@@ -111,30 +106,3 @@ int pollLoop(server general)
     }
     return (0);
 }
-
- int main()
- {
-     try
-     {
-         Parser parser;
-         Block root = parser.parseFile("hola.conf");
-         const std::list<Block> hola = root.getBlocks();
-         Block prueba(hola.begin());
-         server general(prueba);
-         std::cout << "hola se instancion bien la clase" << std::endl;
-         pollLoop(general);
-         Directive crocqueta;
-         std::string *haa  = crocqueta.args.data();
-         if (haa)
-         {
-             /* code */
-         }
-        
-     }
-     catch (std::exception& e)
-     {
-         std::cerr << "Error: " << e.what() << std::endl;
-         return 1;
-     }
-     return 0;
- }
