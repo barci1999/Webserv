@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/02 20:03:51 by pablo            ###   ########.fr       */
+/*   Updated: 2026/03/16 12:53:39 by pablalva         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+/*   Updated: 2026/03/05 13:05:26 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,16 +47,16 @@ private:
 	
 	bool check_location_block(const Block& to_check);
 	bool check_locations(const std::list<Block>);
-	Directive check_directives(std::string to_serch, const Block& to_check);
 	bool check_autoindex(const Block& to_check);
 	size_t check_client_max_body(const Block& to_check);
 	bool	cmp_name_directives(const Block& to_check);
-
-
-public:
+	
+	
+	public:
 	server(const Block& block);
 	~server();
-
+	
+	static Directive check_directives(std::string to_serch, const Block& to_check);
 	const	std::string& get_srvName()	const	{return this->_srvName;}
 	const	Directive& get_srvPorts()	const	{return this->_srvPorts;}
 	const	Directive& get_srvRoot()	const	{return this->_srvRoot;}

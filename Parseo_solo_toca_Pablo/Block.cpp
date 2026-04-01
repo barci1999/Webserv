@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Block.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:45:12 by pablo             #+#    #+#             */
-/*   Updated: 2026/02/21 21:02:54 by pablo            ###   ########.fr       */
+/*   Updated: 2026/03/16 12:54:03 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Block.hpp"
+#include "Parser.hpp"
 
 Block::Block(){}
 Block::Block(const Block& other)
@@ -44,6 +45,17 @@ Block::Block(const std::string name)
 }
 void Block::addDirective(const Directive& to_add)
 {
+	
+	for (std::vector<Directive>::iterator it = this->_directives.begin(); it != this->_directives.end(); it++)
+	{
+		if (it->name == to_add.name)
+		{
+			std::string excep = "Duplicate directive detected -> " + to_add.name + " " + Parser::vector_to_str(to_add.args);
+			throw std::runtime_error(excep.c_str());
+		}
+		
+	}
+	
 	this->_directives.push_back(to_add);
 }
 void Block::addChild(const Block& to_add)
@@ -65,17 +77,17 @@ const std::list<Block>& Block::getBlocks() const
 }
 void Block::print(int indent) const
 {
-    for (int i = 0; i < indent; ++i) std::cout << "  ";
-    std::cout << "Block: " << _name << std::endl;
+	for (int i = 0; i < indent; ++i) std::cout << "  ";
+	std::cout << "Block: " << _name << std::endl;
 
-    for (size_t i = 0; i < _directives.size(); ++i)
-    {
-        for (int j = 0; j < indent + 1; ++j) std::cout << "  ";
-        for (size_t k = 0; k < _directives[i].args.size(); ++k)
-            std::cout << _directives[i].args[k] << " ";
-        std::cout << std::endl;
-    }
+	for (size_t i = 0; i < _directives.size(); ++i)
+	{
+		for (int j = 0; j < indent + 1; ++j) std::cout << "  ";
+		for (size_t k = 0; k < _directives[i].args.size(); ++k)
+			std::cout << _directives[i].args[k] << " ";
+		std::cout << std::endl;
+	}
 
-    for (std::list<Block>::const_iterator it = _children.begin(); it != _children.end(); ++it)
-        it->print(indent + 1);
+	for (std::list<Block>::const_iterator it = _children.begin(); it != _children.end(); ++it)
+		it->print(indent + 1);
 }
