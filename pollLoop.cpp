@@ -11,10 +11,10 @@
 /* ************************************************************************** */
 
 #include "pollLoop.hpp"
-#include "./Parseo_(solo_toca_Pablo)/Block.hpp"
-#include "./Parseo_(solo_toca_Pablo)/Directive.hpp"
-#include "./Parseo_(solo_toca_Pablo)/Parser.hpp"
-#include "./Parseo_(solo_toca_Pablo)/server.hpp"
+#include "./Parseo_solo_toca_Pablo/Block.hpp"
+#include "./Parseo_solo_toca_Pablo/Directive.hpp"
+#include "./Parseo_solo_toca_Pablo/Parser.hpp"
+#include "./Parseo_solo_toca_Pablo/server.hpp"
 #include "client.hpp"
 #include "listener.hpp"
 #include "poll.h"
