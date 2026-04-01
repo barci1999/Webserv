@@ -18,9 +18,10 @@
 #include "client.hpp"
 #include "listener.hpp"
 #include "poll.h"
+#include <unistd.h>
 
-//int pollLoop(server Webservconf)
-int pollLoop(void)
+
+int pollLoop(server general)
 {
     Directive srvPorts;
     std::vector<std::string> Ports;
@@ -29,13 +30,10 @@ int pollLoop(void)
     std::vector<pollfd> pollFds;
     pollfd fds;
     int eventFd;
+    int active;
 
-    Ports.push_back("8080");
-    Ports.push_back("8082");
-    Ports.push_back("8085");
-    Ports.push_back("8089");
-    //srvPorts=Webservconf.get_srvPorts();
-    //Ports=srvPorts.args;
+    srvPorts=general.get_srvPorts();
+    Ports=srvPorts.args;
     for (std::vector<std::string>::iterator it = Ports.begin(); it!=Ports.end();it++){
         srvListeners.push_back(listener(*it));
     }
@@ -45,38 +43,92 @@ int pollLoop(void)
         std::cout << "fds listeners " << fds.fd <<std::endl;
         pollFds.push_back(fds);
     }
-    while (1)
+    while (true)
     {
-        eventFd=poll(pollFds.data(), pollFds.size(),5000);
-        std::cout << "evet " << eventFd << std::endl;
-        if (srvClients.find(eventFd) != srvClients.end())
-            std::cout << "hola" << std::endl;
-        else
+        int active = poll(pollFds.data(), pollFds.size(), -1);
+
+        if (active < 0)
         {
-            sockaddr_in test;
-            int test_socketfd;
-            pollfd test_poll;
-            for (std::vector<listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-                if (it->get_lstSocket_fd() == eventFd){
-                    test_socketfd=it->get_lstSocket_fd();
-                    std::cout << "tests socket fd " << test_socketfd << std::endl;
-                    test=it->get_lstSocketAddr();
-                }
+            perror("poll");
+            break;
+        }
+        for (size_t i = 0; i < pollFds.size(); i++)
+        {
+            if (pollFds[i].revents == 0)
+                continue;
+            int fd = pollFds[i].fd;
+            if (pollFds[i].revents & (POLLHUP | POLLERR))
+            {
+                close(fd);
+                srvClients.erase(fd);
+                pollFds.erase(pollFds.begin() + i);
+                i--;
+                continue;
             }
-            socklen_t client_len = sizeof(test);
-            client clnt(accept(test_socketfd,(struct sockaddr*)&test,&client_len));
-            srvClients[clnt.get_fd()] = clnt;
-            test_poll.fd=clnt.get_fd();
-            std::cout << "client_fd " << test_poll.fd << std::endl;
-            pollFds.push_back(test_poll);
+            if (srvClients.find(fd) == srvClients.end())
+            {
+                int client_fd = accept(fd, NULL, NULL);
+                if (client_fd < 0)
+                    continue;
+
+                client clnt(client_fd);
+                srvClients[client_fd] = clnt;
+
+                pollfd new_poll;
+                new_poll.fd = client_fd;
+                new_poll.events = POLLIN;
+                new_poll.revents = 0;
+
+                pollFds.push_back(new_poll);
+
+                std::cout << "Nuevo cliente: " << client_fd << std::endl;
+            }
+            else
+            {
+                char buffer[1024];
+                int bytes = read(fd, buffer, sizeof(buffer));
+
+                if (bytes <= 0)
+                {
+                    close(fd);
+                    srvClients.erase(fd);
+                    pollFds.erase(pollFds.begin() + i);
+                    i--;
+                    continue;
+                }
+
+                std::cout << "Datos recibidos de " << fd << std::endl;
+
+                // aquí luego parsear HTTP
+            }
         }
     }
     return (0);
 }
 
-int main()
-{
-    pollLoop();
-
-    return(0);
-}
+ int main()
+ {
+     try
+     {
+         Parser parser;
+         Block root = parser.parseFile("hola.conf");
+         const std::list<Block> hola = root.getBlocks();
+         Block prueba(hola.begin());
+         server general(prueba);
+         std::cout << "hola se instancion bien la clase" << std::endl;
+         pollLoop(general);
+         Directive crocqueta;
+         std::string *haa  = crocqueta.args.data();
+         if (haa)
+         {
+             /* code */
+         }
+        
+     }
+     catch (std::exception& e)
+     {
+         std::cerr << "Error: " << e.what() << std::endl;
+         return 1;
+     }
+     return 0;
+ }
