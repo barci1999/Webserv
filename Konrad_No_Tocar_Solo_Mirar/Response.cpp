@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/31 17:32:55 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 15:32:06 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ Response::Response(const Request to_check, const Block server_config)
     this->_headers.clear();
     this->_body.clear();
 
-    if (this->_statusCode == 200)
+    if (this->_statusCode == 200 ||this->_statusCode == 201 ||this->_statusCode == 204)
     {
         if (to_check.get_method() == "POST")
             make_Post(to_check, server_config);
@@ -360,10 +360,12 @@ std::string res_to_str(const Response& to_change)
 }
 void Response::make_Delete(const Request to_check,const Block server_config)
 {
-
+	//si todo va bien se retorna 204
 }
 void Response::make_Post(const Request to_check,const Block server_config)
 {
+	// comprobar el archivo a crear de la request si esta ya existe se devolvera la response con 200 depues se sobreescribirlo
+	// pero si este no existe se creara y la response se devolvera con 201
 
 }
 
