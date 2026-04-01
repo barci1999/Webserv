@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/31 17:04:21 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/01 15:41:46 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,11 +129,13 @@ std::string CGIProcess::serveStaticFile(const Request& request, const Block& loc
 
 // 	if (cgi.isCGI(request, location))
 // 	{
-// 		return execute(request, location);
+// 		Response temp = execute(request, location);
+// 		return res_to_str(temp);
 // 	}
 // 	else
 // 	{
-// 		return serveStaticFile(request, location);
+// 		Response temp(request,location);
+// 		return res_to_str(temp);
 // 	}
 // }
 // YA NO SE UTILIZA AQUI, LO QUE HACE SE DEBE HACER EN EL SERVER
@@ -294,7 +296,7 @@ void CGIProcess::setupChildProcess(const Request& request)
     char **env = buildEnv(request);
 
 	// Es un mensaje para verificar un error
-	//std::cerr << "CGI fullPath: [" << _fullPath << "]" << std::endl;
+	std::cerr << "CGI cgiPass: [" << _cgiPass << "]" << std::endl;
 
     // 🔹 5. Ejecutar CGI
     execve(_cgiPass.c_str(), argv, env);
@@ -379,7 +381,7 @@ void CGIProcess::readFromPipe()
 	{
 		_buffer.append(buffer, bytes);
 	}
-
+	
 	if( bytes == 0)
 	{
 		// EOF -> CGI terminó de escribir | No se hace nada con bytes < 0 por que EOF = 0 es que termino
