@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 16:30:12 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/31 16:44:58 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/01 15:38:22 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,20 +49,22 @@ int main()
     Directive root;
     root.name = "root";
     root.args.push_back("test/cgi-bin"); // ⚠️ carpeta donde pondrás el script
-
+    
     location.addDirective(root);
-
+    
     // 🔹 3. Ejecutar CGI
     CGIProcess cgi;
     cgi.execute(req, location);
-
+    
     // 🔹 4. Leer hasta que termine
     while (!cgi.isFinished())
     {
         cgi.readFromPipe();
+        
         usleep(10000); // 10ms → evita busy loop
+	//std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
     }
-
+    
     std::cout << "\n==== CGI RAW OUTPUT ====\n";
     std::cout << cgi.getBuffer() << std::endl;
 
