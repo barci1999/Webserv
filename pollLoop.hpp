@@ -17,5 +17,15 @@
 # include <string>
 # include <exception>
 # include <sstream>
+# include "./Parseo_solo_toca_Pablo/Block.hpp"
+# include "./Parseo_solo_toca_Pablo/Directive.hpp"
+# include "./Parseo_solo_toca_Pablo/Parser.hpp"
+# include "./Parseo_solo_toca_Pablo/server.hpp"
+# include "client.hpp"
+# include "listener.hpp"
+# include "poll.h"
+# include <unistd.h>
+
+int pollLoop(server general);
 
 #endif

@@ -17,7 +17,7 @@ MAIN_REQUEST := main_parseo_request
 MAIN_RESPONSE := main_motaje_response
 MAIN_CONF := main_parser_conf
 MAIN_CGI := main_cgi_test
-
+MAIN_LOOP := main_loop
 # -----------------------------
 # Fuentes Konrad (sin CGI)
 # -----------------------------
@@ -31,12 +31,19 @@ PARSEO_SRC := $(filter-out $(PARSEO_DIR)/main.cpp, $(wildcard $(PARSEO_DIR)/*.cp
 PARSEO_OBJ := $(PARSEO_SRC:.cpp=.o)
 
 # -----------------------------
+# Fuentes Loop (sin mains)
+# -----------------------------
+LOOP_SRC := $(filter-out main_%.cpp, $(wildcard *.cpp))
+LOOP_OBJ := $(LOOP_SRC:.cpp=.o)
+
+# -----------------------------
 # Objetos mains
 # -----------------------------
 MAIN_REQUEST_OBJ := main_parseo_request.o
 MAIN_RESPONSE_OBJ := main_motaje_response.o
 MAIN_CONF_OBJ := main_parser_conf.o
 MAIN_CGI_OBJ := main_cgi_test.o
+MAIN_LOOP_OBJ := main_loop.o
 
 # ============================
 # Targets
@@ -47,6 +54,7 @@ request: $(MAIN_REQUEST)
 response: $(MAIN_RESPONSE)
 conf: $(MAIN_CONF)
 cgi: $(MAIN_CGI)
+loop: $(MAIN_LOOP)
 
 # -----------------------------
 # Ejecutables
@@ -61,6 +69,9 @@ $(MAIN_CONF): $(MAIN_CONF_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(MAIN_CGI): $(MAIN_CGI_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(MAIN_LOOP): $(MAIN_LOOP_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(LOOP_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # -----------------------------
