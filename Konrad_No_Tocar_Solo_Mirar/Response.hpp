@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/31 12:26:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 14:31:46 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,6 @@ public:
 	void addback_headers(std::string iterator,std::string value) {this->_headers[iterator] = value;}
 	void set_body(std::string body) {this->_body = body;}
 
-	std::string response_to_string(const Response to_change);
 	void make_Post(const Request,const Block server_config);
 	void make_Get(const Request,const Block server_config);
 	void make_Delete(const Request,const Block server_config);
