@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/01 17:17:11 by pablo            ###   ########.fr       */
+/*   Updated: 2026/04/01 20:32:47 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,13 +267,16 @@ void Response::set_error(Response& modifi,unsigned int error)
 	{
 		modifi.set_statuscode(error);
 	}
-
-    std::ostringstream oss;
-    oss << "<html><body><h1>"
-        << modifi.get_statusCode() << " " << modifi.get_reasonPhrase()
-        << "</h1></body></html>";
-    std::string body = oss.str();
+	std::string body;
+	std::string temp = toString(error);
+	temp +=".html";
+	std::cout<<temp<<std::endl;
+	if(!read_file("Parseo_solo_toca_Pablo/www/error_pages/"+temp,body))
+	{
+		read_file("Parseo_solo_toca_Pablo/www/error_pages/501.html",body);
+	}
     modifi.set_body(body);
+	std::cout<<body<<std::endl;
 
     modifi.addback_headers("Content-Type", "text/html");
 

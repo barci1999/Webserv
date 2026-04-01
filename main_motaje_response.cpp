@@ -47,7 +47,7 @@ int main()
 	//std::cout << "======================================================" <<std::endl;
 
     // 🔹 3. Crear response
-	req.set_status_code(201);
+	req.set_status_code(401);
     Response res(req,server_root);
 
     // 🔹 4. Ejecutar GET
