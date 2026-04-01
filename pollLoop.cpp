@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/03/16 12:53:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 17:15:52 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,13 @@ int pollLoop(server general)
                     i--;
                     continue;
                 }
-
+                /*
+                cambiar buffer a string;
+                Resquest nombre;
+                ResquestParser::parse((string de buffer),(nombre de la request));
+                RequestParser::valid_request((nombre de la request));
+                std::string response make response(request,server);
+                */
                 std::cout << "Datos recibidos de " << fd << std::endl;
 
                 // aquí luego parsear HTTP
