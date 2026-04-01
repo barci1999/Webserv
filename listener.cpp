@@ -19,6 +19,7 @@ listener::listener(std::string port)
 {
 	int opt = 1;
 
+	this->originalsrv=NULL;
 	parse_input(port);
 	this->_lstSocket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	setsockopt(this->_lstSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -26,6 +27,15 @@ listener::listener(std::string port)
 	bind(this->_lstSocket_fd,(struct sockaddr*) &this->_lstSocketAddr, sizeof(this->_lstSocketAddr));
 	listen(this->_lstSocket_fd,3);
 }
+
+listener::listener(const listener& to_copy)
+{
+	this->_lstPort=to_copy._lstPort;
+	this->_lstSocket_fd=to_copy._lstSocket_fd;
+	this->_lstSocketAddr=to_copy._lstSocketAddr;
+	this->originalsrv=to_copy.originalsrv;
+}
+
 void listener::parse_input(const std::string& input)
 {
 	if (input.empty())

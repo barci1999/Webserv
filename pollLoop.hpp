@@ -26,6 +26,6 @@
 # include "poll.h"
 # include <unistd.h>
 
-int pollLoop(server general);
+int pollLoop(std::vector<server> general);
 
 #endif

@@ -17,7 +17,8 @@
          Block root = parser.parseFile("hola.conf");
          const std::list<Block> hola = root.getBlocks();
          Block prueba(hola.begin());
-         server general(prueba);
+         std::vector<server> general;
+         general.push_back(server(prueba));
          std::cout << "hola se instancion bien la clase" << std::endl;
          pollLoop(general);
          Directive crocqueta;
