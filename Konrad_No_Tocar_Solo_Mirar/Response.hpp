@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/01 14:31:46 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 20:53:43 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ private:
 	Directive search_directive(std::string to_search,const Block block);
 public:
 	Response();
-	Response(const Request to_check,const Block server_config);
+	Response(const Request to_check,const server server_config);
 	Response(const Response& other);
 	Response(std::string,unsigned int,std::string,std::map<std::string,std::string>,std::string);
 	Response &operator=(const Response& other);
@@ -64,9 +64,9 @@ public:
 	void addback_headers(std::string iterator,std::string value) {this->_headers[iterator] = value;}
 	void set_body(std::string body) {this->_body = body;}
 
-	void make_Post(const Request,const Block server_config);
-	void make_Get(const Request,const Block server_config);
-	void make_Delete(const Request,const Block server_config);
+	void make_Post(const Request,const server server_config);
+	void make_Get(const Request,const server server_config);
+	void make_Delete(const Request,const server server_config);
 	std::string select_valuePhrase(unsigned int);
 };
 std::string res_to_str(const Response& to_change);

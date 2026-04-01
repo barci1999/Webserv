@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/03/16 12:53:49 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 21:32:28 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ tokens Parser::tokenize(const std::string& line)
 Directive Parser::parseDirective(const std::string& line)
 {
 	Directive result;
+	std::string level[] = {"server_name","deny","listen","root","index","error_page","client_max_body_size","autoindex","cgi_extension","upload_enable","upload_store","cgi_pass"};
 	std::string to_check = trim(line);
 	if (!to_check.empty() && to_check[to_check.length() - 1] == ';')
 	{
@@ -63,7 +64,22 @@ Directive Parser::parseDirective(const std::string& line)
 	std::istringstream iss(to_check);
 	std::string token;
 	if (iss >> token)
+	{
+		bool match = false;
+		for (size_t i = 0; i < 12; i++)
+		{
+			if (token == level[i])
+			{
+				match = true;
+				break;
+			}
+		}
+		if (!match)
+		{
+			throw std::runtime_error("invalid directive detected: " + token);
+		}
 		result.name = token;
+	}
 	while (iss >> token)
 	{
 		result.args.push_back(token);

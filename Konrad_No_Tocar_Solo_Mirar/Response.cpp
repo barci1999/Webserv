@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/01 20:32:47 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 20:56:13 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ Response::Response(const Response& other)
 	this->_headers = other.get_headers();
 	this->_body = other.get_body();
 }
-Response::Response(const Request to_check, const Block server_config)
+Response::Response(const Request to_check, const server server_config)
 {
     this->_version = "HTTP/1.1";
     this->_statusCode = to_check.get_status_code();
@@ -158,14 +158,14 @@ static std::string toString(unsigned int value)
     oss << value;
     return oss.str();
 }
-void Response::make_Get(const Request to_check,const Block server_config)
+void Response::make_Get(const Request to_check,const server server_config)
 {  
 
 	std::string path = to_check.get_path();
     if (path.empty()) {	set_error(*this,404); return; }
     Block best_location;
     size_t max_len = 0;
-    for (std::list<Block>::const_iterator it = server_config.getBlocks().begin();it != server_config.getBlocks().end(); ++it)
+    for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();it != server_config.get_srvLocations().end(); ++it)
     {
 		
         std::string loc = it->getName();
@@ -180,7 +180,7 @@ void Response::make_Get(const Request to_check,const Block server_config)
 	if(max_len == 0){ set_error(*this,404); return; }
 	Directive root = search_directive("root",best_location);
 	if (root.name.empty() || root.args.empty())
-		root = search_directive("root",server_config);
+		root = server_config.get_srvRoot();
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
 	if (root_path[root_path.size() -1] != '/')
@@ -192,7 +192,6 @@ void Response::make_Get(const Request to_check,const Block server_config)
 	if (!file_exist(full_path)) 
 	{
 		set_error(*this,404);
-		std::cout<<this->get_statusCode()<<std::endl;
 		return;
 	}
 	if (!can_read(full_path)) { set_error(*this,403); return;}
@@ -361,11 +360,11 @@ std::string res_to_str(const Response& to_change)
 	res << to_change.get_body();
 	return res.str();
 }
-void Response::make_Delete(const Request to_check,const Block server_config)
+void Response::make_Delete(const Request to_check,const server server_config)
 {
 	//si todo va bien se retorna 204
 }
-void Response::make_Post(const Request to_check,const Block server_config)
+void Response::make_Post(const Request to_check,const server server_config)
 {
 	// comprobar el archivo a crear de la request si esta ya existe se devolvera la response con 200 depues se sobreescribirlo
 	// pero si este no existe se creara y la response se devolvera con 201

@@ -13,7 +13,7 @@ int main()
 		Block prueba(hola.begin());
 		server general(prueba);
 		std::cout << std::endl <<"hola se instancion bien la clase" << std::endl;
-		prueba.print();
+		root.print();
 
 		Directive crocqueta;
 		

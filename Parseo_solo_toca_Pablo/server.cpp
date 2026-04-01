@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/16 12:53:43 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/01 20:59:53 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ server::server(const Block& to_check)
 	this->_srvErrorPage = check_directives(std::string("error_page"),to_check);
 	this->_srvLocations = to_check.getBlocks();
 	check_locations(this->_srvLocations);
-	this->_srvAutoIndex = check_autoindex(to_check);
 	this->_srvClientMaxBody = check_client_max_body(to_check);
 }
 Directive server::check_directives(std::string to_search, const Block& to_check)
@@ -80,24 +79,24 @@ bool server::cmp_name_directives(const Block& to_check)
 	return true;
 	
 }
-bool server::check_autoindex(const Block& to_check)
-{
-	const std::vector<Directive>& directives = to_check.getDirectives();
-	for (std::vector<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it)
-	{
-		if (it->name == "autoindex")
-		{
-			if (it->args.size() != 1)
-				throw std::runtime_error("autoindex requires exactly one argument");
-			if (it->args[0] == "on")
-				return true;
-			if (it->args[0] == "off")
-				return false;
-			throw std::runtime_error("autoindex must be 'on' or 'off'");
-		}
-	}
-	return false;
-}
+// bool server::check_autoindex(const Block& to_check)
+// {
+// 	const std::vector<Directive>& directives = to_check.getDirectives();
+// 	for (std::vector<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it)
+// 	{
+// 		if (it->name == "autoindex")
+// 		{
+// 			if (it->args.size() != 1)
+// 				throw std::runtime_error("autoindex requires exactly one argument");
+// 			if (it->args[0] == "on")
+// 				return true;
+// 			if (it->args[0] == "off")
+// 				return false;
+// 			throw std::runtime_error("autoindex must be 'on' or 'off'");
+// 		}
+// 	}
+// 	return false;
+// }
 bool server::check_location_block(const Block& to_check)
 {
 	const std::vector<Directive>& directives = to_check.getDirectives();
