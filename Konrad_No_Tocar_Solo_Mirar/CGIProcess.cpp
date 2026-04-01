@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/01 15:41:46 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:48:19 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,9 @@ void CGIProcess::extractCGIConfig(const Block& location)
 //Comprueba si la request es CGI comparando extensión
 bool CGIProcess::isCGI(const Request& request, const Block& location)
 {
+	/*toda la prafernalia*/
+	//block bet_locaiton
+	
 	extractCGIConfig(location);
 
 	if (_cgiExtension.empty() || _cgiPass.empty())
