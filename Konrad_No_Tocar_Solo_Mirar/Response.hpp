@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/01 20:53:43 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/02 17:31:35 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,8 @@ private:
 	bool is_file(const std::string file);
 	bool can_read(const std::string file);
 	bool read_file(const std::string& path, std::string& out);
-	Directive search_directive(std::string to_search,const Block block);
 public:
+	static Directive search_directive(std::string to_search,const Block block);
 	Response();
 	Response(const Request to_check,const server server_config);
 	Response(const Response& other);
