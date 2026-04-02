@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/01 20:56:13 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/02 18:04:40 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,7 @@ void Response::make_Get(const Request to_check,const server server_config)
     if (path.empty()) {	set_error(*this,404); return; }
     Block best_location;
     size_t max_len = 0;
+	bool has_loc = false;
     for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();it != server_config.get_srvLocations().end(); ++it)
     {
 		
@@ -174,11 +175,15 @@ void Response::make_Get(const Request to_check,const server server_config)
         {
             best_location = *it;
             max_len = loc.length();
+			has_loc = true;
         }
     }
-	
-	if(max_len == 0){ set_error(*this,404); return; }
-	Directive root = search_directive("root",best_location);
+	Directive root;
+	if (has_loc)
+	{
+		root = search_directive("root",best_location);
+		/* code */
+	}
 	if (root.name.empty() || root.args.empty())
 		root = server_config.get_srvRoot();
 	std::string root_path = root.args[0];
@@ -199,7 +204,12 @@ void Response::make_Get(const Request to_check,const server server_config)
 	{
 		if(full_path[full_path.size() - 1] != '/')
 			full_path += '/';
-		Directive index = search_directive("index",best_location);
+		Directive index;
+		if (has_loc)
+			index = search_directive("index", best_location);
+
+		if (index.name.empty())
+			index = server_config.get_srvIndex();
 		if (!index.name.empty())
 		{
 			
@@ -212,7 +222,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 					set_version("HTTP/1.1");
 					set_statuscode(200);
 					set_reasonphrase("OK");
-					
+
 					addback_headers("Content-Type",getContentType(temp));
 					addback_headers("Content-Length",toString(body.size()));
 					addback_headers("Connection","close");
@@ -221,7 +231,13 @@ void Response::make_Get(const Request to_check,const server server_config)
 				}
 			}
 		}
-		Directive autoindex = search_directive("autoindex",best_location);
+		Directive autoindex;
+		if(has_loc)
+			autoindex = search_directive("autoindex",best_location);
+		if (autoindex.name.empty())
+		{
+			autoindex = server_config.get_srvAutoindex();
+		}
 		if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on")
 		{
 			body = generate_autoindex(full_path,path);
@@ -234,7 +250,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 			addback_headers("Content-Length", toString(body.size()));
 			addback_headers("Connection", "close");
 			set_body(body);
-			
+
 			return;
 		}
 		else
