@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/01 20:59:15 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/02 12:26:45 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ private:
 	Directive _srvErrorPage;
 	std::list<Block> _srvLocations;
 	size_t _srvClientMaxBody;
+	bool _srcAutoindex;
 
 	
 //valores para rodri:
@@ -63,7 +64,7 @@ private:
 	const	Directive& get_srvErrorPage()	const	{return this->_srvErrorPage;}
 	const	std::list<Block>& get_srvLocations()	const	{return this->_srvLocations;}
 	const	size_t& get_srvClientMaxBody()	const	{return this->_srvClientMaxBody;}
-	
+	const	bool get_srvAutoindex()	const {return this->_srcAutoindex;}
 	
 	void	set_srvName(std::string& srvname)	{this->_srvName = srvname;}
 	void	set_srvPorts(Directive& srvports)	{this->_srvPorts = srvports;}
@@ -72,6 +73,7 @@ private:
 	void	set_srvErrorPage(Directive& srverrorpage)	{this->_srvErrorPage = srverrorpage;}
 	void	set_srvLocations(std::list<Block>& srvlocations)	{this->_srvLocations = srvlocations;}
 	void	set_srvClientMaxBody(size_t srvclientmaxbody)	{this->_srvClientMaxBody = srvclientmaxbody;}
+	void	set_srvAutoindex(bool srvautoindex)	{this->_srcAutoindex = srvautoindex;}
 
 	
 };
