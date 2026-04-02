@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/02 12:36:48 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/02 18:00:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ server::server(const Block& to_check)
 	this->_srvRoot = check_directives(std::string("root"),to_check);
 	this->_srvIndex = check_directives(std::string("index"),to_check);
 	this->_srvErrorPage = check_directives(std::string("error_page"),to_check);
-	this->_srcAutoindex = check_autoindex(to_check);
+	this->_srvAutoindex = check_directives(std::string("autoindex"),to_check);
 	this->_srvLocations = to_check.getBlocks();
 	check_locations(this->_srvLocations);
 	this->_srvClientMaxBody = check_client_max_body(to_check);
