@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/01 21:32:28 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/04 20:53:40 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,115 +40,180 @@ std::string Parser::trim(std::string input)
 tokens Parser::tokenize(const std::string& line)
 {
 	std::string to_check = trim(line);
-	if (to_check.empty())
+	std::vector<std::string> temp = str_to_vector(to_check);
+	if (temp.empty())
 		return EMPTY;
-	if (to_check[0] == '#')
+	if (temp[0] == "#")
 		return COMMENT;
-	if (to_check[to_check.length() - 1] == '{')
+	if (temp[0] == "server" && temp.size() > 1 && temp.back() == "{")
+	{
+		return SERVER_BLOCK_START;
+	}
+	if (temp.back() == "{")
 		return BLOCK_START;
-	if (to_check[to_check.length() - 1] == '}')
+	if (temp.back() == "}")
 		return BLOCK_END;
-	if (to_check[to_check.length() - 1] == ';')
+	if (temp.back()== ";")
 		return DIRECTIVE;
 	return ERROR;
 }
 Directive Parser::parseDirective(const std::string& line)
 {
-	Directive result;
-	std::string level[] = {"server_name","deny","listen","root","index","error_page","client_max_body_size","autoindex","cgi_extension","upload_enable","upload_store","cgi_pass"};
-	std::string to_check = trim(line);
-	if (!to_check.empty() && to_check[to_check.length() - 1] == ';')
-	{
-		to_check.erase(to_check.length()-1);
-	}
-	std::istringstream iss(to_check);
-	std::string token;
-	if (iss >> token)
-	{
-		bool match = false;
-		for (size_t i = 0; i < 12; i++)
-		{
-			if (token == level[i])
-			{
-				match = true;
-				break;
-			}
-		}
-		if (!match)
-		{
-			throw std::runtime_error("invalid directive detected: " + token);
-		}
-		result.name = token;
-	}
-	while (iss >> token)
-	{
-		result.args.push_back(token);
-	}
-	return result;
-	
+    Directive result;
+    std::string level[] = {
+        "server_name","deny","listen","root","index","error_page",
+        "client_max_body_size","autoindex","cgi_extension",
+        "upload_enable","upload_store","cgi_pass","allowed_methods"
+    };
+    std::string to_check = trim(line);
+    if (to_check.empty() || to_check[to_check.length() - 1] != ';')
+        throw std::runtime_error("missing ';' in directive: " + line);
+    to_check.erase(to_check.length() - 1);
+    std::istringstream iss(to_check);
+    std::string token;
+    if (iss >> token)
+    {
+        bool match = false;
+        size_t size = sizeof(level) / sizeof(level[0]);
+        for (size_t i = 0; i < size; i++)
+        {
+            if (token == level[i])
+            {
+                match = true;
+                break;
+            }
+        }
+        if (!match)
+            throw std::runtime_error("invalid directive detected: " + token);
+        result.name = token;
+    }
+    if (result.name.empty())
+        throw std::runtime_error("invalid directive format: " + line);
+    while (iss >> token)
+        result.args.push_back(token);
+    if (result.args.empty())
+        throw std::runtime_error("directive missing arguments: " + result.name);
+    return result;
 }
-Block Parser::parseBlock(std::ifstream& file, const std::string& block_name)
+Block Parser::parseBlock(std::ifstream& file, const std::string& line)
 {
-	std::string cleaned_name = trim(block_name);
-	if (!cleaned_name.empty() && cleaned_name[cleaned_name.length() - 1] == '{')
-		cleaned_name.erase(cleaned_name.length() - 1);
-	cleaned_name = trim(cleaned_name);
-
-	Block result(cleaned_name);
+	Block location;
+	std::vector<std::string> tmp = str_to_vector(line);
+	if (tmp.empty() || tmp.size() !=  3 || tmp.back() != "{" || tmp[0] != "location")
+	{
+		throw std::runtime_error("Invalid location block header -> " + line);
+	}
+	location.setName(tmp[1]);
 	std::string file_line;
-
-	while (std::getline(file, file_line))
+	while (std::getline(file,file_line))
 	{
-		std::string temp = trim(file_line);
-		if (temp.empty() || temp[0] == '#') 
-			continue;
-
-		tokens type = tokenize(temp);
-
-		if (type == BLOCK_END)
-			return result;
-		else if (type == DIRECTIVE)
-			result.addDirective(parseDirective(temp));
-		else if (type == BLOCK_START)
-			result.addChild(parseBlock(file, temp));
-		else if (type == ERROR)
+		tokens token = tokenize(file_line);
+		if (token == EMPTY || token == COMMENT)
 		{
-			std::string except = "invalid line -> " + temp;
-			throw std::runtime_error(except.c_str());
+			continue;
+		}
+		else if (token == DIRECTIVE)
+		{
+			location.addDirective(parseDirective(file_line));
+		}
+		else if (token == BLOCK_START || token == SERVER_BLOCK_START)
+		{
+			throw std::runtime_error("Nested blocks are not allowed -> " +trim(file_line));
+		}
+		else if (token == BLOCK_END)	
+		{
+			return location;
+		}
+		else
+		{
+			throw std::runtime_error("Invalid line insida loction -> " + trim(file_line));
 		}
 	}
-
-	throw std::runtime_error("Missing closing brace");
+	throw std::runtime_error("Missing closing brace in location block -> " + trim(line));
+	return location;
 }
-Block Parser::parseFile(const std::string& file_name)
+std::vector<server> Parser::parseFile(const std::string& file_name)
 {
-	Block result("root");
+	std::vector<server> result;
 	std::ifstream file(file_name.c_str());
 	if(!file.is_open())
 		throw std::runtime_error("Error open file");
 	std::string line;
 	while (std::getline(file,line))
 	{
-		switch (tokenize(line))
+		tokens type = tokenize(line);
+		if (type == COMMENT || type == EMPTY)
 		{
-		case EMPTY:
-			break;
-		case DIRECTIVE:
-			result.addDirective(parseDirective(line));
-			break;
-		case BLOCK_START:
-			result.addChild(parseBlock(file,line));
-			break;
-		case BLOCK_END:
-			break;
-		case COMMENT:
-			break;
-		case ERROR:
-			throw std::runtime_error("token Error detected");
+			continue;
 		}
+		else if(type == SERVER_BLOCK_START)
+		{
+			server to_insert = parseServerBlock(file,line);
+			result.push_back(to_insert);
+		}
+		else
+		{
+			throw std::runtime_error("Unexpected line outside server block: " + line);
+		}
+		
 	}
+	//server.insert_directives(directives);
+	//server.insert_blocks(locations);
 	return result;
 }
+server Parser::parseServerBlock(std::ifstream& file,std::string line)
+{
+	server Server;
+	std::vector<Directive> directives;
+	std::list<Block> locations;
+	std::vector<std::string> server_name = str_to_vector(line);
+	if (server_name.empty() || (server_name.size() != 3 && server_name.size() != 2) || server_name.back() != "{")
+	{
+		throw std::runtime_error("invalid line detected ->" + line);
+	}
+	else
+	{
+		if (server_name.size() == 2)
+		{
+			Server.set_srvName("default");
+		}
+		else
+		{
+			Server.set_srvName(server_name[1]);
+		}
+	}
+	while (std::getline(file,line))
+	{
+		tokens token = tokenize(line);
+		if (token == EMPTY || token == COMMENT)
+		{
+			continue;
+		}
+		else if (token == DIRECTIVE)
+		{
+			Directive insert_directive = parseDirective(line);
+			directives.push_back(insert_directive);
+		}
+		else if (token == BLOCK_START)
+		{
+			Block insert_block = parseBlock(file,line);
+			locations.push_back(insert_block);
+		}
+		else if (token == BLOCK_END)
+		{
+			Server.insert_directives(directives);
+			Server.insert_locations(locations);
+			return Server;
+		}
+		else
+		{
+			throw std::runtime_error("invalid line -> " + line);
+		}
+	}
+	throw std::runtime_error("Missing closing brace in server block");
+	return Server;
+}
+
 std::vector<std::string> Parser::str_to_vector(const std::string& to_change)
 {
 	std::string to_check = trim(to_change);

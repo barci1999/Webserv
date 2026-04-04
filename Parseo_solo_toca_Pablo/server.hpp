@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/04 16:27:56 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/04 21:21:58 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ private:
 	bool check_location_block(const Block& to_check);
 	bool check_locations(const std::list<Block>);
 	bool check_autoindex(const Block& to_check);
-	size_t check_client_max_body(const Block& to_check);
+	size_t check_client_max_body(const Directive to_check);
 	bool	cmp_name_directives(const Block& to_check);
 	
 	
@@ -67,7 +67,7 @@ private:
 	const	size_t& get_srvClientMaxBody()	const	{return this->_srvClientMaxBody;}
 	const	Directive& get_srvAutoindex()	const {return this->_srvAutoindex;}
 	
-	void	set_srvName(std::string& srvname)	{this->_srvName = srvname;}
+	void	set_srvName(std::string srvname)	{this->_srvName = srvname;}
 	void	set_srvPorts(Directive& srvports)	{this->_srvPorts = srvports;}
 	void	set_srvRoot(Directive& srvroot)	{this->_srvRoot = srvroot;}
 	void	set_srvIndex(Directive& srvindex)	{this->_srvIndex = srvindex;}
@@ -76,7 +76,10 @@ private:
 	void	set_srvClientMaxBody(size_t srvclientmaxbody)	{this->_srvClientMaxBody = srvclientmaxbody;}
 	void	set_srvAutoindex(Directive& srvautoindex)	{this->_srvAutoindex = srvautoindex;}
 
+	Directive	take_concret_direc(std::string to_serch,std::vector<Directive> to_check);
 	
+	int 	insert_directives(const std::vector<Directive>& to_insert);
+	int		insert_locations(const std::list<Block>& to_insert);
 };
 std::ostream& operator<<(std::ostream& out,const server& to_print);
 #endif

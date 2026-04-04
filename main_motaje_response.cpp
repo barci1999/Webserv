@@ -61,6 +61,9 @@ int main()
 	
 	
 	location.addChild(methods);
+std::cerr<<"AAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
+std::cout << methods.getName()<<std::endl;
+	location.print();
 
 	std::list<Block> to_isert;
 	to_isert.push_back(location);
@@ -74,14 +77,14 @@ int main()
 	Server.set_srvAutoindex(srv_autoindex);
 	Server.set_srvLocations(to_isert);
 
-	std::cout<<Server<<std::endl;
+	//std::cout<<Server<<std::endl;
 
 
 	
 	//std::cout << "======================================================" <<std::endl;
 	
-	req.set_status_code(401);
-	Response(req,Server);
+	Response hola(req,Server);
+	//std::cout << res_to_str(hola) << std::endl;
 
     // 🔹 4. Ejecutar GET
 
