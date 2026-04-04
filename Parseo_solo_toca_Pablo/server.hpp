@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/02 17:59:38 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/04 16:27:56 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ private:
 	public:
 	server(const Block& block);
 	~server();
+	server();
 	
 	static Directive check_directives(std::string to_serch, const Block& to_check);
 	const	std::string& get_srvName()	const	{return this->_srvName;}
@@ -77,5 +78,5 @@ private:
 
 	
 };
-
+std::ostream& operator<<(std::ostream& out,const server& to_print);
 #endif

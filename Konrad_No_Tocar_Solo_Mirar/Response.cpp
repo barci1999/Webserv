@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/02 18:05:25 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/04 16:44:34 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 		
         std::string loc = it->getName();
 
-        if (path.find(loc) == 0 && loc.length() > max_len)
+		if (path.find(loc) == 0 && (path.length() == loc.length() || path[loc.length()] == '/') && loc.length() > max_len)
         {
             best_location = *it;
             max_len = loc.length();
@@ -379,6 +379,20 @@ std::string res_to_str(const Response& to_change)
 void Response::make_Delete(const Request to_check,const server server_config)
 {
 	//si todo va bien se retorna 204
+
+	/* flujo de ejecucion
+		1. resolver location (o server)
+		2. comprobar método permitido → 405
+		3. construir full_path
+		4. ¿existe?
+			→ NO → 404
+		5. ¿es directorio?
+			→ SÍ → 403
+		6. ¿tienes permisos para borrar?
+			→ NO → 403
+		7. remove()
+		8. responder 200 / 204
+	*/
 }
 void Response::make_Post(const Request to_check,const server server_config)
 {

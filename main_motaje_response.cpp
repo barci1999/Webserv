@@ -10,45 +10,78 @@
 int main()
 {
     // 🔹 1. Crear request desde string
-    std::string raw_request = "GET / HTTP/1.1\r\nContent-Length: 0\r\nHost: example.com\r\n\r\n";
+    std::string raw_request = 
+    "GET /test/ HTTP/1.1\r\n"
+    "Host: localhost\r\n"
+    "Connection: close\r\n"
+    "\r\n";
     Request req;
 	RequestParser::parse(raw_request,req);
 	RequestParser::valid_request(req);
 	//std::cout << req<<std::endl;
+	
+	Block location;
+	server Server;
+	std::string srv_name = "name";
+	Directive srv_ports;
+	srv_ports.name = "listen";
+	srv_ports.args.push_back("8080");
+	Directive srv_root;
+	srv_root.name = "root";
+	srv_root.args.push_back("Parseo_solo_toca_Pablo/www/sandbox");
+	Directive srv_index;
+	srv_index.name = "index";
+	srv_index.args.push_back("parrot.html");
+	Directive srv_Error;
+	srv_Error.name = "error_page";
+	srv_Error.args.push_back("404");
+	Directive srv_autoindex;
+	srv_autoindex.name = "autoindex";
+	srv_autoindex.args.push_back("on");
 
-    // 🔹 2. Crear configuración del servidor (simulada)
-    Block server_root;
-	Block server;
+	location.setName("/test");
+	Directive root_locattion;
+	root_locattion.name = "root";
+	root_locattion.args.push_back("Parseo_solo_toca_Pablo/www/sandbox");
+	Directive index_location;
+	index_location.name = "index";
+	index_location.args.push_back("parrot.html");
+	Directive autoindex_location ;
+	autoindex_location.name = "autoindex";
+	autoindex_location.args.push_back("on");
+	location.addDirective(root_locattion);
+	location.addDirective(index_location);
+	location.addDirective(autoindex_location);
+	Block methods;
+	methods.setName("limit_except GET POST DELETE");
+	Directive deny;
+	deny.name= "deny";
+	deny.args.push_back("all");
+	methods.addDirective(deny);
+	
+	
+	location.addChild(methods);
 
-    // root = carpeta donde están tus archivos (ajusta si hace falta)
-    Directive root;
-    root.name = "root";
-    root.args.push_back("Parseo_solo_toca_Pablo/www");
+	std::list<Block> to_isert;
+	to_isert.push_back(location);
 
-    // index = archivo por defecto
-    // Directive index;
-    // index.name = "index";
-    // index.args.push_back("index.html");
+	Server.set_srvName(srv_name);
+	Server.set_srvPorts(srv_ports);
+	Server.set_srvRoot(srv_root);
+	Server.set_srvIndex(srv_index);
+	Server.set_srvErrorPage(srv_Error);
+	Server.set_srvClientMaxBody(10485760);
+	Server.set_srvAutoindex(srv_autoindex);
+	Server.set_srvLocations(to_isert);
 
-    // autoindex off (opcional)
-    Directive autoindex;
-    autoindex.name = "autoindex";
-    autoindex.args.push_back("on");
-
-	server.setName("/");
-    server.addDirective(root);
-    //server.addDirective(index);
-    server.addDirective(autoindex);
-	server_root.addChild(server);
+	std::cout<<Server<<std::endl;
 
 
-	//server_root.print();
-
+	
 	//std::cout << "======================================================" <<std::endl;
-
-    // 🔹 3. Crear response
+	
 	req.set_status_code(401);
-    Response res(req,server_root);
+	Response(req,Server);
 
     // 🔹 4. Ejecutar GET
 
@@ -69,7 +102,7 @@ int main()
     // std::cout << res.get_body() << std::endl;
 
 	//std::cout << "=========================================================" <<std::endl;
-	std::cout << res_to_str(res) << std::endl;
+	//std::cout << res_to_str(res) << std::endl;
 
     return 0;
 }
