@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/04 16:40:06 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/04 21:22:32 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,9 +136,9 @@ bool server::check_location_block(const Block& to_check)
 	}
 	return true;
 }
-size_t server::check_client_max_body(const Block& to_check)
+size_t server::check_client_max_body(const Directive to_comprove)
 {
-	Directive temp = check_directives("client_max_body_size", to_check);
+	
 
 	if (temp.args.size() != 1)
 		throw std::runtime_error("client_max_body_size requires exactly one argument");
@@ -237,4 +237,29 @@ std::ostream& operator<<(std::ostream& out, const server& s) {
     }
 
     return out;
+}
+Directive server::take_concret_direc(std::string to_search,std::vector<Directive> to_check)
+{
+	Directive result;
+	for (std::vector<Directive>::iterator it = to_check.begin(); it != to_check.end(); ++it)
+	{
+		if (to_search == it->name)
+		{
+			result.name = it->name;
+			result.args = it->args;
+			return result;
+		}
+	}
+	std::runtime_error("Directive not found -> "+ to_search);
+	return result;
+}
+int server::insert_directives(const std::vector<Directive>& to_insert)
+{
+	this->_srvPorts = take_concret_direc("listen",to_insert);
+	this->_srvRoot = take_concret_direc("root",to_insert);
+	this->_srvIndex = take_concret_direc("index",to_insert);
+	this->_srvErrorPage = take_concret_direc("error_page",to_insert);
+	this->_srvAutoindex = take_concret_direc("autoindex",to_insert);
+	this->_srvClientMaxBody = 
+	
 }
