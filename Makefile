@@ -2,7 +2,7 @@
 # Makefile Webserver 42
 # ============================
 CXX := c++
-CXXFLAGS := -Wall -Wextra -std=c++98 -fsanitize=address
+CXXFLAGS := -Wall -Wextra -std=c++98
 
 # -----------------------------
 # Carpetas

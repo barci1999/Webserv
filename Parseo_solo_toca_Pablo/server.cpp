@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/02 18:00:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/04 16:40:06 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ server::server(const Block& to_check)
 	check_locations(this->_srvLocations);
 	this->_srvClientMaxBody = check_client_max_body(to_check);
 }
+server::server(){}
 Directive server::check_directives(std::string to_search, const Block& to_check)
 {
 	const std::vector<Directive>& directives = to_check.getDirectives();
@@ -175,3 +176,65 @@ size_t server::check_client_max_body(const Block& to_check)
 	return number * multiplier;
 }
 server::~server(){}
+static std::ostream& printVector(std::ostream& out, const std::vector<std::string>& v) {
+    for (size_t i = 0; i < v.size(); ++i) {
+        out << v[i];
+        if (i != v.size() - 1) out << ", ";
+    }
+    return out;
+}
+
+// Función auxiliar para imprimir bloques recursivamente
+static std::ostream& printBlock(std::ostream& out, const Block& b, int indent = 0) {
+    std::string pad(indent, ' ');
+    out << pad << "Block: " << b.getName() << std::endl;
+
+    const std::vector<Directive>& dirs = b.getDirectives();
+    for (size_t i = 0; i < dirs.size(); ++i) {
+        out << pad << "  Directive: " << dirs[i].name << " -> ";
+        printVector(out, dirs[i].args);
+        out << std::endl;
+    }
+
+    const std::list<Block>& children = b.getBlocks();
+    for (std::list<Block>::const_iterator it = children.begin(); it != children.end(); ++it) {
+        printBlock(out, *it, indent + 4);
+    }
+
+    return out;
+}
+
+// Operador de salida para server
+std::ostream& operator<<(std::ostream& out, const server& s) {
+    out << "Server Name: " << s.get_srvName() << std::endl;
+
+    out << "Ports: " << s.get_srvPorts().name << " -> ";
+    printVector(out, s.get_srvPorts().args);
+    out << std::endl;
+
+    out << "Root: " << s.get_srvRoot().name << " -> ";
+    printVector(out, s.get_srvRoot().args);
+    out << std::endl;
+
+    out << "Index: " << s.get_srvIndex().name << " -> ";
+    printVector(out, s.get_srvIndex().args);
+    out << std::endl;
+
+    out << "ErrorPage: " << s.get_srvErrorPage().name << " -> ";
+    printVector(out, s.get_srvErrorPage().args);
+    out << std::endl;
+
+    out << "Autoindex: " << s.get_srvAutoindex().name << " -> ";
+    printVector(out, s.get_srvAutoindex().args);
+    out << std::endl;
+
+    out << "ClientMaxBodySize: " << s.get_srvClientMaxBody() << std::endl;
+
+    out << "Locations:" << std::endl;
+    const std::list<Block>& locs = s.get_srvLocations();
+    for (std::list<Block>::const_iterator it = locs.begin(); it != locs.end(); ++it) {
+        printBlock(out, *it, 2);
+    }
+
+    return out;
+}
