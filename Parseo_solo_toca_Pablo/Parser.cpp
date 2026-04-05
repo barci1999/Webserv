@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/04 20:53:40 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 16:15:01 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ Directive Parser::parseDirective(const std::string& line)
 {
     Directive result;
     std::string level[] = {
-        "server_name","deny","listen","root","index","error_page",
+        "server_name","listen","root","index","error_page",
         "client_max_body_size","autoindex","cgi_extension",
         "upload_enable","upload_store","cgi_pass","allowed_methods"
     };

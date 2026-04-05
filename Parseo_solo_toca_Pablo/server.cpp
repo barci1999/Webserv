@@ -6,24 +6,12 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/04 21:22:32 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 16:50:17 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.hpp"
 
-server::server(const Block& to_check)
-{
-	this->_srvName = to_check.getName();
-	this->_srvPorts = check_directives(std::string("listen"),to_check);
-	this->_srvRoot = check_directives(std::string("root"),to_check);
-	this->_srvIndex = check_directives(std::string("index"),to_check);
-	this->_srvErrorPage = check_directives(std::string("error_page"),to_check);
-	this->_srvAutoindex = check_directives(std::string("autoindex"),to_check);
-	this->_srvLocations = to_check.getBlocks();
-	check_locations(this->_srvLocations);
-	this->_srvClientMaxBody = check_client_max_body(to_check);
-}
 server::server(){}
 Directive server::check_directives(std::string to_search, const Block& to_check)
 {
@@ -43,106 +31,127 @@ Directive server::check_directives(std::string to_search, const Block& to_check)
 	throw std::runtime_error("Directive not found: " + to_search);
 	return *it;
 }
-bool server::check_locations(std::list<Block> to_check)
+void server::validate_directives_names(const Block& to_check)
 {
-	std::list<Block>::iterator it = to_check.begin();
-	for (; it != to_check.end(); it++)
+    std::string level[] = {
+        "server_name","listen","root","index","error_page",
+        "client_max_body_size","autoindex","cgi_extension",
+        "upload_enable","upload_store","cgi_pass","allowed_methods"
+    };
+    for (std::vector<Directive>::const_iterator it = to_check.getDirectives().begin(); 
+        it != to_check.getDirectives().end(); ++it)
+    {
+        bool valid = false;
+        for (size_t i = 0; i < 12; ++i)
+        {
+            if (it->name == level[i])
+            {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid)
+        {
+            throw std::runtime_error("Invalid directive name: " + it->name);
+        }
+    }
+	if (check_root(take_concret_direc("root",to_check.getDirectives())).name.empty())
 	{
-		if(!check_location_block(*it))
-			throw std::runtime_error("invalid location block.");
-		else if (!cmp_name_directives(*it))
-		{
-			throw std::runtime_error("invalid directive block.");
-		}
+		throw std::runtime_error("location block without root directive ->" + to_check.getName());
 	}
-	return true;
-}
-bool server::cmp_name_directives(const Block& to_check)
-{
-	std::string level[] = {"listen","root","index","error_page","client_max_body_size","autoindex","cgi_extension","upload_enable","upload_store","cgi_pass"};
-	std::vector<Directive>::const_iterator it = to_check.getDirectives().begin();
-	while (it != to_check.getDirectives().end())
-	{
-		bool result = false;
-		for (size_t i = 0; i < 10; i++)
-		{
-			if (it->name == level[i])
-			{
-				result = true;
-				break;
-			}
-		}
-		if (!result)
-		{
-			return false;
-		}
-		++it;
-	}
-	return true;
 	
 }
-bool server::check_autoindex(const Block& to_check)
+Directive server::check_autoindex(const Directive& to_check)
 {
-	const std::vector<Directive>& directives = to_check.getDirectives();
-	for (std::vector<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it)
-	{
-		if (it->name == "autoindex")
-		{
-			if (it->args.size() != 1)
-				throw std::runtime_error("autoindex requires exactly one argument");
-			if (it->args[0] == "on")
-				return true;
-			if (it->args[0] == "off")
-				return false;
-			throw std::runtime_error("autoindex must be 'on' or 'off'");
-		}
-	}
-	return false;
+    // no existe → vacío
+    if (to_check.name.empty())
+        return Directive();
+
+    if (to_check.name != "autoindex")
+        return Directive();
+
+    if (to_check.args.size() != 1)
+        throw std::runtime_error("autoindex requires exactly one argument");
+
+    if (to_check.args[0] != "on" && to_check.args[0] != "off")
+        throw std::runtime_error("autoindex must be 'on' or 'off'");
+    return to_check;
 }
-bool server::check_location_block(const Block& to_check)
+bool server::check_location_block(const Block& loc)
 {
-	const std::vector<Directive>& directives = to_check.getDirectives();
-	check_directives("root", to_check);
-	for (std::vector<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it)
-	{
-		if (it->name.empty())
-			throw std::runtime_error("directives need a name");
-		if (it->args.empty())
-			throw std::runtime_error("directives need at least one argument -> " + it->name);
+    const std::vector<Directive>& directives = loc.getDirectives();
+	const char* dirs[] = {
+		"root", "index", "autoindex", "allowed_methods",
+		"cgi_extension", "upload_enable", "upload_store", "cgi_pass"
+	};
+	std::set<std::string> valid_directives;
+	for (size_t i = 0; i < 8; ++i) {
+		valid_directives.insert(dirs[i]);
 	}
-	const std::list<Block>& children = to_check.getBlocks();
-	for (std::list<Block>::const_iterator bit = children.begin(); bit != children.end(); ++bit)
-	{
-		std::vector<std::string> temp = Parser::str_to_vector(bit->getName());
-		if (temp.empty())
-			throw std::runtime_error("invalid limit_except block name");
-		if (temp[0] != "limit_except")
-			throw std::runtime_error("invalid block inside location");
-		if (temp.size() < 2)
-			throw std::runtime_error("limit_except requires at least one method");
-		for (size_t i = 1; i < temp.size(); ++i)
-		{
-			if (temp[i] != "GET" && temp[i] != "POST" && temp[i] != "DELETE")
-				throw std::runtime_error("invalid HTTP method in limit_except");
-		}
-		const std::vector<Directive>& child_directives = bit->getDirectives();
-		if (child_directives.size() != 1)
-			throw std::runtime_error("limit_except must contain exactly one directive");
-		const Directive& d = child_directives[0];
-		if (d.name != "deny")
-			throw std::runtime_error("only 'deny' allowed in limit_except");
-		if (d.args.size() != 1 || d.args[0] != "all")
-			throw std::runtime_error("deny directive must be: deny all");
-	}
-	return true;
+	std::set<std::string> seen_directives; 
+    for (std::vector<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it)
+    {
+        const Directive& d = *it;
+        if (d.name.empty())
+            throw std::runtime_error("Directive in location cannot have empty name");
+        if (valid_directives.find(d.name) == valid_directives.end())
+            throw std::runtime_error("Invalid directive in location: " + d.name);
+        if (seen_directives.find(d.name) != seen_directives.end())
+            throw std::runtime_error("Duplicate directive in location: " + d.name);
+        seen_directives.insert(d.name);
+
+        if (d.args.empty())
+            throw std::runtime_error("Directive " + d.name + " requires at least one argument");
+        if (d.name == "root")
+        {
+            if (d.args[0][0] != '/')
+                throw std::runtime_error("root must start with '/'");
+        }
+        else if (d.name == "autoindex")
+        {
+            if (d.args[0] != "on" && d.args[0] != "off")
+                throw std::runtime_error("autoindex must be 'on' or 'off'");
+        }
+        else if (d.name == "allowed_methods")
+        {
+            for (size_t i = 0; i < d.args.size(); ++i)
+            {
+                if (d.args[i] != "GET" && d.args[i] != "POST" && d.args[i] != "DELETE")
+                    throw std::runtime_error("Invalid HTTP method in allowed_methods: " + d.args[i]);
+            }
+        }
+        else if (d.name == "cgi_pass")
+        {
+            if (d.args.size() != 1 || d.args[0].empty())
+                throw std::runtime_error("cgi_pass requires exactly one non-empty argument");
+        }
+        else if (d.name == "upload_enable")
+        {
+            if (d.args[0] != "on" && d.args[0] != "off")
+                throw std::runtime_error("upload_enable must be 'on' or 'off'");
+        }
+        else if (d.name == "upload_store")
+        {
+            if (d.args[0].empty() || d.args[0][0] != '/')
+                throw std::runtime_error("upload_store must be a valid absolute path starting with '/'");
+        }
+        else if (d.name == "cgi_extension")
+        {
+            for (size_t i = 0; i < d.args.size(); ++i)
+            {
+                if (d.args[i].empty() || d.args[i][0] != '.')
+                    throw std::runtime_error("cgi_extension arguments must start with a dot '.' -> " + d.args[i]);
+            }
+        }
+    }
+    return true;
 }
 size_t server::check_client_max_body(const Directive to_comprove)
 {
 	
-
-	if (temp.args.size() != 1)
+	if (to_comprove.args.size() != 1)
 		throw std::runtime_error("client_max_body_size requires exactly one argument");
-	std::string value = temp.args[0];
+	std::string value = to_comprove.args[0];
 	if (value.empty())
 		throw std::runtime_error("client_max_body_size empty value");
 	size_t multiplier = 1;
@@ -195,12 +204,6 @@ static std::ostream& printBlock(std::ostream& out, const Block& b, int indent = 
         printVector(out, dirs[i].args);
         out << std::endl;
     }
-
-    const std::list<Block>& children = b.getBlocks();
-    for (std::list<Block>::const_iterator it = children.begin(); it != children.end(); ++it) {
-        printBlock(out, *it, indent + 4);
-    }
-
     return out;
 }
 
@@ -220,9 +223,13 @@ std::ostream& operator<<(std::ostream& out, const server& s) {
     printVector(out, s.get_srvIndex().args);
     out << std::endl;
 
-    out << "ErrorPage: " << s.get_srvErrorPage().name << " -> ";
-    printVector(out, s.get_srvErrorPage().args);
-    out << std::endl;
+    out << "ErrorPages:" << std::endl;
+    const std::vector<Directive>& error_pages = s.get_srvErrorPage();
+    for (std::vector<Directive>::const_iterator it = error_pages.begin(); it != error_pages.end(); ++it) {
+        out << "  " << it->name << " -> ";
+        printVector(out, it->args);
+        out << std::endl;
+    }
 
     out << "Autoindex: " << s.get_srvAutoindex().name << " -> ";
     printVector(out, s.get_srvAutoindex().args);
@@ -238,28 +245,121 @@ std::ostream& operator<<(std::ostream& out, const server& s) {
 
     return out;
 }
-Directive server::take_concret_direc(std::string to_search,std::vector<Directive> to_check)
+Directive server::take_concret_direc(const std::string& to_search, const std::vector<Directive>& to_check)
 {
-	Directive result;
-	for (std::vector<Directive>::iterator it = to_check.begin(); it != to_check.end(); ++it)
-	{
-		if (to_search == it->name)
-		{
-			result.name = it->name;
-			result.args = it->args;
-			return result;
-		}
-	}
-	std::runtime_error("Directive not found -> "+ to_search);
-	return result;
+    for (std::vector<Directive>::const_iterator it = to_check.begin(); it != to_check.end(); ++it)
+    {
+        if (to_search == it->name)
+            return *it;
+    }
+    return Directive();
+}
+Directive server::check_error_page(const Directive& to_check)
+{
+    if (to_check.name.empty() || to_check.name != "error_page")
+        return Directive();
+    if (to_check.args.size() < 2)
+        return Directive();
+    for (size_t i = 0; i + 1 < to_check.args.size(); ++i)
+    {
+        int code = std::atoi(to_check.args[i].c_str());
+        if (code < 400 || code > 599)
+			return Directive();
+    }
+    const std::string& path = to_check.args.back();
+    if (path.empty()  || path[0] != '/') 
+        return Directive();
+    return to_check;
+}
+Directive server::check_index(const Directive& to_check)
+{
+    if (to_check.name.empty() || to_check.name != "index")
+        return Directive(); 
+    if (to_check.args.empty())
+        return Directive();
+    return to_check;
+}
+Directive server::check_root(const Directive& to_check)
+{
+    if (to_check.name.empty() || to_check.name != "root")
+        return Directive();
+    if (to_check.args.empty())
+        return Directive();
+    const std::string& path = to_check.args[0];
+    if (path.empty() || path[0] != '/')
+        return Directive();
+    return to_check;
+}
+Directive server::check_listen(const Directive& to_check)
+{
+    if (to_check.name.empty() || to_check.name != "listen")
+        return Directive();
+    if (to_check.args.empty())
+        return Directive();
+    for (size_t i = 0; i < to_check.args.size(); ++i)
+    {
+        int port = std::atoi(to_check.args[i].c_str());
+        if (port <= 0 || port > 65535)
+            return Directive();
+    }
+    return to_check;
 }
 int server::insert_directives(const std::vector<Directive>& to_insert)
 {
-	this->_srvPorts = take_concret_direc("listen",to_insert);
-	this->_srvRoot = take_concret_direc("root",to_insert);
-	this->_srvIndex = take_concret_direc("index",to_insert);
-	this->_srvErrorPage = take_concret_direc("error_page",to_insert);
-	this->_srvAutoindex = take_concret_direc("autoindex",to_insert);
-	this->_srvClientMaxBody = 
-	
+    std::set<std::string> seen;
+    for (std::vector<Directive>::const_iterator it = to_insert.begin(); it != to_insert.end(); ++it)
+    {
+        if (it->name == "error_page") 
+        {
+            if (check_error_page(*it).name.empty())
+                throw std::runtime_error("Invalid error_page directive");
+            this->_srvErrorPage.push_back(*it);
+            continue;
+        }
+
+        if (seen.find(it->name) != seen.end())
+            throw std::runtime_error("Duplicate directive not allowed: " + it->name);
+
+        seen.insert(it->name);
+
+        if (it->name == "listen")          this->_srvPorts = check_listen(*it);
+        else if (it->name == "root")      this->_srvRoot = check_root(*it);
+        else if (it->name == "index")     this->_srvIndex = check_index(*it);
+        else if (it->name == "autoindex") this->_srvAutoindex = check_autoindex(*it);
+        else if (it->name == "client_max_body_size")
+            this->_srvClientMaxBody = check_client_max_body(*it);
+    }
+    if (this->_srvPorts.name.empty())
+        throw std::runtime_error("Missing mandatory directive: listen");
+    if (this->_srvRoot.name.empty())
+        throw std::runtime_error("Missing mandatory directive: root");
+    if (this->_srvIndex.name.empty())
+    {
+        this->_srvIndex.name = "index";
+        this->_srvIndex.args.push_back("index.html");
+    }
+    if (this->_srvAutoindex.name.empty())
+    {
+        this->_srvAutoindex.name = "autoindex";
+        this->_srvAutoindex.args.push_back("off");
+    }
+    if (this->_srvClientMaxBody == 0)
+        this->_srvClientMaxBody = 1048576;
+    return 0;
+}
+int server::insert_locations(const std::list<Block>& to_insert)
+{
+    std::set<std::string> location_names;
+
+    for (std::list<Block>::const_iterator it = to_insert.begin(); it != to_insert.end(); ++it)
+    {
+        check_location_block(*it);
+        const std::string& loc_name = it->getName();
+        if (location_names.find(loc_name) != location_names.end())
+            throw std::runtime_error("Duplicate location block -> " + loc_name);
+        location_names.insert(loc_name);
+        this->_srvLocations.push_back(*it);
+    }
+
+    return 0;
 }
