@@ -6,13 +6,14 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/04 16:44:34 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 18:00:21 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"  
 #include "Request.hpp"    
 #include "../Parseo_solo_toca_Pablo/Block.hpp" 
+#include<fstream>
 
 Response::Response(): _headers()
 {

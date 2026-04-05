@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/05 16:50:17 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 18:54:32 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,6 @@ bool server::check_location_block(const Block& loc)
         if (seen_directives.find(d.name) != seen_directives.end())
             throw std::runtime_error("Duplicate directive in location: " + d.name);
         seen_directives.insert(d.name);
-
         if (d.args.empty())
             throw std::runtime_error("Directive " + d.name + " requires at least one argument");
         if (d.name == "root")
@@ -354,6 +353,11 @@ int server::insert_locations(const std::list<Block>& to_insert)
     for (std::list<Block>::const_iterator it = to_insert.begin(); it != to_insert.end(); ++it)
     {
         check_location_block(*it);
+		if (take_concret_direc("root", it->getDirectives()).name.empty())
+		{
+			throw std::runtime_error("No root directive detected in block -> " + it->getName());
+		}
+		
         const std::string& loc_name = it->getName();
         if (location_names.find(loc_name) != location_names.end())
             throw std::runtime_error("Duplicate location block -> " + loc_name);

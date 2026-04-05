@@ -8,12 +8,13 @@ int main()
 	try
 	{
 		Parser parser;
-		Block root = parser.parseFile("Parseo_solo_toca_Pablo/hola.conf");
-		const std::list<Block> hola = root.getBlocks();
-		Block prueba(hola.begin());
-		server general(prueba);
+		std::vector<server> Servers = parser.parseFile("Parseo_solo_toca_Pablo/hola.conf");
+		for (std::vector<server>::iterator it = Servers.begin(); it != Servers.end(); ++it)
+		{
+			std::cout<<*it<<std::endl;
+		}
+		
 		std::cout << std::endl <<"hola se instancion bien la clase" << std::endl;
-		root.print();
 
 		Directive crocqueta;
 		
