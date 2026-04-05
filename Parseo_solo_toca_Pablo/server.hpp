@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/05 16:40:49 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 17:46:04 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 # include "Directive.hpp"
-# include "Parser.hpp"
 # include <vector>
 # include <iostream>
 # include <string>
@@ -58,8 +57,8 @@ private:
 	
 	
 	public:
-	~server();
 	server();
+	~server();
 	
 	static Directive check_directives(std::string to_serch, const Block& to_check);
 	const	std::string& get_srvName()	const	{return this->_srvName;}

@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/05 16:15:01 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 18:44:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,35 +28,34 @@ Parser::~Parser(){}
 
 std::string Parser::trim(std::string input)
 {
-   size_t start = 0;
-   while (start < input.length() && std::isspace((unsigned char)input[start]))
+	size_t start = 0;
+	while (start < input.length() && std::isspace((unsigned char)input[start]))
 		start++;
-   size_t end = input.length();
-   while (end > start && std::isspace((unsigned char)input[end - 1]))
+	size_t end = input.length();
+	while (end > start && std::isspace((unsigned char)input[end - 1]))
 		end--;
-   return(input.substr(start,end - start));  
+	return(input.substr(start,end - start));  
 }
 
 tokens Parser::tokenize(const std::string& line)
 {
-	std::string to_check = trim(line);
-	std::vector<std::string> temp = str_to_vector(to_check);
-	if (temp.empty())
-		return EMPTY;
-	if (temp[0] == "#")
-		return COMMENT;
-	if (temp[0] == "server" && temp.size() > 1 && temp.back() == "{")
-	{
-		return SERVER_BLOCK_START;
-	}
-	if (temp.back() == "{")
-		return BLOCK_START;
-	if (temp.back() == "}")
-		return BLOCK_END;
-	if (temp.back()== ";")
-		return DIRECTIVE;
-	return ERROR;
+    std::string to_check = trim(line); 
+    if (to_check.empty())
+        return EMPTY;
+    if (to_check[0] == '#')
+        return COMMENT;
+    char last_char = to_check[to_check.length() - 1];
+    if (to_check.length() >= 6 && to_check.substr(0,6) == "server" && last_char == '{')
+        return SERVER_BLOCK_START;
+    if (last_char == '{')
+        return BLOCK_START;
+    if (last_char == '}')
+        return BLOCK_END;
+    if (last_char == ';')
+        return DIRECTIVE;
+    return ERROR;
 }
+
 Directive Parser::parseDirective(const std::string& line)
 {
     Directive result;
@@ -157,8 +156,6 @@ std::vector<server> Parser::parseFile(const std::string& file_name)
 		}
 		
 	}
-	//server.insert_directives(directives);
-	//server.insert_blocks(locations);
 	return result;
 }
 server Parser::parseServerBlock(std::ifstream& file,std::string line)
