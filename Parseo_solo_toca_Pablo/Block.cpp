@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:45:12 by pablo             #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:03 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 16:36:58 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ Block::Block(const Block& other)
 {
 	this->_name = other._name;
 	this->_directives = other._directives;
-	this->_children = other._children;
+
 }
 Block& Block::operator=(const Block& other)
 {
@@ -27,7 +27,7 @@ Block& Block::operator=(const Block& other)
 		return *this;
 	}
 	this->_name = other._name;
-	this->_children = other._children;
+
 	this->_directives = other._directives;
 	return *this;
 }
@@ -35,7 +35,7 @@ Block::Block(std::list<Block>::const_iterator hola)
 {
 	this->_name = hola->getName();
 	this->_directives = hola->getDirectives();
-	this->_children = hola->getBlocks();
+
 }
 Block::~Block(){}
 
@@ -58,10 +58,7 @@ void Block::addDirective(const Directive& to_add)
 	
 	this->_directives.push_back(to_add);
 }
-void Block::addChild(const Block& to_add)
-{
-	this->_children.push_back(to_add);
-}
+
 const std::string& Block::getName() const
 {
 	return this->_name;
@@ -70,10 +67,6 @@ const std::string& Block::getName() const
 const std::vector<Directive>& Block::getDirectives() const
 {
 	return  this->_directives;
-}
-const std::list<Block>& Block::getBlocks() const
-{
-	return this->_children;
 }
 void Block::print(int indent) const
 {
@@ -87,7 +80,4 @@ void Block::print(int indent) const
 			std::cout << _directives[i].args[k] << " ";
 		std::cout << std::endl;
 	}
-
-	for (std::list<Block>::const_iterator it = _children.begin(); it != _children.end(); ++it)
-		it->print(indent + 1);
 }

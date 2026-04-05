@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:14:57 by pablo             #+#    #+#             */
-/*   Updated: 2026/03/30 17:52:41 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/05 16:13:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ class Block
 private:
 	std::string _name;//nombre del bloque
 	std::vector<Directive> _directives;//conjunto de directivas
-	std::list<Block> _children;//conjunto de subbloques que se encuentran dentro del actual.
 public:
 	Block(/* args */);
 	Block(const Block& other);
@@ -37,7 +36,6 @@ public:
 	void setName(std::string name){this->_name = name; return;}
 	const std::string& getName() const;
 	const std::vector<Directive>& getDirectives() const;
-	const std::list<Block>& getBlocks() const;
 	
 	
 
