@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/02 17:31:35 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/06 17:15:51 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ private:
 	std::string _body;
 	
 
-	void set_error(Response& modifi,unsigned int error);
+	void set_error(Response& modifi,unsigned int error,const server& server_config);
 	bool is_directory(const std::string& path);
 	bool file_exist(const std::string file);
 	bool is_file(const std::string file);
