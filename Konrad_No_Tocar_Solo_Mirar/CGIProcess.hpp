@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/06 15:31:43 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/06 17:32:48 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class CGIProcess
 		void extractCGIConfig(const Block& best_location, const server server_config);
 		std::string extractExtension(const std::string& path);
 
-		std::string buildFullPath(const Request& request, const server& location);
+		std::string buildFullPath(const Request& request, const server& server_comfig);
 
 		char **buildEnv(const Request& request);
 		
@@ -66,8 +66,6 @@ class CGIProcess
 
 		//std::string execute(const Request& request, const Block& location);
 		void execute(const Request& request, const server& server_config);
-		
-		std::string serveStaticFile(const Request& request, const Block& location);//REVISAR SU FUNCIONAMIENTO
 		
 		int getFD() const; //devuelve el fd para poll
 		bool isFinished(); // lee sin bloquear

@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/06 15:30:58 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/06 17:31:41 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ std::string CGIProcess::extractExtension(const std::string& path)
 }
 
 /*
- * extractCGIConfig(const Block& best_location, const Block& server_config)
+ * extractCGIConfig(const Block& best_location, const server& server_config)
  * ------------------------------------------------------------------------
  * Obtiene la configuración necesaria para ejecutar CGI:
  * - extensión del script (ej: .py, .php)
@@ -100,18 +100,10 @@ std::string CGIProcess::extractExtension(const std::string& path)
  *   }
  *
  * - O configuración global en server.
- *
- * Importancia:
- * - Sin esto, no sabes:
- *   - qué archivos son CGI
- *   - cómo ejecutarlos
- *
  */
 
 //Se busca cgi_extension y cgi_pass y se guarda en la variables, al principio las inicializo vacias
 //Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
-//Lee del config (location) qué extensión y qué ejecutable CGI usar
-
 void CGIProcess::extractCGIConfig(const Block& best_location, const server server_config)
 {
 	_cgiExtension.clear();
@@ -120,12 +112,11 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server serve
 	Directive ext = Response::search_directive("cgi_extension", best_location);
 	Directive pass = Response::search_directive("cgi_pass", best_location);
 
-	// 🔁 fallback al server
 	if (ext.name.empty())
-		//Mensaje de erro de que no se encunentra
+		//Mensaje de error de que no se encunentra, buscar para ver que clase de erro, si mensaje o htlm
 
 	if (pass.name.empty())
-		//Mensaje de erro de que no se encunentra
+		//Mensaje de error de que no se encunentra
 
 	if (!ext.args.empty())
 		_cgiExtension = ext.args[0];
@@ -200,7 +191,7 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 //CREAMOS EL FULLPATH
 // Construye la ruta real del archivo en disco
 /*
- * buildFullPath(const Request& request, const Block& server_config)
+ * buildFullPath(const Request& request, const server& server_config)
  * ------------------------------------------------------------------
  * Construye la ruta real en disco del recurso solicitado.
  *
@@ -253,27 +244,6 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 
 	return root_path + relative;
 }
-
-
-
-//Si por algun casual el root ya termina en / no se añade uno.
-//Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
-
-// //Lee un archivo normal y devuelve su contenido
-// std::string CGIProcess::serveStaticFile(const Request& request, const Block& location)
-// {
-// 	std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
-
-// 	std::ifstream file(fullPath.c_str());
-
-// 	if (!file.is_open())
-// 		return "404 Not Found";
-
-// 	std::stringstream buffer;
-// 	buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
-
-// 	return buffer.str();
-// }
 
 
 //////////////////////////////////////////////
