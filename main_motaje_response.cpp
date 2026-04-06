@@ -35,6 +35,7 @@ int main()
 	Directive srv_Error;
 	srv_Error.name = "error_page";
 	srv_Error.args.push_back("404");
+	srv_Error.args.push_back("Parseo_solo_toca_Pablo/www/error_pages/404.html");
 	Directive srv_autoindex;
 	srv_autoindex.name = "autoindex";
 	srv_autoindex.args.push_back("on");
@@ -49,21 +50,15 @@ int main()
 	Directive autoindex_location ;
 	autoindex_location.name = "autoindex";
 	autoindex_location.args.push_back("on");
+	Directive methods;
+	methods.name = "allowed_methods";
+	methods.args.push_back("GET");
+	location.addDirective(methods);
 	location.addDirective(root_locattion);
 	location.addDirective(index_location);
 	location.addDirective(autoindex_location);
-	Block methods;
-	methods.setName("limit_except GET POST DELETE");
-	Directive deny;
-	deny.name= "deny";
-	deny.args.push_back("all");
-	methods.addDirective(deny);
 	
-	
-	location.addChild(methods);
-std::cerr<<"AAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
-std::cout << methods.getName()<<std::endl;
-	location.print();
+	//location.print();
 
 	std::list<Block> to_isert;
 	to_isert.push_back(location);
@@ -79,12 +74,12 @@ std::cout << methods.getName()<<std::endl;
 
 	//std::cout<<Server<<std::endl;
 
-
 	
 	//std::cout << "======================================================" <<std::endl;
 	
+	req.set_status_code(400);
 	Response hola(req,Server);
-	//std::cout << res_to_str(hola) << std::endl;
+	std::cout << res_to_str(hola) << std::endl;
 
     // 🔹 4. Ejecutar GET
 

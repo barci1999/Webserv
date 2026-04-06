@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>501 - Not Implemented</title>
+<title>500 - Internal Server Error</title>
 
 <style>
 
@@ -73,25 +73,25 @@ code{
 
 <div class="card">
 
-<h1 class="error">501</h1>
+<h1 class="error">500</h1>
 
-<h2>Not Implemented</h2>
+<h2>Internal Server Error</h2>
 
 <p>
-El servidor no reconoce o no soporta el método HTTP utilizado.
+El servidor encontró una condición inesperada que le impidió completar la solicitud.
 </p>
 
 <p>
 Ejemplo:
 </p>
 
-<code>PATCH /resource</code>
+<code>GET /profile</code>
 
 <p>
-cuando el servidor solo implementa:
+puede fallar debido a:
 </p>
 
-<code>GET, POST, DELETE</code>
+<code>Error en el código del servidor o fallo en la base de datos</code>
 
 <br><br>
 

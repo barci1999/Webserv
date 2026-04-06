@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/05 18:00:21 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/06 18:01:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,12 @@ Response::Response(const Request to_check, const server server_config)
         else if (to_check.get_method() == "DELETE")
             make_Delete(to_check, server_config);
         else
-            set_error(*this, 405);
+            set_error(*this, 405,server_config);
     }
 	else
 	{
 		this->_statusCode = to_check.get_status_code();
-		set_error(*this,this->_statusCode);
+		set_error(*this,this->_statusCode,server_config);
 		
 	}
 }
@@ -163,7 +163,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 {  
 
 	std::string path = to_check.get_path();
-    if (path.empty()) {	set_error(*this,404); return; }
+    if (path.empty()) {	set_error(*this,404,server_config); return; }
     Block best_location;
     size_t max_len = 0;
 	bool has_loc = false;
@@ -197,10 +197,10 @@ void Response::make_Get(const Request to_check,const server server_config)
 	std::string body;
 	if (!file_exist(full_path)) 
 	{
-		set_error(*this,404);
+		set_error(*this,404,server_config);
 		return;
 	}
-	if (!can_read(full_path)) { set_error(*this,403); return;}
+	if (!can_read(full_path)) { set_error(*this,403,server_config); return;}
 	if (is_directory(full_path))
 	{
 		if(full_path[full_path.size() - 1] != '/')
@@ -219,7 +219,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 				std::string temp = full_path + *it;
 				if (file_exist(temp) && is_file(temp) && can_read(temp))
 				{
-					if (!read_file(temp, body)){ set_error(*this, 500); return; }
+					if (!read_file(temp, body)){ set_error(*this, 500,server_config); return; }
 					set_version("HTTP/1.1");
 					set_statuscode(200);
 					set_reasonphrase("OK");
@@ -242,7 +242,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 		if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on")
 		{
 			body = generate_autoindex(full_path,path);
-			if (body.empty()){set_error(*this, 500);return;}
+			if (body.empty()){set_error(*this, 500,server_config);return;}
 			set_version("HTTP/1.1");
 			set_statuscode(200);
 			set_reasonphrase("OK");
@@ -256,12 +256,12 @@ void Response::make_Get(const Request to_check,const server server_config)
 		}
 		else
 		{
-			set_error(*this,403);
+			set_error(*this,403,server_config);
 			return;
 		}
 	}
-	if (!is_file(full_path)){set_error(*this,403);return;}
-	if (!read_file(full_path,body)){set_error(*this,500);return;}
+	if (!is_file(full_path)){set_error(*this,403,server_config);return;}
+	if (!read_file(full_path,body)){set_error(*this,500,server_config);return;}
 	set_version("HTTP/1.1");
 	set_statuscode(200);
 	set_reasonphrase("OK");
@@ -271,7 +271,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 	set_body(body);
 	return;
 }
-void Response::set_error(Response& modifi,unsigned int error)
+void Response::set_error(Response& modifi,unsigned int error,const server& server_config)
 {
 
     modifi.set_reasonphrase(select_valuePhrase(error));
@@ -280,19 +280,37 @@ void Response::set_error(Response& modifi,unsigned int error)
 		modifi.set_statuscode(501);
 	}
 	else
-	{
 		modifi.set_statuscode(error);
-	}
+	std::vector<Directive> errors = server_config.get_srvErrorPage();
+	std::string error_path = "";
 	std::string body;
-	std::string temp = toString(error);
-	temp +=".html";
-	std::cout<<temp<<std::endl;
-	if(!read_file("Parseo_solo_toca_Pablo/www/error_pages/"+temp,body))
+	for (std::vector<Directive>::iterator it = errors.begin();it != errors.end(); ++it)
 	{
-		read_file("Parseo_solo_toca_Pablo/www/error_pages/501.html",body);
+		if (!it->args.empty() && !it->args[0].empty() && !it->args[1].empty() && it->args[0] == toString(error))
+		{
+			error_path = it->args[1];
+		}
+	}
+	if (error_path.empty())
+	{
+		modifi.set_statuscode(500);
+		modifi.set_reasonphrase("Internal Server Error");
+		body = "<h1>500 - Internal Server Error</h1><p>Ocurrió un error al intentar acceder al archivo.</p> <p>Por favor, inténtalo más tarde.</p>";
+	}
+	else
+	{
+		if (file_exist(error_path) && can_read(error_path))
+		{
+			read_file(error_path,body);
+		}
+		else
+		{
+			modifi.set_statuscode(500);
+			modifi.set_reasonphrase("Internal Server Error");
+			body = "<h1>500 - Internal Server Error</h1><p>Ocurrió un error al intentar acceder al archivo.</p> <p>Por favor, inténtalo más tarde.</p>";
+		}
 	}
     modifi.set_body(body);
-	std::cout<<body<<std::endl;
 
     modifi.addback_headers("Content-Type", "text/html");
 
