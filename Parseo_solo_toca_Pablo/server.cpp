@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/05 18:54:32 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/06 15:50:45 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -343,7 +343,9 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
         this->_srvAutoindex.args.push_back("off");
     }
     if (this->_srvClientMaxBody == 0)
+    {
         this->_srvClientMaxBody = 1048576;
+    }
     return 0;
 }
 int server::insert_locations(const std::list<Block>& to_insert)

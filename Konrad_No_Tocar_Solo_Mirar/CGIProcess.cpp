@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/02 18:28:58 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/06 15:30:58 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,13 +42,13 @@
  *   → devuelve "/cgi-bin/"
  *
  */
-Block find_best_location(const std::string& path, const Block& server_config)
+Block find_best_location(const std::string& path, const server& server_config)
 {
 	Block best;
 	size_t max_len = 0;
 
-	for (std::list<Block>::const_iterator it = server_config.getBlocks().begin();
-		 it != server_config.getBlocks().end(); ++it)
+	for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();
+		 it != server_config.get_srvLocations().end(); ++it)
 	{
 		std::string loc = it->getName();
 
@@ -112,7 +112,7 @@ std::string CGIProcess::extractExtension(const std::string& path)
 //Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
 //Lee del config (location) qué extensión y qué ejecutable CGI usar
 
-void CGIProcess::extractCGIConfig(const Block& best_location, const Block& server_config)
+void CGIProcess::extractCGIConfig(const Block& best_location, const server server_config)
 {
 	_cgiExtension.clear();
 	_cgiPass.clear();
@@ -122,10 +122,10 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const Block& serve
 
 	// 🔁 fallback al server
 	if (ext.name.empty())
-		ext = Response::search_directive("cgi_extension", server_config);
+		//Mensaje de erro de que no se encunentra
 
 	if (pass.name.empty())
-		pass = Response::search_directive("cgi_pass", server_config);
+		//Mensaje de erro de que no se encunentra
 
 	if (!ext.args.empty())
 		_cgiExtension = ext.args[0];
@@ -168,7 +168,7 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const Block& serve
  */
 // Aquí verifico que si el contenido del request es el mismo que la extension del location
 //Comprueba si la request es CGI comparando extensión
-bool CGIProcess::isCGI(const Request& request, const Block& server_config)
+bool CGIProcess::isCGI(const Request& request, const server& server_config)
 {
 	std::string path = request.get_path();
 
@@ -230,7 +230,7 @@ bool CGIProcess::isCGI(const Request& request, const Block& server_config)
  *   - evitar errores de ruta en execve()
  *
  */
-std::string CGIProcess::buildFullPath(const Request& request, const Block& server_config)
+std::string CGIProcess::buildFullPath(const Request& request, const server& server_config)
 {
 	std::string path = request.get_path();
 
@@ -238,7 +238,7 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& serve
 
 	Directive root = Response::search_directive("root", best_location);
 	if (root.name.empty())
-		root = Response::search_directive("root", server_config);
+		root = server_config.get_srvRoot();
 
 	std::string root_path = root.args[0];
 
@@ -259,21 +259,21 @@ std::string CGIProcess::buildFullPath(const Request& request, const Block& serve
 //Si por algun casual el root ya termina en / no se añade uno.
 //Al final se guarda _fullPath = buildFullPath(request, location); en la funcion que se llame.
 
-//Lee un archivo normal y devuelve su contenido
-std::string CGIProcess::serveStaticFile(const Request& request, const Block& location)
-{
-	std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
+// //Lee un archivo normal y devuelve su contenido
+// std::string CGIProcess::serveStaticFile(const Request& request, const Block& location)
+// {
+// 	std::string fullPath = buildFullPath(request, location);//se construye la ruta real del archivo
 
-	std::ifstream file(fullPath.c_str());
+// 	std::ifstream file(fullPath.c_str());
 
-	if (!file.is_open())
-		return "404 Not Found";
+// 	if (!file.is_open())
+// 		return "404 Not Found";
 
-	std::stringstream buffer;
-	buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
+// 	std::stringstream buffer;
+// 	buffer << file.rdbuf();//esto te devuelve todo el contenido del archivo y se copia con << dentro de buffer
 
-	return buffer.str();
-}
+// 	return buffer.str();
+// }
 
 
 //////////////////////////////////////////////
@@ -285,7 +285,7 @@ std::string CGIProcess::serveStaticFile(const Request& request, const Block& loc
 //Lanza el proceso CGI (fork + pipes) | ESta es la vieja, la dejo por si hay que revisar algo 
 
 //Nuevo execute, una version no bloqueante
-void CGIProcess::execute(const Request& request, const Block& server_config)
+void CGIProcess::execute(const Request& request, const server& server_config)
 {
     _fullPath = buildFullPath(request, server_config);
     _finished = false;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/05 18:44:12 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/06 15:49:59 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,7 @@ std::vector<server> Parser::parseFile(const std::string& file_name)
 server Parser::parseServerBlock(std::ifstream& file,std::string line)
 {
 	server Server;
+	Server.set_srvClientMaxBody(0);
 	std::vector<Directive> directives;
 	std::list<Block> locations;
 	std::vector<std::string> server_name = str_to_vector(line);
