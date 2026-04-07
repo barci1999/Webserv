@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 15:10:46 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 15:17:53 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,6 +261,40 @@ void CGIProcess::execute(const Request& request, const server& server_config)
     }
 
     close(_inputPipe[1]);
+}
+
+
+/*
+ * createPipes()
+ * --------------
+ * Crea los pipes de comunicación entre proceso padre e hijo.
+ *
+ * Cómo funciona:
+ * 1. Crea:
+ *    - _inputPipe  → padre escribe → hijo lee (stdin)
+ *    - _outputPipe → hijo escribe → padre lee (stdout)
+ * 2. Configura ambos en modo NO BLOQUEANTE con fcntl().
+ *
+ * Importancia:
+ * - Permite comunicación asíncrona sin bloquear el servidor.
+ *
+ */
+void CGIProcess::createPipes()
+{
+	if (pipe(_inputPipe) < 0)
+		throw std::runtime_error("pipe failed");
+
+	if (pipe(_outputPipe) < 0)
+		throw std::runtime_error("pipe failed");
+	
+	// No se si poner los extremos de lectura en non-blocking es aqui, luego se vera.
+    int flags = fcntl(_outputPipe[0], F_GETFL, 0);
+    fcntl(_outputPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+    flags = fcntl(_inputPipe[1], F_GETFL, 0);
+    fcntl(_inputPipe[1], F_SETFL, flags | O_NONBLOCK);
+	//Esto lee del CGI y escribe en el CGI de forma no bloqueante usando el fcntl.
+	// DE esta manera se hace una vez, afecta a todos los usos.
 }
 
 /*
