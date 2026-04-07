@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/06 17:15:51 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:45:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include<sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
-
+#include "../utils.hpp"
 //cosas a comprobar a la hora de hacer la response:
 // en el parse recuest no se saca error en el query si se envuentra && asi que
 //se debe hacer un parseo si se encuentran esos caractters antes de lanzar la response 
@@ -34,13 +34,7 @@ private:
 	
 
 	void set_error(Response& modifi,unsigned int error,const server& server_config);
-	bool is_directory(const std::string& path);
-	bool file_exist(const std::string file);
-	bool is_file(const std::string file);
-	bool can_read(const std::string file);
-	bool read_file(const std::string& path, std::string& out);
 public:
-	static Directive search_directive(std::string to_search,const Block block);
 	Response();
 	Response(const Request to_check,const server server_config);
 	Response(const Response& other);

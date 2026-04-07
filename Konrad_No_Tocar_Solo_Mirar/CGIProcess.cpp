@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/06 19:25:17 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 14:45:41 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGIProcess.hpp"
 #include "../Parseo_solo_toca_Pablo/server.hpp"
+#include "../utils.hpp"
 
 //////////////////////////////////////////////
 // 🔹 UTILIDADES (cosas simples)
@@ -109,8 +110,8 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server serve
 	_cgiExtension.clear();
 	_cgiPass.clear();
 
-	Directive ext = Response::search_directive("cgi_extension", best_location);
-	Directive pass = Response::search_directive("cgi_pass", best_location);
+	Directive ext = search_directive("cgi_extension", best_location);
+	Directive pass = search_directive("cgi_pass", best_location);
 
 	if (ext.name.empty())
 		//Mensaje de error de que no se encunentra, buscar para ver que clase de erro, si mensaje o htlm
@@ -227,7 +228,7 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 
 	Block best_location = find_best_location(path, server_config);
 
-	Directive root = Response::search_directive("root", best_location);
+	Directive root = search_directive("root", best_location);
 	if (root.name.empty())
 		root = server_config.get_srvRoot();
 

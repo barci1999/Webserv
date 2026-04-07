@@ -18,20 +18,26 @@ MAIN_RESPONSE := main_motaje_response
 MAIN_CONF := main_parser_conf
 MAIN_CGI := main_cgi_test
 MAIN_LOOP := main_loop
+
 # -----------------------------
-# Fuentes Konrad (sin CGI)
+# Utils (AÑADIDO)
+# -----------------------------
+UTILS_OBJ := utils.o
+
+# -----------------------------
+# Fuentes Konrad
 # -----------------------------
 KONRAD_SRC := $(wildcard $(KONRAD_DIR)/*.cpp)
 KONRAD_OBJ := $(KONRAD_SRC:.cpp=.o)
 
 # -----------------------------
-# Fuentes Parseo (sin mains)
+# Fuentes Parseo
 # -----------------------------
 PARSEO_SRC := $(filter-out $(PARSEO_DIR)/main.cpp, $(wildcard $(PARSEO_DIR)/*.cpp))
 PARSEO_OBJ := $(PARSEO_SRC:.cpp=.o)
 
 # -----------------------------
-# Fuentes Loop (sin mains)
+# Fuentes Loop
 # -----------------------------
 LOOP_SRC := $(filter-out main_%.cpp, $(wildcard *.cpp))
 LOOP_OBJ := $(LOOP_SRC:.cpp=.o)
@@ -57,25 +63,25 @@ cgi: $(MAIN_CGI)
 loop: $(MAIN_LOOP)
 
 # -----------------------------
-# Ejecutables
+# Ejecutables (AQUÍ ESTÁ EL FIX)
 # -----------------------------
-$(MAIN_REQUEST): $(MAIN_REQUEST_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
+$(MAIN_REQUEST): $(MAIN_REQUEST_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(UTILS_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(MAIN_RESPONSE): $(MAIN_RESPONSE_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
+$(MAIN_RESPONSE): $(MAIN_RESPONSE_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(UTILS_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(MAIN_CONF): $(MAIN_CONF_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
+$(MAIN_CONF): $(MAIN_CONF_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(UTILS_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(MAIN_CGI): $(MAIN_CGI_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ)
+$(MAIN_CGI): $(MAIN_CGI_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(UTILS_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(MAIN_LOOP): $(MAIN_LOOP_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(LOOP_OBJ)
+$(MAIN_LOOP): $(MAIN_LOOP_OBJ) $(KONRAD_OBJ) $(PARSEO_OBJ) $(LOOP_OBJ) $(UTILS_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # -----------------------------
-# Compilación de mains
+# Compilación genérica
 # -----------------------------
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -96,7 +102,8 @@ $(PARSEO_DIR)/%.o: $(PARSEO_DIR)/%.cpp
 # Limpiar
 # -----------------------------
 clean:
-	rm -f *.o $(KONRAD_OBJ) $(PARSEO_OBJ) $(MAIN_REQUEST_OBJ) $(MAIN_RESPONSE_OBJ) $(MAIN_CONF_OBJ) \
-        $(MAIN_REQUEST) $(MAIN_RESPONSE) $(MAIN_CONF) $(MAIN_CGI)
+	rm -f *.o $(KONRAD_OBJ) $(PARSEO_OBJ) $(UTILS_OBJ) \
+	$(MAIN_REQUEST_OBJ) $(MAIN_RESPONSE_OBJ) $(MAIN_CONF_OBJ) \
+	$(MAIN_REQUEST) $(MAIN_RESPONSE) $(MAIN_CONF) $(MAIN_CGI)
 
 .PHONY: all request response conf cgi clean
