@@ -6,13 +6,14 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/06 18:01:12 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 14:40:21 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"  
 #include "Request.hpp"    
 #include "../Parseo_solo_toca_Pablo/Block.hpp" 
+#include "../utils.hpp"
 #include<fstream>
 
 Response::Response(): _headers()
@@ -109,23 +110,7 @@ std::string Response::select_valuePhrase(unsigned int status)
 	}
 }
 Response::~Response(){}
-Directive Response::search_directive(std::string to_cheack,const Block block)
-{
-	Directive result;
-	result.name = "";
-	const std::vector<Directive>& directive = block.getDirectives();
-	std::vector<Directive>::const_iterator it = directive.begin();
-	for (; it != directive.end(); it++)
-	{
-		if (to_cheack == it->name)
-		{
-			result.name = it->name;
-			result.args = it->args;
-			return result;
-		}
-	}
-	return result;
-}
+
 std::string Response::generate_autoindex(const std::string& full_path,const std::string& request_path)
 {
 	DIR* dir = opendir(full_path.c_str());
@@ -152,12 +137,6 @@ std::string Response::generate_autoindex(const std::string& full_path,const std:
 	return body;
 	
 	
-}
-static std::string toString(unsigned int value) 
-{
-    std::ostringstream oss;
-    oss << value;
-    return oss.str();
 }
 void Response::make_Get(const Request to_check,const server server_config)
 {  
@@ -321,42 +300,8 @@ void Response::set_error(Response& modifi,unsigned int error,const server& serve
     modifi.addback_headers("Connection", "close");
 }
 
-bool Response::is_directory(const std::string& path)
-{
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0)
-        return false;
-    return S_ISDIR(info.st_mode);
-}
-bool Response::file_exist(const std::string file)
-{
-	struct stat buffer;
-	return (stat(file.c_str(),&buffer) == 0);
-}
-bool Response::is_file(const std::string file)
-{
-	struct stat buffer;
-	if (stat(file.c_str(),&buffer) != 0)
-	{
-		return false;
-	}
-	return S_ISREG(buffer.st_mode);
-}
-bool Response::can_read(const std::string file)
-{
-	return (access(file.c_str(),R_OK) == 0);
-}
-bool Response::read_file(const std::string& path, std::string& out)
-{
-    std::ifstream file(path.c_str());
-    if (!file.is_open())
-        return false;
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    out = buffer.str();
-    return true;
-}
+
 std::string Response::getContentType(const std::string& path)
 {
 	size_t pos = path.rfind('.');
