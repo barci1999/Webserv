@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 15:10:32 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 15:28:32 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ class CGIProcess
 		Response buildResponse(); // construye la respuesta final
 		
 		const std::string& getBuffer() const;
-		std::string handleRequest(Request& request, Block& location);//ESTA AL FINCLA DEL ARCHIVO .cpp
+		//std::string handleRequest(Request& request, Block& location);//ESTA AL FINCLA DEL ARCHIVO .cpp
 
 };
 
