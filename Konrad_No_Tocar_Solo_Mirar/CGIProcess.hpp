@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/06 17:32:48 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 15:10:32 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #include "RequestParser.hpp"
 #include "Response.hpp"
 #include "../Parseo_solo_toca_Pablo/server.hpp"
+#include "../utils.hpp"
 
 
 
@@ -51,7 +52,6 @@ class CGIProcess
 		bool _finished;
 
 		void extractCGIConfig(const Block& best_location, const server server_config);
-		std::string extractExtension(const std::string& path);
 
 		std::string buildFullPath(const Request& request, const server& server_comfig);
 
