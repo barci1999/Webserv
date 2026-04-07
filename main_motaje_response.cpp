@@ -29,9 +29,9 @@ int main()
 	Directive srv_root;
 	srv_root.name = "root";
 	srv_root.args.push_back("Parseo_solo_toca_Pablo/www/sandbox");
-	Directive srv_index;
-	srv_index.name = "index";
-	srv_index.args.push_back("parrot.html");
+	// Directive srv_index;
+	// srv_index.name = "index";
+	// srv_index.args.push_back("parrot.html");
 	Directive srv_Error;
 	srv_Error.name = "error_page";
 	srv_Error.args.push_back("404");
@@ -44,19 +44,19 @@ int main()
 	Directive root_locattion;
 	root_locattion.name = "root";
 	root_locattion.args.push_back("Parseo_solo_toca_Pablo/www/sandbox");
-	Directive index_location;
-	index_location.name = "index";
-	index_location.args.push_back("parrot.html");
-	Directive autoindex_location ;
-	autoindex_location.name = "autoindex";
-	autoindex_location.args.push_back("on");
+	// Directive index_location;
+	// index_location.name = "index";
+	// index_location.args.push_back("parrot.html");
+	// Directive autoindex_location ;
+	// autoindex_location.name = "autoindex";
+	// autoindex_location.args.push_back("on");
 	Directive methods;
 	methods.name = "allowed_methods";
 	methods.args.push_back("GET");
 	location.addDirective(methods);
 	location.addDirective(root_locattion);
-	location.addDirective(index_location);
-	location.addDirective(autoindex_location);
+	//location.addDirective(index_location);
+	//location.addDirective(autoindex_location);
 	
 	//location.print();
 
@@ -66,7 +66,7 @@ int main()
 	Server.set_srvName(srv_name);
 	Server.set_srvPorts(srv_ports);
 	Server.set_srvRoot(srv_root);
-	Server.set_srvIndex(srv_index);
+	//Server.set_srvIndex(srv_index);
 	Server.set_srvErrorPage(srv_Error);
 	Server.set_srvClientMaxBody(10485760);
 	Server.set_srvAutoindex(srv_autoindex);
@@ -77,9 +77,9 @@ int main()
 	
 	//std::cout << "======================================================" <<std::endl;
 	
-	req.set_status_code(400);
 	Response hola(req,Server);
 	std::cout << res_to_str(hola) << std::endl;
+	std::cout<<req<<std::endl;
 
     // 🔹 4. Ejecutar GET
 
