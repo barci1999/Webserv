@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 14:40:21 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 19:45:39 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,34 +135,20 @@ std::string Response::generate_autoindex(const std::string& full_path,const std:
 	body += "</ul></body></html>";
 	closedir(dir);
 	return body;
-	
-	
 }
 void Response::make_Get(const Request to_check,const server server_config)
 {  
 
 	std::string path = to_check.get_path();
     if (path.empty()) {	set_error(*this,404,server_config); return; }
-    Block best_location;
-    size_t max_len = 0;
-	bool has_loc = false;
-    for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();it != server_config.get_srvLocations().end(); ++it)
-    {
-		
-        std::string loc = it->getName();
-
-		if (path.find(loc) == 0 && (path.length() == loc.length() || path[loc.length()] == '/') && loc.length() > max_len)
-        {
-            best_location = *it;
-            max_len = loc.length();
-			has_loc = true;
-        }
-    }
+    Block best_location = find_best_location(path,server_config);
+    size_t max_len = best_location.getName().length();
 	Directive root;
-	if (has_loc)
+	bool has_loc = false;
+	if (!best_location.getName().empty())
 	{
 		root = search_directive("root",best_location);
-		/* code */
+		has_loc = true;
 	}
 	if (root.name.empty() || root.args.empty())
 		root = server_config.get_srvRoot();
@@ -340,23 +326,60 @@ std::string res_to_str(const Response& to_change)
 	res << to_change.get_body();
 	return res.str();
 }
+//si todo va bien se retorna 204
+
+/* flujo de ejecucion
+	1. resolver location (o server)
+	2. comprobar método permitido → 405
+	3. construir full_path
+	4. ¿existe?
+		→ NO → 404
+	5. ¿es directorio?
+		→ SÍ → 403
+	6. ¿tienes permisos para borrar?
+		→ NO → 403
+	7. remove()
+	8. responder 200 / 204
+*/
 void Response::make_Delete(const Request to_check,const server server_config)
 {
-	//si todo va bien se retorna 204
+	std::string path = to_check.get_path();
+    if (path.empty()) {	set_error(*this,404,server_config);	return;	}
+	
+	Block best_loc = find_best_location(path,server_config);
+	if (best_loc.getName().empty())	{	set_error(*this,404,server_config);	return;	}
+	
+	Directive root = search_directive("root",best_loc);
+	if (root.name.empty() || root.args.empty())	{	set_error(*this,404,server_config);	return;	}
+	
+	Directive methods = search_directive("allowed_methods",best_loc);
+	if (methods.name.empty() || methods.args.empty())	{	set_error(*this,405,server_config);	return;	}
+	
+	std::vector<std::string>::iterator it = std::find(methods.args.begin(),methods.args.end(),"DELETE");
+	if (it == methods.args.end())	{	set_error(*this,405,server_config);	return;	}
 
-	/* flujo de ejecucion
-		1. resolver location (o server)
-		2. comprobar método permitido → 405
-		3. construir full_path
-		4. ¿existe?
-			→ NO → 404
-		5. ¿es directorio?
-			→ SÍ → 403
-		6. ¿tienes permisos para borrar?
-			→ NO → 403
-		7. remove()
-		8. responder 200 / 204
-	*/
+	size_t max_len = best_loc.getName().length();
+	std::string root_path = root.args[0];
+	std::string relative = path.substr(max_len);
+	if (root_path[root_path.size() -1] != '/')
+	{
+		root_path += '/';
+	}
+	std::string full_path = root_path + relative;
+	if(!file_exist(full_path)) {	set_error(*this,404,server_config);	return;	}
+	if(is_directory(full_path)) {	set_error(*this,403,server_config);	return;	}
+	
+	std::string parent_path = take_parent_path(full_path);
+	if (!can_write(parent_path))	{	set_error(*this,403,server_config);	return;	}
+	if (std::remove(full_path.c_str()) != 0) {	set_error(*this,500,server_config);	return;	}
+	else
+	{
+		/*
+		como a comprovado que el archivo tiene todo correcto 
+		tenemos que mandar un html de un formulario que nos hara un post que ejecutara
+		el cgi de un programa que borra el archivo
+		*/
+	}
 }
 void Response::make_Post(const Request to_check,const server server_config)
 {

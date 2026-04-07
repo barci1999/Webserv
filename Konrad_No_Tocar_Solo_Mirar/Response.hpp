@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 14:45:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 16:58:26 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,9 @@
 #include <unistd.h>
 #include <dirent.h>
 #include "../utils.hpp"
+#include<algorithm>
+#include <iostream>
+#include <string>
 //cosas a comprobar a la hora de hacer la response:
 // en el parse recuest no se saca error en el query si se envuentra && asi que
 //se debe hacer un parseo si se encuentran esos caractters antes de lanzar la response 

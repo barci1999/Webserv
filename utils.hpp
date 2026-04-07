@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:28:51 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 15:12:53 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 17:07:25 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,3 +28,5 @@ bool can_read(const std::string file);
 bool read_file(const std::string& path, std::string& out);
 Block find_best_location(const std::string& path, const server& server_config);
 std::string extractExtension(const std::string& path);
+std::string take_parent_path(const std::string& chil_path);
+bool can_write(const std::string file);
