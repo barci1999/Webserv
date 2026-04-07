@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/06 17:31:41 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/06 19:25:17 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,6 +255,41 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 //Lanza el proceso CGI (fork + pipes) | ESta es la vieja, la dejo por si hay que revisar algo 
 
 //Nuevo execute, una version no bloqueante
+
+/*
+ * execute(const Request& request, const server& server_config)
+ * ------------------------------------------------------------
+ * Lanza la ejecución de un CGI de forma NO BLOQUEANTE.
+ *
+ * Parámetros:
+ * - request: petición HTTP del cliente
+ * - server_config: configuración del servidor
+ *
+ * Cómo funciona:
+ * 1. Construye la ruta real del script con buildFullPath().
+ * 2. Inicializa estado interno (_finished = false, buffer vacío).
+ * 3. Crea pipes para comunicación padre ↔ hijo.
+ * 4. Hace fork():
+ *    - Hijo → ejecuta setupChildProcess() + execve()
+ *    - Padre → prepara comunicación (no bloquea)
+ * 5. Cierra extremos innecesarios en el padre.
+ * 6. Si es POST:
+ *    - Escribe el body en el pipe de entrada (NO bloqueante).
+ * 7. Cierra el pipe de escritura → importante para EOF.
+ *
+ * NO BLOQUEANTE:
+ * - NO lee la salida aquí.
+ * - NO hace waitpid bloqueante.
+ * - La lectura se hace después con poll() + readFromPipe().
+ *
+ * Relación con Webserv:
+ * - Este método SOLO inicia el CGI.
+ * - El servidor (poll loop) continuará leyendo poco a poco.
+ *
+ * Importancia:
+ * - Permite manejar múltiples clientes sin bloquear el servidor.
+ *
+ */
 void CGIProcess::execute(const Request& request, const server& server_config)
 {
     _fullPath = buildFullPath(request, server_config);
@@ -282,6 +317,8 @@ void CGIProcess::execute(const Request& request, const server& server_config)
 
     close(_inputPipe[1]);
 }
+
+
 /*
  * createPipes()
  * --------------
