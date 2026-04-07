@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 14:45:41 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:17:53 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,62 +17,6 @@
 //////////////////////////////////////////////
 // 🔹 UTILIDADES (cosas simples)
 //////////////////////////////////////////////
-
-/*
- * find_best_location(const std::string& path, const Block& server_config)
- * -----------------------------------------------------------------------
- * Busca la location más específica que coincide con la ruta de la request.
- *
- * Parámetros:
- * - path: ruta de la request (ej: "/cgi-bin/test.py")
- * - server_config: bloque server completo (contiene todas las locations)
- *
- * Cómo funciona:
- * 1. Recorre todas las locations definidas en el server.
- * 2. Comprueba si el path empieza por el nombre de la location.
- * 3. Se queda con la coincidencia más larga (longest match).
- * 4. Devuelve esa location.
- *
- * Relación con Webserv:
- * - Imita el comportamiento de nginx:
- *   location /cgi-bin/ → más específica que location /
- *
- * Ejemplo:
- *   path = "/cgi-bin/test.py"
- *   locations = ["/", "/cgi-bin/"]
- *   → devuelve "/cgi-bin/"
- *
- */
-Block find_best_location(const std::string& path, const server& server_config)
-{
-	Block best;
-	size_t max_len = 0;
-
-	for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();
-		 it != server_config.get_srvLocations().end(); ++it)
-	{
-		std::string loc = it->getName();
-
-		if (path.find(loc) == 0 && loc.length() > max_len)
-		{
-			best = *it;
-			max_len = loc.length();
-		}
-	}
-	return best;
-}
-
-
-//Guarda lo que hay despues del . en la extension | Saca la extensión de un archivo (.php, .py)
-std::string CGIProcess::extractExtension(const std::string& path)
-{
-	size_t dotPos = path.find_last_of('.');
-
-	if (dotPos == std::string::npos)
-		return "";
-
-	return path.substr(dotPos);
-}
 
 /*
  * extractCGIConfig(const Block& best_location, const server& server_config)

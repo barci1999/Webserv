@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 14:40:07 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:14:35 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,4 +70,34 @@ bool read_file(const std::string& path, std::string& out)
     buffer << file.rdbuf();
     out = buffer.str();
     return true;
+}
+
+Block find_best_location(const std::string& path, const server& server_config)
+{
+	Block best;
+	size_t max_len = 0;
+
+	for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();
+		 it != server_config.get_srvLocations().end(); ++it)
+	{
+		std::string loc = it->getName();
+
+		if (path.find(loc) == 0 && (path.length() == loc.length() || path[loc.length()] == '/') && loc.length() > max_len)
+		{
+			best = *it;
+			max_len = loc.length();
+		}
+	}
+	return best;
+}
+
+//Guarda lo que hay despues del . en la extension | Saca la extensión de un archivo (.php, .py)
+std::string extractExtension(const std::string& path)
+{
+	size_t dotPos = path.find_last_of('.');
+
+	if (dotPos == std::string::npos)
+		return "";
+
+	return path.substr(dotPos);
 }

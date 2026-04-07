@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:28:51 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 14:40:12 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/07 15:12:53 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 #include "Parseo_solo_toca_Pablo/Directive.hpp"
 #include "Parseo_solo_toca_Pablo/Block.hpp"
+#include "Parseo_solo_toca_Pablo/server.hpp"
 #include <fstream>
 #include <unistd.h>
 #include <iostream>
@@ -25,3 +26,5 @@ bool file_exist(const std::string file);
 bool is_file(const std::string file);
 bool can_read(const std::string file);
 bool read_file(const std::string& path, std::string& out);
+Block find_best_location(const std::string& path, const server& server_config);
+std::string extractExtension(const std::string& path);
