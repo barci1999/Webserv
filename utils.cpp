@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 15:14:35 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 17:27:30 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,10 @@ bool can_read(const std::string file)
 {
 	return (access(file.c_str(),R_OK) == 0);
 }
+bool can_write(const std::string file)
+{
+	return (access(file.c_str(),W_OK | X_OK) == 0);
+}
 bool read_file(const std::string& path, std::string& out)
 {
     std::ifstream file(path.c_str());
@@ -100,4 +104,16 @@ std::string extractExtension(const std::string& path)
 		return "";
 
 	return path.substr(dotPos);
+}
+std::string take_parent_path(const std::string& chilf_path)
+{
+	size_t pos = chilf_path.rfind('/');
+	std::string parent_path;
+	if (pos == std::string::npos) 
+		parent_path = "."; 
+	else if (pos == 0)
+		parent_path = "/"; 
+	else
+		parent_path = chilf_path.substr(0, pos);
+	return parent_path;
 }
