@@ -5,7 +5,6 @@
 
 int main()
 {
-	hola prueba
 	try
 	{
 		Parser parser;
