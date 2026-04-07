@@ -3,9 +3,11 @@ import sys
 
 body = sys.stdin.read()
 
-print("Content-Type: text/plain")
-print("Status: 200 OK")
-print("")
+# Primera cabecera: Status
+print("Status: 200 OK")                  
+print("Content-Type: text/plain")        
+print()                                  
+
 print("CGI funcionando!")
 print("Body recibido:")
 print(body)

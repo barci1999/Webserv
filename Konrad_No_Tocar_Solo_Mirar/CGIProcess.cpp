@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 15:27:42 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 20:53:50 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@
 
 //Se busca cgi_extension y cgi_pass y se guarda en la variables, al principio las inicializo vacias
 //Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
-void CGIProcess::extractCGIConfig(const Block& best_location, const server server_config)
+void CGIProcess::extractCGIConfig(const Block& best_location, const server& server_config)
 {
 	_cgiExtension.clear();
 	_cgiPass.clear();
@@ -58,10 +58,16 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server serve
 	Directive pass = search_directive("cgi_pass", best_location);
 
 	if (ext.name.empty())
+	{
+		std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
 		//Mensaje de error de que no se encunentra, buscar para ver que clase de erro, si mensaje o htlm
+	}
 
 	if (pass.name.empty())
+	{
+		std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" << std::endl;
 		//Mensaje de error de que no se encunentra
+	}
 
 	if (!ext.args.empty())
 		_cgiExtension = ext.args[0];
@@ -187,7 +193,15 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 	if (!root_path.empty() && root_path[root_path.size() - 1] != '/')
 		root_path += '/';
 
-	return root_path + relative;
+	std::string scriptPath = root_path + relative;
+
+	// 🔥 DEBUG AQUÍ
+	std::cout << "PATH: " << path << std::endl;
+	std::cout << "RELATIVE: " << relative << std::endl;
+	std::cout << "ROOT: " << root_path << std::endl;
+	std::cout << "SCRIPT PATH: " << scriptPath << std::endl;
+
+	return scriptPath;
 }
 
 
@@ -260,7 +274,7 @@ void CGIProcess::execute(const Request& request, const server& server_config)
         write(_inputPipe[1], body.c_str(), body.size());
     }
 
-    close(_inputPipe[1]);
+    //close(_inputPipe[1]);
 }
 
 
@@ -440,19 +454,21 @@ char **CGIProcess::buildEnv(const Request& request)
 void CGIProcess::setupChildProcess(const Request& request)
 {
     // 🔹 1. Redirigir stdin y stdout
-    dup2(_inputPipe[0], STDIN_FILENO);
-    dup2(_outputPipe[1], STDOUT_FILENO);
+    dup2(_inputPipe[0], 0);
+    dup2(_outputPipe[1], 1);
 
     // 🔹 2. Cerrar pipes innecesarios
+    close(_inputPipe[0]);
     close(_inputPipe[1]);
     close(_outputPipe[0]);
-    close(_inputPipe[0]);
     close(_outputPipe[1]);
 
 
 	// Extrae el directorio del script:
 	// Cambia el directorio de ejecución del proceso hijo
 	std::string dir = _fullPath.substr(0, _fullPath.find_last_of('/'));
+	// 🔥 DEBUG CRÍTICO
+	std::cerr << "DIR: " << dir << std::endl;
 	if (chdir(dir.c_str()) != 0)
 	{
 		perror("chdir failed");
@@ -477,11 +493,15 @@ void CGIProcess::setupChildProcess(const Request& request)
 	std::cerr << "CGI cgiPass: [" << _cgiPass << "]" << std::endl;
 
     // 🔹 5. Ejecutar CGI
+	//Un debug por que no entiendo
+	std::cerr << "DEBUG: execve, script: " << _fullPath << std::endl;
+	std::cerr << "DEBUG: argv[0] = " << argv[0] << ", argv[1] = " << argv[1] << std::endl;
+	std::cerr << "DEBUG: ejecutando execve" << std::endl;
     execve(_cgiPass.c_str(), argv, env);
 
     // 🔴 Si llega aquí → error
     perror("execve failed");
-    exit(1);
+    exit(127);
 }
 
 //////////////////////////////////////////////
@@ -567,6 +587,7 @@ bool CGIProcess::isFinished()
 		return true;
 	
 	int status;
+	
 	pid_t result = waitpid(_pid, &status, WNOHANG);
 
 	if(result == 0)
