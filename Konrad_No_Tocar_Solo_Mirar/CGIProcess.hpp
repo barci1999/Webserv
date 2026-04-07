@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 15:28:32 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/07 15:45:07 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ class CGIProcess
 {
 	private:
 
-		CGIProcess(){};
-		~CGIProcess(){};
 		int _inputPipe[2];
 		int _outputPipe[2];
 		pid_t _pid;
@@ -51,7 +49,7 @@ class CGIProcess
 		std::string _buffer;
 		bool _finished;
 
-		void extractCGIConfig(const Block& best_location, const server server_config);
+		void extractCGIConfig(const Block& best_location, const server& server_config);
 
 		std::string buildFullPath(const Request& request, const server& server_comfig);
 
@@ -62,6 +60,8 @@ class CGIProcess
 		void setupChildProcess(const Request& request);
 		Response parseCGIResponse(const std::string& output);
 	public:
+		CGIProcess(){};
+		~CGIProcess(){};
 		bool isCGI(const Request& request, const server& location);
 
 		//std::string execute(const Request& request, const Block& location);
