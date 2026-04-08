@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 16:30:12 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 20:24:47 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/08 16:27:17 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ int main()
         cgi.readFromPipe();
         usleep(10000);
     }
+    cgi.readFromPipe();  // 🔥 leer lo último que quede
 
     std::cout << "\n==== CGI RAW OUTPUT ====\n";
     std::cout << cgi.getBuffer() << std::endl;

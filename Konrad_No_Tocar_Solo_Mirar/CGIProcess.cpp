@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/07 20:53:50 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/08 16:30:00 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,7 +274,7 @@ void CGIProcess::execute(const Request& request, const server& server_config)
         write(_inputPipe[1], body.c_str(), body.size());
     }
 
-    //close(_inputPipe[1]);
+    close(_inputPipe[1]);
 }
 
 
@@ -665,7 +665,29 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 {
 	Response response;
 
+	// size_t pos = output.find("\r\n\r\n");
+
+	// if (pos == std::string::npos)
+    // 	pos = output.find("\n\n");
+	// if (pos == std::string::npos)
+	// {
+	// 	response.set_statuscode(500);
+	// 	response.set_reasonphrase("Internal Server Error");
+	// 	response.set_body("CGI malformed response");
+	// 	return response;
+	// }
+
+	// std::string headerPart = output.substr(0, pos);
+	// std::string bodyPart = output.substr(pos + 4);
+
 	size_t pos = output.find("\r\n\r\n");
+	size_t separator_len = 4;
+
+	if (pos == std::string::npos)
+	{
+		pos = output.find("\n\n");
+		separator_len = 2;
+	}
 
 	if (pos == std::string::npos)
 	{
@@ -676,8 +698,8 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 	}
 
 	std::string headerPart = output.substr(0, pos);
-	std::string bodyPart = output.substr(pos + 4);
-
+	std::string bodyPart = output.substr(pos + separator_len);
+	
 	std::istringstream stream(headerPart);
 	std::string line;
 
