@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 19:45:39 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/09 16:19:02 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -372,14 +372,17 @@ void Response::make_Delete(const Request to_check,const server server_config)
 	std::string parent_path = take_parent_path(full_path);
 	if (!can_write(parent_path))	{	set_error(*this,403,server_config);	return;	}
 	if (std::remove(full_path.c_str()) != 0) {	set_error(*this,500,server_config);	return;	}
-	else
-	{
-		/*
-		como a comprovado que el archivo tiene todo correcto 
-		tenemos que mandar un html de un formulario que nos hara un post que ejecutara
-		el cgi de un programa que borra el archivo
-		*/
-	}
+	else{
+			set_version("HTTP/1.1");
+			set_statuscode(204);
+			set_reasonphrase(select_valuePhrase(204));
+			this->_body.clear();
+			this->_headers.clear();
+			addback_headers("Content-Length",toString(0));
+			addback_headers("Connection","close");
+			return;
+		}
+
 }
 void Response::make_Post(const Request to_check,const server server_config)
 {
