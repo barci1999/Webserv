@@ -10,15 +10,15 @@
 int main()
 {
     // 🔹 1. Crear request desde string
-    std::string raw_request = 
-    "GET /test/ HTTP/1.1\r\n"
+  std::string raw_request = 
+    "DELETE /test/archivo_prueba.txt HTTP/1.1\r\n"
     "Host: localhost\r\n"
     "Connection: close\r\n"
     "\r\n";
     Request req;
 	RequestParser::parse(raw_request,req);
 	RequestParser::valid_request(req);
-	//std::cout << req<<std::endl;
+	std::cout << req<<std::endl;
 	
 	Block location;
 	server Server;
@@ -36,6 +36,10 @@ int main()
 	srv_Error.name = "error_page";
 	srv_Error.args.push_back("404");
 	srv_Error.args.push_back("Parseo_solo_toca_Pablo/www/error_pages/404.html");
+    Directive srv_Error_2;
+    srv_Error_2.name = "error_page";
+    srv_Error_2.args.push_back("403");
+    srv_Error.args.push_back("Parseo_solo_toca_Pablo/www/error_pages/403.html");
 	Directive srv_autoindex;
 	srv_autoindex.name = "autoindex";
 	srv_autoindex.args.push_back("on");
@@ -53,6 +57,7 @@ int main()
 	Directive methods;
 	methods.name = "allowed_methods";
 	methods.args.push_back("GET");
+    methods.args.push_back("DELETE");
 	location.addDirective(methods);
 	location.addDirective(root_locattion);
 	//location.addDirective(index_location);
@@ -72,14 +77,18 @@ int main()
 	Server.set_srvAutoindex(srv_autoindex);
 	Server.set_srvLocations(to_isert);
 
-	//std::cout<<Server<<std::endl;
+	std::cout<<Server<<std::endl;
 
 	
-	//std::cout << "======================================================" <<std::endl;
+	std::cout << "======================================================" <<std::endl;
 	
 	Response hola(req,Server);
 	std::cout << res_to_str(hola) << std::endl;
-	std::cout<<req<<std::endl;
+
+    std::cout << "======================================================" <<std::endl;
+
+
+	//std::cout<<req<<std::endl;
 
     // 🔹 4. Ejecutar GET
 
