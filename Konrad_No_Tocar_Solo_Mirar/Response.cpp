@@ -6,7 +6,7 @@
 /*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/09 16:19:02 by pablo            ###   ########.fr       */
+/*   Updated: 2026/04/10 19:18:43 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,9 @@ Response::Response(const Request to_check, const server server_config)
         else if (to_check.get_method() == "GET")
             make_Get(to_check, server_config);
         else if (to_check.get_method() == "DELETE")
+		{
             make_Delete(to_check, server_config);
+		}
         else
             set_error(*this, 405,server_config);
     }
@@ -154,12 +156,12 @@ void Response::make_Get(const Request to_check,const server server_config)
 		root = server_config.get_srvRoot();
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
-	if (root_path[root_path.size() -1] != '/')
-	{
-		root_path += '/';
-	}
 	std::string full_path = root_path + relative;
 	std::string body;
+	/*if (!full_path.empty() && full_path[0] == '/')
+	{
+		full_path.erase(0,1);	
+	}*/
 	if (!file_exist(full_path)) 
 	{
 		set_error(*this,404,server_config);
@@ -246,6 +248,7 @@ void Response::set_error(Response& modifi,unsigned int error,const server& serve
 	}
 	else
 		modifi.set_statuscode(error);
+
 	std::vector<Directive> errors = server_config.get_srvErrorPage();
 	std::string error_path = "";
 	std::string body;
@@ -255,6 +258,10 @@ void Response::set_error(Response& modifi,unsigned int error,const server& serve
 		{
 			error_path = it->args[1];
 		}
+	}
+	if (!error_path.empty() && error_path[0] == '/')
+	{
+		error_path.erase(0,1);	
 	}
 	if (error_path.empty())
 	{
@@ -344,7 +351,7 @@ std::string res_to_str(const Response& to_change)
 void Response::make_Delete(const Request to_check,const server server_config)
 {
 	std::string path = to_check.get_path();
-    if (path.empty()) {	set_error(*this,404,server_config);	return;	}
+    if (path.empty()) {(*this,404,server_config);	return;	}
 	
 	Block best_loc = find_best_location(path,server_config);
 	if (best_loc.getName().empty())	{	set_error(*this,404,server_config);	return;	}
@@ -357,16 +364,17 @@ void Response::make_Delete(const Request to_check,const server server_config)
 	
 	std::vector<std::string>::iterator it = std::find(methods.args.begin(),methods.args.end(),"DELETE");
 	if (it == methods.args.end())	{	set_error(*this,405,server_config);	return;	}
-
+	
 	size_t max_len = best_loc.getName().length();
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
-	if (root_path[root_path.size() -1] != '/')
-	{
-		root_path += '/';
-	}
 	std::string full_path = root_path + relative;
-	if(!file_exist(full_path)) {	set_error(*this,404,server_config);	return;	}
+	if (!full_path.empty() && full_path[0] == '/')
+	{
+		full_path.erase(0,1);	
+	}
+	std::cout << "AAAAAAAAA"<<full_path<<std::endl;
+	if(!file_exist(full_path)) { set_error(*this,404,server_config);	return;	}
 	if(is_directory(full_path)) {	set_error(*this,403,server_config);	return;	}
 	
 	std::string parent_path = take_parent_path(full_path);

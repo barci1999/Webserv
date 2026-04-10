@@ -1,0 +1,18 @@
+server {
+    listen 8080;
+    root /Parseo_solo_toca_Pablo/www/sandbox;
+    error_page 400 /Parseo_solo_toca_Pablo/www/error_pages/400.html;
+    error_page 403 /Parseo_solo_toca_Pablo/www/error_pages/403.html;
+    error_page 404 /Parseo_solo_toca_Pablo/www/error_pages/404.html;
+    error_page 405 /Parseo_solo_toca_Pablo/www/error_pages/405.html;
+    error_page 500 /Parseo_solo_toca_Pablo/www/error_pages/500.html;
+    error_page 501 /Parseo_solo_toca_Pablo/www/error_pages/501.html;
+    autoindex on;
+    
+    location /test {
+        root /Parseo_solo_toca_Pablo/www/sandbox;
+        index parrot.html;
+        autoindex on;
+        allowed_methods GET DELETE;
+    }
+}
