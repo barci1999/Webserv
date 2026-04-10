@@ -16,15 +16,23 @@ int main()
   {
 	/* code */
 	std::string raw_request = 
-	"DELETE /test/archivo_prueba.txt HTTP/1.1\r\n"
+	"POST /test/archivo_prueba.txt HTTP/1.1\r\n"
 	"Host: localhost\r\n"
+	"Transfer-Encoding: chunked\r\n"
 	"Connection: close\r\n"
+	"\r\n"
+	"5\r\n"
+	"hola \r\n"
+	"6\r\n"
+	"mundo!\r\n"
+	"0\r\n"
 	"\r\n";
+	"hola mundo";
 	Request req;
 	RequestParser::parse(raw_request,req);
 	RequestParser::valid_request(req);
 	std::cout << req<<std::endl;
-	Parser parser;
+	/*Parser parser;
 	std::vector<server> list = parser.parseFile("conf_test_response.txt");
 	std::vector<server>::iterator it = list.begin();
 	server Server = *it;
@@ -36,6 +44,7 @@ int main()
 	std::cout << res_to_str(hola) << std::endl;
   
 	std::cout << "======================================================" <<std::endl;
+	*/
   }
   catch(const std::exception& e)
   {
