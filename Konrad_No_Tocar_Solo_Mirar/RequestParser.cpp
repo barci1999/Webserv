@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/23 16:52:09 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/10 21:57:16 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestParser.hpp"
 #include "cstdlib"
+#include "../utils.hpp"
 
 void RequestParser::ParseBody(const std::string& bodyContent, Request& request)
 {
@@ -326,37 +327,84 @@ bool RequestParser::valid_version(Request& to_check)
 	return true;
 	
 }
-bool RequestParser::valid_headers(Request& to_check)
+e_check RequestParser::is_chunked(const Request& req)
 {
-	const std::map<std::string,std::string>& headers = to_check.get_headers();
-	if (headers.find("host") == headers.end())
-	{
-		
-		RequestParser::set_error(to_check,400,"Bad Request");
-		return false;
-	}
-	if (to_check.get_method() == "POST")
-	{
-		if (headers.find("content-length") == headers.end())
-		{
-			RequestParser::set_error(to_check,400,"Bad Request");
-			return false;
-		}
-	}
-	for (std::map<std::string,std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
-	{
-		const std::string& name = it->first;
-		for (size_t i = 0; i < name.size(); ++i)
-		{
-			unsigned char c = name[i];
-			if (c <= 31 || c == 127)
-			{
-				RequestParser::set_error(to_check,400,"Bad Request");
-				return false;
-			}
-		}
-	}
-	return true;
+    const std::map<std::string,std::string>& headers = req.get_headers();
+    std::map<std::string,std::string>::const_iterator it = headers.find("transfer-encoding");
+
+    if (it == headers.end())
+        return KO;
+
+    if (it->second.empty())
+        return ERROR;
+
+    if (it->second.find("chunked") == std::string::npos)
+        return ERROR;
+
+    return OK;
+}
+e_check RequestParser::has_cont_length(const Request& req)
+{
+    const std::map<std::string,std::string>& headers = req.get_headers();
+    std::map<std::string,std::string>::const_iterator it = headers.find("content-length");
+
+    if (it == headers.end())
+        return KO;
+
+    if (it->second.empty())
+        return ERROR;
+
+    if (!is_valid_number(it->second))
+        return ERROR;
+
+    return OK;
+}
+bool RequestParser::valid_headers(Request& req)
+{
+    const std::map<std::string,std::string>& h = req.get_headers();
+
+    if (h.find("host") == h.end())
+    {
+        set_error(req,400,"Bad Request");
+        return false;
+    }
+
+    bool has_cl = (h.find("content-length") != h.end());
+    bool has_te = (h.find("transfer-encoding") != h.end());
+
+    if (has_cl && has_te)
+    {
+        set_error(req,400,"Bad Request");
+        return false;
+    }
+
+    if (req.get_method() == "POST")
+    {
+        if (!has_cl && !has_te)
+        {
+            set_error(req,400,"Bad Request");
+            return false;
+        }
+    }
+
+    // validar nombres de headers
+    for (std::map<std::string,std::string>::const_iterator it = h.begin();
+         it != h.end(); ++it)
+    {
+        const std::string& name = it->first;
+
+        for (size_t i = 0; i < name.size(); ++i)
+        {
+            unsigned char c = name[i];
+            if (c <= 31 || c == 127)
+            {
+                set_error(req,400,"Bad Request");
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 bool RequestParser::valid_body(Request& to_check)
 {
@@ -381,6 +429,7 @@ bool RequestParser::valid_body(Request& to_check)
 	size_t content_length = std::atoi(it->second.c_str());
 	if (body.length() != content_length)
 	{
+		std::cout << body.length() << " | " << content_length <<std::endl;
 		RequestParser::set_error(to_check,400,"Bad Request");
 		return false;
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 17:27:30 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/10 21:29:42 by pablo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,4 +116,17 @@ std::string take_parent_path(const std::string& chilf_path)
 	else
 		parent_path = chilf_path.substr(0, pos);
 	return parent_path;
+}
+bool is_valid_number(const std::string& nbr)
+{
+	if (nbr.empty())
+        return false;
+
+    for (size_t i = 0; i < nbr.size(); i++)
+    {
+        if (!std::isdigit(nbr[i]))
+            return false;
+    }
+    return true;
+	
 }
