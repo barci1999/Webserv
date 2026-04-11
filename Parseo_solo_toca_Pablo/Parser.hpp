@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:42 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/04 21:03:44 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/11 16:38:27 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,18 +16,9 @@
 # include<fstream>
 # include"Block.hpp"
 # include"server.hpp"
+# include"../utils.hpp"
 # include<vector>
 
-enum tokens
-{
-	EMPTY,
-	COMMENT,
-	DIRECTIVE,
-	SERVER_BLOCK_START,
-	BLOCK_START,
-	BLOCK_END,
-	ERROR,
-};
 
 class Parser
 {

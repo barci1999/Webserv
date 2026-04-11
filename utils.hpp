@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:28:51 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/10 21:29:07 by pablo            ###   ########.fr       */
+/*   Updated: 2026/04/11 17:34:07 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,25 @@
 #include "Parseo_solo_toca_Pablo/Directive.hpp"
 #include "Parseo_solo_toca_Pablo/Block.hpp"
 #include "Parseo_solo_toca_Pablo/server.hpp"
+#include "Konrad_No_Tocar_Solo_Mirar/Request.hpp"
 #include <fstream>
 #include <unistd.h>
 #include <iostream>
 #include <sstream>
 #include<sys/stat.h>
+enum tokens
+{
+	EMPTY,
+	COMMENT,
+	DIRECTIVE,
+	SERVER_BLOCK_START,
+	BLOCK_START,
+	BLOCK_END,
+	OK,
+	KO,
+	ERROR,
+};
+
 Directive search_directive(std::string to_cheack,const Block block);
 std::string toString(unsigned int value);
 bool is_directory(const std::string& path);
@@ -31,3 +45,4 @@ std::string extractExtension(const std::string& path);
 std::string take_parent_path(const std::string& chil_path);
 bool can_write(const std::string file);
 bool is_valid_number(const std::string& nbr);
+std::string parse_chunked_body(Request& req);
