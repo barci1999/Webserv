@@ -10,47 +10,42 @@
 
 int main()
 {
-  
+
 	// 🔹 1. Crear request desde string
-  try
-  {
+	try
+	{
 	/* code */
-	std::string raw_request = 
-	"POST /test/archivo_prueba.txt HTTP/1.1\r\n"
-	"Host: localhost\r\n"
-	"Transfer-Encoding: chunked\r\n"
-	"Connection: close\r\n"
-	"\r\n"
-	"5\r\n"
-	"hola \r\n"
-	"6\r\n"
-	"mundo!\r\n"
-	"0\r\n"
-	"\r\n";
-	"hola mundo";
+	std::string raw_request =
+"GET /index.html HTTP/1.1\r\n"
+"Host: localhost\r\n"
+"Transfer-Encoding: chunked\r\n"
+"\r\n";
 	Request req;
 	RequestParser::parse(raw_request,req);
+	std::cout<<"=============================================================="<<std::endl;
+	std::cout << req.get_body()<<std::endl;
 	RequestParser::valid_request(req);
+	std::cout<<"=============================================================="<<std::endl;
+	std::cout << req.get_body()<<std::endl;
 	std::cout << req<<std::endl;
 	/*Parser parser;
 	std::vector<server> list = parser.parseFile("conf_test_response.txt");
 	std::vector<server>::iterator it = list.begin();
 	server Server = *it;
-  
+
 	std::cout<<Server<<std::endl;
 	std::cout << "======================================================" <<std::endl;
 	
 	Response hola(req,Server);
 	std::cout << res_to_str(hola) << std::endl;
-  
+
 	std::cout << "======================================================" <<std::endl;
 	*/
-  }
-  catch(const std::exception& e)
-  {
+	}
+	catch(const std::exception& e)
+	{
 	std::cerr << e.what() << '\n';
-  }
-  
+	}
 
 
     return 0;

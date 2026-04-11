@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestParser.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/10 21:57:16 by pablo            ###   ########.fr       */
+/*   Updated: 2026/04/11 18:45:24 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,39 +219,6 @@ Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 	return request;
 }
 
-
-// #include <iostream>
-
-// int main()
-// {
-//     // Simulamos una request HTTP completa
-//     std::string rawRequest =
-//         "POST /test.py?name=juan HTTP/1.1\r\n"
-//         "Host: localhost\r\n"
-//         "Content-Length: 11\r\n"
-//         "Content-Type: text/plain\r\n"
-//         "\r\n"
-//         "Hola Mundo";
-
-//     RequestParser parser;
-//     Request req = parser.parse(rawRequest);
-
-//     // Mostramos resultados
-//     std::cout << "Method: " << req.get_method() << std::endl;
-//     std::cout << "Path: " << req.get_path() << std::endl;
-//     std::cout << "Query: " << req.get_query() << std::endl;
-//     std::cout << "Version: " << req.get_version() << std::endl;
-
-//     std::cout << "\nHeaders:\n";
-//     for (std::map<std::string, std::string>::iterator it = req.get_headers().begin(); it != req.get_headers().end(); ++it)
-//     {
-//         std::cout << it->first << " => " << it->second << std::endl;
-//     }
-
-//     std::cout << "\nBody: " << req.get_body() << std::endl;
-
-//     return 0;
-// }
 void RequestParser::set_error(Request& req, unsigned int code,const std::string error_phrase)
 {
 	req.set_final_status(error_phrase);
@@ -327,7 +294,7 @@ bool RequestParser::valid_version(Request& to_check)
 	return true;
 	
 }
-e_check RequestParser::is_chunked(const Request& req)
+tokens RequestParser::is_chunked(const Request& req)
 {
     const std::map<std::string,std::string>& headers = req.get_headers();
     std::map<std::string,std::string>::const_iterator it = headers.find("transfer-encoding");
@@ -343,7 +310,7 @@ e_check RequestParser::is_chunked(const Request& req)
 
     return OK;
 }
-e_check RequestParser::has_cont_length(const Request& req)
+tokens RequestParser::has_cont_length(const Request& req)
 {
     const std::map<std::string,std::string>& headers = req.get_headers();
     std::map<std::string,std::string>::const_iterator it = headers.find("content-length");
@@ -386,10 +353,8 @@ bool RequestParser::valid_headers(Request& req)
             return false;
         }
     }
-
-    // validar nombres de headers
     for (std::map<std::string,std::string>::const_iterator it = h.begin();
-         it != h.end(); ++it)
+        it != h.end(); ++it)
     {
         const std::string& name = it->first;
 
@@ -403,37 +368,65 @@ bool RequestParser::valid_headers(Request& req)
             }
         }
     }
-
     return true;
 }
-bool RequestParser::valid_body(Request& to_check)
+
+bool RequestParser::valid_body(Request& req)
 {
-	std::string method = to_check.get_method();
-	std::string body = to_check.get_body();
-	std::map<std::string,std::string> headers =  to_check.get_headers();
-	if (method != "POST")
-	{
-		return true;
-	}
-	std::map<std::string,std::string>::iterator it = headers.find("content-length");
-	if(it == headers.end())
-	{
-		RequestParser::set_error(to_check,400,"Bad Request");
-		return false;
-	}
-	if (it->second.empty())
-	{
-		RequestParser::set_error(to_check,400,"Bad Request");
-		return false;
-	}
-	size_t content_length = std::atoi(it->second.c_str());
-	if (body.length() != content_length)
-	{
-		std::cout << body.length() << " | " << content_length <<std::endl;
-		RequestParser::set_error(to_check,400,"Bad Request");
-		return false;
-	}
-	return true;
+    if (req.get_method() != "POST")
+        return true;
+
+    const std::map<std::string,std::string>& headers = req.get_headers();
+
+    tokens chunk = is_chunked(req);
+    tokens c_length = has_cont_length(req);
+
+    if ((chunk == ERROR || c_length == ERROR) ||
+        (chunk == OK && c_length == OK) ||
+        (chunk == KO && c_length == KO))
+    {
+        set_error(req,400,"Bad Request");
+        return false;
+    }
+    if (chunk == OK)
+    {
+        std::string new_body = parse_chunked_body(req);
+		// if (req.get_body().find("0\r\n\r\n") != std::string::npos)
+		// {
+		// 	std::cout<<"holaaaaaaaaa"<<std::endl;
+		// 	set_error(req,400,"Bad Request");
+        //     return false;
+		// }
+		std::cout<<"\""<<new_body<<"\""<<std::endl;
+
+        if (new_body.empty() && req.get_body() != "0\r\n\r\n")
+        {
+            set_error(req,400,"Bad Request");
+            return false;
+        }
+
+        req.set_body(new_body);
+        return true;
+    }
+    std::map<std::string,std::string>::const_iterator it = headers.find("content-length");
+    if (it == headers.end())
+    {
+        set_error(req,400,"Bad Request");
+        return false;
+    }
+    char* end = NULL;
+    long len = strtol(it->second.c_str(), &end, 10);
+    if (*end != '\0' || len < 0)
+    {
+        set_error(req,400,"Bad Request");
+        return false;
+    }
+    if (req.get_body().size() != (size_t)len)
+    {
+        set_error(req,400,"Bad Request");
+        return false;
+    }
+    return true;
 }
 
 

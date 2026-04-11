@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/10 21:29:42 by pablo            ###   ########.fr       */
+/*   Updated: 2026/04/11 18:54:11 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ Block find_best_location(const std::string& path, const server& server_config)
 	size_t max_len = 0;
 
 	for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();
-		 it != server_config.get_srvLocations().end(); ++it)
+		it != server_config.get_srvLocations().end(); ++it)
 	{
 		std::string loc = it->getName();
 
@@ -129,4 +129,56 @@ bool is_valid_number(const std::string& nbr)
     }
     return true;
 	
+}
+std::string parse_chunked_body(Request& req)
+{
+    std::string old_body = req.get_body();
+    std::string result;
+
+    size_t i = 0;
+    bool found_last_chunk = false;
+
+    while (i < old_body.size())
+    {
+        size_t end_line = old_body.find("\r\n", i);
+        if (end_line == std::string::npos)
+            return "";
+
+        std::string size_str = old_body.substr(i, end_line - i);
+
+        char* endptr = NULL;
+        long size = strtol(size_str.c_str(), &endptr, 16);
+
+        if (*endptr != '\0' || size < 0)
+            return "";
+
+        i = end_line + 2;
+
+        if (size == 0)
+        {
+            found_last_chunk = true;
+            i += 2; // saltar el \r\n después del 0
+            break;
+        }
+
+        if (i + (size_t)size > old_body.size())
+            return "";
+
+        result.append(old_body.substr(i, size));
+
+        i += size;
+
+        if (i + 1 >= old_body.size() || old_body.substr(i, 2) != "\r\n")
+            return "";
+
+        i += 2;
+    }
+
+    if (!found_last_chunk)
+        return "";
+
+    if (i != old_body.size())
+        return "";
+
+    return result;
 }
