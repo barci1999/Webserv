@@ -11,7 +11,7 @@ server {
     
     location /test {
         root /Parseo_solo_toca_Pablo/www/sandbox;
-        index parrot.html;
+        index /parrot.html;
         autoindex on;
         allowed_methods GET DELETE;
     }
