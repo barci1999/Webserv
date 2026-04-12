@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:14:57 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/05 16:13:12 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/12 17:37:34 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ public:
 	void setName(std::string name){this->_name = name; return;}
 	const std::string& getName() const;
 	const std::vector<Directive>& getDirectives() const;
+	std::vector<Directive>& getDirectivesMutable() {return this->_directives;}
 	
 	
 

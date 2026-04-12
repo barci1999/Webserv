@@ -16,7 +16,7 @@ int main()
 	{
 	/* code */
 	std::string raw_request =
-"GET /index.html HTTP/1.1\r\n"
+"GET /parrot.html HTTP/1.1\r\n"
 "Host: localhost\r\n"
 "Transfer-Encoding: chunked\r\n"
 "\r\n";
@@ -28,7 +28,7 @@ int main()
 	std::cout<<"=============================================================="<<std::endl;
 	std::cout << req.get_body()<<std::endl;
 	std::cout << req<<std::endl;
-	/*Parser parser;
+	Parser parser;
 	std::vector<server> list = parser.parseFile("conf_test_response.txt");
 	std::vector<server>::iterator it = list.begin();
 	server Server = *it;
@@ -37,10 +37,10 @@ int main()
 	std::cout << "======================================================" <<std::endl;
 	
 	Response hola(req,Server);
-	std::cout << res_to_str(hola) << std::endl;
+	//std::cout << res_to_str(hola) << std::endl;
 
 	std::cout << "======================================================" <<std::endl;
-	*/
+	
 	}
 	catch(const std::exception& e)
 	{

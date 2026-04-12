@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/05 17:46:04 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/12 17:38:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ private:
 	Directive check_error_page(const Directive& to_check);
 	Directive check_root(const Directive& to_check);
 	Directive check_listen(const Directive& to_check);
+	void normalize_location(Block& loc);
 	
 	
 	public:

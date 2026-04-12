@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablo <pablo@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/10 19:09:15 by pablo            ###   ########.fr       */
+/*   Updated: 2026/04/12 17:39:31 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,8 @@ bool server::check_location_block(const Block& loc)
             throw std::runtime_error("Directive " + d.name + " requires at least one argument");
         if (d.name == "root")
         {
-            if (d.args[0][0] != '/')
-                throw std::runtime_error("root must start with '/'");
+            if (d.args.empty())
+                throw std::runtime_error("root args cant be empty");
         }
         else if (d.name == "autoindex")
         {
@@ -255,39 +255,56 @@ Directive server::take_concret_direc(const std::string& to_search, const std::ve
 }
 Directive server::check_error_page(const Directive& to_check)
 {
-    if (to_check.name.empty() || to_check.name != "error_page")
+    if (to_check.name != "error_page" || to_check.args.size() < 2)
         return Directive();
-    if (to_check.args.size() < 2)
-        return Directive();
-    for (size_t i = 0; i + 1 < to_check.args.size(); ++i)
+
+    Directive clean = to_check;
+
+    for (size_t i = 0; i + 1 < clean.args.size(); ++i)
     {
-        int code = std::atoi(to_check.args[i].c_str());
+        int code = std::atoi(clean.args[i].c_str());
         if (code < 400 || code > 599)
-			return Directive();
+            return Directive();
     }
-    const std::string& path = to_check.args.back();
-    if (path.empty()  || path[0] != '/') 
+
+    std::string& path = clean.args.back();
+
+    if (path.empty())
         return Directive();
-    return to_check;
+
+    if (!path.empty() && path[0] == '/')
+	{
+        path.erase(0, 1);
+	}
+    return clean;
 }
 Directive server::check_index(const Directive& to_check)
 {
     if (to_check.name.empty() || to_check.name != "index")
-        return Directive(); 
+        return Directive();
+
     if (to_check.args.empty())
         return Directive();
+
+    const std::string& idx = to_check.args[0];
+
+    if (!idx.empty() && idx[0] == '/')
+        return Directive();
+
     return to_check;
 }
 Directive server::check_root(const Directive& to_check)
 {
-    if (to_check.name.empty() || to_check.name != "root")
+    if (to_check.name != "root" || to_check.args.empty())
         return Directive();
-    if (to_check.args.empty())
-        return Directive();
-    const std::string& path = to_check.args[0];
-    if (path.empty() || path[0] != '/')
-        return Directive();
-    return to_check;
+
+    Directive clean = to_check;
+    std::string& path = clean.args[0];
+
+    if (!path.empty() && path[0] == '/')
+        path.erase(0, 1);
+
+    return clean;
 }
 Directive server::check_listen(const Directive& to_check)
 {
@@ -310,10 +327,11 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
     {
         if (it->name == "error_page") 
         {
-            if (check_error_page(*it).name.empty())
-                throw std::runtime_error("Invalid error_page directive");
-            this->_srvErrorPage.push_back(*it);
-            continue;
+			Directive checked = check_error_page(*it);
+			if (checked.name.empty())
+				throw std::runtime_error("Invalid error_page directive");
+			this->_srvErrorPage.push_back(checked);
+			continue;
         }
 
         if (seen.find(it->name) != seen.end())
@@ -348,23 +366,41 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
     }
     return 0;
 }
+void server::normalize_location(Block& loc)
+{
+    std::vector<Directive>& directives = loc.getDirectivesMutable();
+
+    for (size_t i = 0; i < directives.size(); ++i)
+    {
+        for (size_t j = 0; j < directives[i].args.size(); ++j)
+        {
+            if (!directives[i].args[j].empty() &&
+                directives[i].args[j][0] == '/')
+            {
+                directives[i].args[j].erase(0, 1);
+            }
+        }
+    }
+}
 int server::insert_locations(const std::list<Block>& to_insert)
 {
     std::set<std::string> location_names;
 
     for (std::list<Block>::const_iterator it = to_insert.begin(); it != to_insert.end(); ++it)
     {
-        check_location_block(*it);
-		if (take_concret_direc("root", it->getDirectives()).name.empty())
+		Block clean = *it;
+		normalize_location(clean);
+        check_location_block(clean);
+		if (take_concret_direc("root", clean.getDirectives()).name.empty())
 		{
 			throw std::runtime_error("No root directive detected in block -> " + it->getName());
 		}
 		
-        const std::string& loc_name = it->getName();
+        const std::string& loc_name = clean.getName();
         if (location_names.find(loc_name) != location_names.end())
             throw std::runtime_error("Duplicate location block -> " + loc_name);
         location_names.insert(loc_name);
-        this->_srvLocations.push_back(*it);
+        this->_srvLocations.push_back(clean);
     }
 
     return 0;
