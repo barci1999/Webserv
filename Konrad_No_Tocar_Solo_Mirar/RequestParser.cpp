@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/11 18:45:24 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/12 19:30:57 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -391,14 +391,6 @@ bool RequestParser::valid_body(Request& req)
     if (chunk == OK)
     {
         std::string new_body = parse_chunked_body(req);
-		// if (req.get_body().find("0\r\n\r\n") != std::string::npos)
-		// {
-		// 	std::cout<<"holaaaaaaaaa"<<std::endl;
-		// 	set_error(req,400,"Bad Request");
-        //     return false;
-		// }
-		std::cout<<"\""<<new_body<<"\""<<std::endl;
-
         if (new_body.empty() && req.get_body() != "0\r\n\r\n")
         {
             set_error(req,400,"Bad Request");

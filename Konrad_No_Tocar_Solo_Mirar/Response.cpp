@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/12 17:00:29 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/12 18:55:25 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,16 +154,12 @@ void Response::make_Get(const Request to_check,const server server_config)
 		root = search_directive("root",best_location);
 		has_loc = true;
 	}
-	std::cout << "AAAAAAAAAAAAAAAA" <<root.name<<std::endl;
 	if (root.name.empty() || root.args.empty())
 		root = server_config.get_srvRoot();
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
 	std::string full_path = root_path + relative;
 	std::string body;
-	std::cout<<"root_path->" <<root_path<<std::endl;
-	std::cout<<"relative ->" <<relative<<std::endl;
-	std::cout<<"full_path->" <<full_path<<std::endl;
 	if (!file_exist(full_path)) 
 	{
 		set_error(*this,404,server_config);
@@ -371,11 +367,6 @@ void Response::make_Delete(const Request to_check,const server server_config)
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
 	std::string full_path = root_path + relative;
-	if (!full_path.empty() && full_path[0] == '/')
-	{
-		full_path.erase(0,1);	
-	}
-	std::cout << "AAAAAAAAA"<<full_path<<std::endl;
 	if(!file_exist(full_path)) { set_error(*this,404,server_config);	return;	}
 	if(is_directory(full_path)) {	set_error(*this,403,server_config);	return;	}
 	
