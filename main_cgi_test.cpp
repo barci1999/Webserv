@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 16:30:12 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/09 18:53:30 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/13 18:24:48 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,140 @@ void createRequests(Request &req1, Request &req2)
     RequestParser::parse(raw_request2, req2);
 }
 
+Response executeCGIWithPoll(Request& req, server& srv)
+{
+    CGIProcess* cgi = new CGIProcess();
+
+    if (!cgi->isCGI(req, srv))
+        throw std::runtime_error("No es CGI");
+
+    cgi->execute(req, srv);
+
+    int fd = cgi->getFD();
+
+    struct pollfd pol;
+    pol.fd = fd;
+    pol.events = POLLIN | POLLHUP;
+    pol.revents = 0;
+
+    std::vector<pollfd> pollfds;
+    pollfds.push_back(pol);
+
+    while (true)
+    {
+        int ret = poll(&pollfds[0], pollfds.size(), -1);
+        if (ret < 0)
+        {
+            perror("poll");
+            break;
+        }
+
+        // 🔴 CGI TERMINADO
+        if (pollfds[0].revents & (POLLHUP | POLLERR))
+        {
+            cgi->readFromPipe(); // leer lo último
+
+            Response res = cgi->buildResponse();
+
+            close(fd);
+            delete cgi;
+
+            return res;
+        }
+
+        // 🟢 DATOS DISPONIBLES
+        if (pollfds[0].revents & POLLIN)
+        {
+            cgi->readFromPipe();
+        }
+    }
+
+    delete cgi;
+    throw std::runtime_error("Error ejecutando CGI");
+}
+
+
+
+std::vector<Response> executeMultipleCGIWithPoll(std::vector<Request>& requests, server& srv)
+{
+    std::vector<Response> responses;
+
+    std::vector<pollfd> pollfds;
+    std::map<int, CGIProcess*> cgi_map;
+
+    // 🔹 1. LANZAR TODOS LOS CGI
+    for (size_t i = 0; i < requests.size(); i++)
+    {
+        CGIProcess* cgi = new CGIProcess();
+
+        if (!cgi->isCGI(requests[i], srv))
+        {
+            delete cgi;
+            continue;
+        }
+
+        cgi->execute(requests[i], srv);
+
+        int fd = cgi->getFD();
+
+        struct pollfd p;
+        p.fd = fd;
+        p.events = POLLIN | POLLHUP;
+        p.revents = 0;
+
+        pollfds.push_back(p);
+        cgi_map[fd] = cgi;
+    }
+
+    // 🔥 2. LOOP ÚNICO (LA CLAVE)
+    while (!cgi_map.empty())
+    {
+        int ret = poll(&pollfds[0], pollfds.size(), -1);
+        if (ret < 0)
+        {
+            perror("poll");
+            break;
+        }
+
+        for (size_t i = 0; i < pollfds.size(); i++)
+        {
+            int fd = pollfds[i].fd;
+
+            // 🔴 TERMINADO
+            if (pollfds[i].revents & (POLLHUP | POLLERR))
+            {
+                CGIProcess* cgi = cgi_map[fd];
+
+                cgi->readFromPipe(); // leer lo último
+
+                Response res = cgi->buildResponse();
+                responses.push_back(res);
+
+                close(fd);
+                delete cgi;
+
+                cgi_map.erase(fd);
+                pollfds.erase(pollfds.begin() + i);
+                i--;
+                continue;
+            }
+
+            // 🟢 HAY DATOS
+            if (pollfds[i].revents & POLLIN)
+            {
+                CGIProcess* cgi = cgi_map[fd];
+                cgi->readFromPipe();
+            }
+        }
+    }
+
+    return responses;
+}
+
+
+
+
+
 int main()
 {
     Request req1, req2;
@@ -92,32 +226,32 @@ int main()
     // =========================================================
 
 
-    std::cout << "\n===== SECUENCIAL =====\n";
+    // std::cout << "\n===== SECUENCIAL =====\n";
 
-    CGIProcess cgi1;
-    if (!cgi1.isCGI(req1, srv))
-        return 1;
+    // CGIProcess cgi1;
+    // if (!cgi1.isCGI(req1, srv))
+    //     return 1;
 
-    cgi1.execute(req1, srv);
+    // cgi1.execute(req1, srv);
 
-    while (!cgi1.isFinished())
-        cgi1.readFromPipe();
+    // while (!cgi1.isFinished())
+    //     cgi1.readFromPipe();
 
-    std::cout << "\n--- CGI 1 ---\n";
-    std::cout << cgi1.getBuffer() << std::endl;
+    // std::cout << "\n--- CGI 1 ---\n";
+    // std::cout << cgi1.getBuffer() << std::endl;
 
 
-    CGIProcess cgi2;
-    if (!cgi2.isCGI(req2, srv))
-        return 1;
+    // CGIProcess cgi2;
+    // if (!cgi2.isCGI(req2, srv))
+    //     return 1;
 
-    cgi2.execute(req2, srv);
+    // cgi2.execute(req2, srv);
 
-    while (!cgi2.isFinished())
-        cgi2.readFromPipe();
+    // while (!cgi2.isFinished())
+    //     cgi2.readFromPipe();
 
-    std::cout << "\n--- CGI 2 ---\n";
-    std::cout << cgi2.getBuffer() << std::endl;
+    // std::cout << "\n--- CGI 2 ---\n";
+    // std::cout << cgi2.getBuffer() << std::endl;
 
 
     // =========================================================
@@ -210,6 +344,46 @@ int main()
     //         }
     //     }
     // }
+
+    // std::cout << "\n===== CON POLL ( HECHO PRIMERO UNO Y LUEGO EL OTRO) =====\n";
+
+    // try
+    // {
+    //     Response res1 = executeCGIWithPoll(req1, srv);
+    //     std::cout << "\n--- RESPONSE 1 ---\n";
+    //     std::cout << res1.get_body() << std::endl;
+
+    //     Response res2 = executeCGIWithPoll(req2, srv);
+    //     std::cout << "\n--- RESPONSE 2 ---\n";
+    //     std::cout << res2.get_body() << std::endl;
+    //     // executeCGIWithPoll()  // uno
+    //     // executeCGIWithPoll()  // otro
+    //     // Eso crea 2 loops de poll independientes, nunca conviven, nunca se ejecutan a la vez
+    // }
+    // catch (std::exception& e)
+    // {
+    //     std::cerr << "Error: " << e.what() << std::endl;
+    // }
+
+    
+
+    std::cout << "\n===== CON POLL ( EN PRINCIPIO BIEN HECHO) =====\n";
+
+    std::vector<Request> requests;
+    requests.push_back(req1);
+    requests.push_back(req2);
+
+    std::cout << "\n===== MULTI CGI (REAL PARALELO) =====\n";
+
+    std::vector<Response> responses =
+        executeMultipleCGIWithPoll(requests, srv);
+
+    for (size_t i = 0; i < responses.size(); i++)
+    {
+        std::cout << "\n--- RESPONSE " << i << " ---\n";
+        std::cout << responses[i].get_body() << std::endl;
+    }
+    
 
     std::cout << "\n🔥 TODO TERMINADO\n";
 
