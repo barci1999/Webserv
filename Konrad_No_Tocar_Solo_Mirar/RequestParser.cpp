@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/12 19:30:57 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/14 14:57:24 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,32 +92,39 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 		}
 	}
 }
-
-// Convertimos la línea completa "GET /test.py?name=juan HTTP/1.1" en un flujo para poder leer palabra por palabra.
-//El operador >> lee desde la posición actual del stream, ignora los espacios iniciales, y guarda en la variable todos los caracteres hasta el siguiente espacio
-// Buscamos si la URL contiene un '?', find devuelve la posición donde está el carácter, si no se encuentra devuelve std::string::npos.
-//  SI HAY '?' se extrae desde el inicio hasta antes del '?' y eso seria el PATH puro
-// Luego s extrae desde la posicion del '?' hasta el final y eso es la QUERY
-// Si no hay '?', toda la URL es solo path.
-// static void imprimirEscapado(const std::string& s) {
-// 	for (size_t i = 0; i < s.size(); i++) {
-// 		switch (s[i]) {
-// 			case '\n': std::cout << "\\n"; break;
-// 			case '\t': std::cout << "\\t"; break;
-// 			case '\r': std::cout << "\\r"; break;
-// 			case '\b': std::cout << "\\b"; break;
-// 			case '\f': std::cout << "\\f"; break;
-// 			case '\v': std::cout << "\\v"; break;
-// 			case '\\': std::cout << "\\\\"; break;
-// 			default:
-// 				std::cout << s[i];
-// 		}
-// 	}
-// 	std::cout<<std::endl;
-// }
+std::string RequestParser::normalize_path(const std::string& path)
+{
+    std::vector<std::string> parts;
+    std::istringstream ss(path);
+    std::string token;
+    bool is_absolute = (!path.empty() && path[0] == '/');
+    while (std::getline(ss, token, '/'))
+    {
+        if (token.empty() || token == ".")
+            continue;
+        if (token == "..")
+        {
+            if (!parts.empty())
+                parts.pop_back();
+            continue;
+        }
+        parts.push_back(token);
+    }
+    std::string result;
+    if (is_absolute)
+        result = "/";
+    for (size_t i = 0; i < parts.size(); ++i)
+    {
+        result += parts[i];
+        if (i + 1 < parts.size())
+            result += "/";
+    }
+    if (result.empty())
+        result = "/";
+    return result;
+}
 void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 {
-	//imprimirEscapado(line);
 	std::istringstream stream(line);
 	std::string temp;
 	stream >> temp;
@@ -131,12 +138,12 @@ void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 
 	if (queryPos != std::string::npos)
 	{
-		request.set_path(fullPath.substr(0, queryPos));
+		request.set_path(normalize_path(fullPath.substr(0, queryPos)));
 		request.set_query(fullPath.substr(queryPos + 1));
 	}
 	else
 	{
-		request.set_path(fullPath);
+		request.set_path(normalize_path(fullPath));
 		request.set_query("");
 	}
 }
