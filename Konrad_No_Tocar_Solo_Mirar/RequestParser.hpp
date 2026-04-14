@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:28:06 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/11 16:38:53 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/14 14:54:05 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class RequestParser
 		static std::string Trim(const std::string& str);
 		static tokens is_chunked(const Request& to_check);
 		static tokens has_cont_length(const Request& to_check);
+		static std::string normalize_path(const std::string& path);
 	public:
 		static Request& parse(const std::string& rawRequest,Request &request);
 		static bool valid_request(Request& to_check);

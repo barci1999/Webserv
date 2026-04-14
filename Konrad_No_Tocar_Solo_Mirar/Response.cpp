@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/12 18:55:25 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/14 16:50:58 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -385,10 +385,119 @@ void Response::make_Delete(const Request to_check,const server server_config)
 		}
 
 }
+// 1º sacar el path del request
+	// si sale bien continuar
+	// sacar error 404 si no 
+// 2º find best_location con el path del request
+	// si se encuentra el location continuar
+	// si no sacar error 404
+// 3º obtener el root del location
+	// si se encuentra continuar
+	// si no se encuentra usar el root del servidor
+		// si no se encuentra root del servidor sacar error 404
+// 4º validar que existe el metodo POST en allowed_methods del location
+	// si de encuentra el metodo continuar 
+	// si no se encientra sacar error 405
+// 5º validar upload_enable on/off
+	// si on continuar
+	// si off sacar error 403
+// 6º construir path real
+// 7º comprobar el path
+	// si existe y es un archivo continuar
+	// si es un directorio sacar error 403
+// 8º validar permisos de escritura dela carpeta donde esta el archivo
+	// si la carpeta tiene los permisos de escritura continuar
+	// si no sacar error 403
+// 9º comprobar que el body existe (aun que este vacio) y tiene un tamaño permitido
+	// si todo bien continuar
+	// si tiene un tamaño demasiado grande sacar un 413
+// 10º escribir el arhivo
+	// si el archivo existe (sobreescribir el archivo) y montar un response 200 (hedares = Content-Length: 0 / Connection: close)
+	// si el archivo no existe (crear el archivo y escribir en el) u montar un 201 (hedares = Content-Length: 0 / Connection: close)
+	// si no se puede abrir o falla la escritura sacar un 500
 void Response::make_Post(const Request to_check,const server server_config)
 {
-	// comprobar el archivo a crear de la request si esta ya existe se devolvera la response con 200 depues se sobreescribirlo
-	// pero si este no existe se creara y la response se devolvera con 201
+	std::string path = to_check.get_path();
+	if(path.empty()) {set_error(*this,404,server_config); return;}
 
+	Block loc = find_best_location(path,server_config);
+	if(loc.getName().empty()) {set_error(*this,404,server_config); return;}
+
+	Directive root = search_directive("root",loc);
+	if(root.name.empty())
+	{
+		root = server_config.get_srvRoot();
+		if (root.name.empty()) {set_error(*this,404,server_config); return;}
+	}
+	
+	Directive methods = search_directive("allowed_methods",loc);
+	if(methods.name.empty()) {set_error(*this,405,server_config); return;}
+
+	std::vector<std::string>::iterator it_m = std::find(methods.args.begin(),methods.args.end(),"POST");
+	if(it_m == methods.args.end()) {set_error(*this,405,server_config); return;}
+
+	Directive upload = search_directive("upload_enable",loc);
+	if(upload.name.empty()) {set_error(*this,403,server_config); return;}
+
+	std::vector<std::string>::iterator it_up = std::find(upload.args.begin(),upload.args.end(),"on");
+	if(it_up == upload.args.end()) {set_error(*this,403,server_config); return;}
+
+	if (to_check.get_body().size() > static_cast<size_t>(server_config.get_srvClientMaxBody()))
+	{
+		set_error(*this,413,server_config); return;
+	}
+	
+	size_t max_len = loc.getName().length();
+	std::string root_path = root.args[0];
+	std::string relative = path.substr(max_len);
+	std::string full_path = root_path + relative;
+	
+	int fd_file = 0;
+	if (file_exist(full_path))
+	{
+		if (is_directory(full_path)) { set_error(*this,403,server_config); return;}
+		else if (is_file(full_path) && can_write(take_parent_path(full_path)))
+		{
+			fd_file = open(full_path.c_str(),O_WRONLY | O_TRUNC);
+			set_version("HTTP/1.1");
+			set_statuscode(200);
+			set_reasonphrase(select_valuePhrase(200));
+			this->_body.clear();
+			this->_headers.clear();
+			addback_headers("Content-Length",toString(0));
+			addback_headers("Connection","close");
+		}
+		else { set_error(*this,403,server_config); return; }
+	}
+	else
+	{
+		fd_file = open(full_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC,0644);
+		set_version("HTTP/1.1");
+		set_statuscode(201);
+		set_reasonphrase(select_valuePhrase(201));
+		this->_body.clear();
+		this->_headers.clear();
+		addback_headers("Content-Length",toString(0));
+		addback_headers("Connection","close");
+	}
+	if (fd_file == -1)
+	{
+		set_error(*this,500,server_config); return;
+	}
+	
+	size_t total_bits = 0;
+	std::string body = to_check.get_body();
+	while (total_bits < body.size())
+	{
+		ssize_t w = write(fd_file,body.c_str() + total_bits, body.size() - total_bits);
+		if (w <= 0)
+		{
+			close(fd_file);
+			set_error(*this,500,server_config);
+			return;
+		}
+		total_bits += w;
+	}
+	close(fd_file);
 }
 

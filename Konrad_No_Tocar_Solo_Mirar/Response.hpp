@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/07 16:58:26 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/14 15:33:09 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include<sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include "../utils.hpp"
 #include<algorithm>
 #include <iostream>
