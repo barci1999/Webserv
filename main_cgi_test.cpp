@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 16:30:12 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/13 18:24:48 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/15 20:08:52 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,13 @@
 #include "Konrad_No_Tocar_Solo_Mirar/Request.hpp"
 #include "Konrad_No_Tocar_Solo_Mirar/RequestParser.hpp"
 #include "Konrad_No_Tocar_Solo_Mirar/Response.hpp"
+#include "Konrad_No_Tocar_Solo_Mirar/ResponseCGI.hpp"
 
 #include "Parseo_solo_toca_Pablo/server.hpp"
 #include "Parseo_solo_toca_Pablo/Block.hpp"
 #include "Parseo_solo_toca_Pablo/Directive.hpp"
+#include "Parseo_solo_toca_Pablo/Parser.hpp"
+
 
 // 🔧 función común para crear config
 server createServer()
@@ -78,6 +81,8 @@ void createRequests(Request &req1, Request &req2)
 
     RequestParser::parse(raw_request1, req1);
     RequestParser::parse(raw_request2, req2);
+    RequestParser::valid_request(req1);
+    RequestParser::valid_request(req2);
 }
 
 Response executeCGIWithPoll(Request& req, server& srv)
@@ -134,83 +139,6 @@ Response executeCGIWithPoll(Request& req, server& srv)
 
 
 
-std::vector<Response> executeMultipleCGIWithPoll(std::vector<Request>& requests, server& srv)
-{
-    std::vector<Response> responses;
-
-    std::vector<pollfd> pollfds;
-    std::map<int, CGIProcess*> cgi_map;
-
-    // 🔹 1. LANZAR TODOS LOS CGI
-    for (size_t i = 0; i < requests.size(); i++)
-    {
-        CGIProcess* cgi = new CGIProcess();
-
-        if (!cgi->isCGI(requests[i], srv))
-        {
-            delete cgi;
-            continue;
-        }
-
-        cgi->execute(requests[i], srv);
-
-        int fd = cgi->getFD();
-
-        struct pollfd p;
-        p.fd = fd;
-        p.events = POLLIN | POLLHUP;
-        p.revents = 0;
-
-        pollfds.push_back(p);
-        cgi_map[fd] = cgi;
-    }
-
-    // 🔥 2. LOOP ÚNICO (LA CLAVE)
-    while (!cgi_map.empty())
-    {
-        int ret = poll(&pollfds[0], pollfds.size(), -1);
-        if (ret < 0)
-        {
-            perror("poll");
-            break;
-        }
-
-        for (size_t i = 0; i < pollfds.size(); i++)
-        {
-            int fd = pollfds[i].fd;
-
-            // 🔴 TERMINADO
-            if (pollfds[i].revents & (POLLHUP | POLLERR))
-            {
-                CGIProcess* cgi = cgi_map[fd];
-
-                cgi->readFromPipe(); // leer lo último
-
-                Response res = cgi->buildResponse();
-                responses.push_back(res);
-
-                close(fd);
-                delete cgi;
-
-                cgi_map.erase(fd);
-                pollfds.erase(pollfds.begin() + i);
-                i--;
-                continue;
-            }
-
-            // 🟢 HAY DATOS
-            if (pollfds[i].revents & POLLIN)
-            {
-                CGIProcess* cgi = cgi_map[fd];
-                cgi->readFromPipe();
-            }
-        }
-    }
-
-    return responses;
-}
-
-
 
 
 
@@ -219,7 +147,11 @@ int main()
     Request req1, req2;
     createRequests(req1, req2);
 
-    server srv = createServer();
+    Parser parser;
+	std::vector<server> list = parser.parseFile("conf_server_cgi.txt");
+	std::vector<server>::iterator it = list.begin();
+	server Server = *it;
+    std::cout<<Server<<std::endl;
 
     // =========================================================
     // 🔴 MODO 1: SECUENCIAL (SIN POLL)
@@ -372,11 +304,16 @@ int main()
     std::vector<Request> requests;
     requests.push_back(req1);
     requests.push_back(req2);
+    for (std::vector<Request>::iterator it = requests.begin() ; it  != requests.end();++it )
+    {
+        std::cout<< *it<<std::endl;
+    }
+    
 
     std::cout << "\n===== MULTI CGI (REAL PARALELO) =====\n";
 
     std::vector<Response> responses =
-        executeMultipleCGIWithPoll(requests, srv);
+        CGI_Response(requests, Server);
 
     for (size_t i = 0; i < responses.size(); i++)
     {

@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/09 16:16:48 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/16 17:53:55 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,9 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 	std::string path = request.get_path();
 
 	Block best_location = find_best_location(path, server_config);
+
+	std::cout << "PATH: " << path << std::endl;
+	std::cout << "BEST LOCATION: " << best_location.getName() << std::endl;
 
 	if (best_location.getName().empty())
 		return false;
@@ -453,23 +456,28 @@ char **CGIProcess::buildEnv(const Request& request)
 //Configura el hijo: redirige stdin/stdout y ejecuta el CGI
 void CGIProcess::setupChildProcess(const Request& request)
 {
-    // 🔹 1. Redirigir stdin y stdout
+    // 🔹 1. Redirigir stdin (pipe entrada) → STDIN del CGI
     dup2(_inputPipe[0], 0);
+
+    // 🔹 2. Redirigir stdout (pipe salida) → STDOUT del CGI
     dup2(_outputPipe[1], 1);
 
-    // 🔹 2. Cerrar pipes innecesarios
+    // 🔹 3. Cerrar todos los pipes (ya no se necesitan tras dup2)
     close(_inputPipe[0]);
     close(_inputPipe[1]);
     close(_outputPipe[0]);
     close(_outputPipe[1]);
 
 
-	// Extrae el directorio del script:
-	// Cambia el directorio de ejecución del proceso hijo
+	// 🔹 4. Obtener el directorio del script (SIN el nombre del archivo)
+    // Ej: "sgoinfre/.../cgi-bin/test.py" → "sgoinfre/.../cgi-bin"
 	std::string dir = _fullPath.substr(0, _fullPath.find_last_of('/'));
-	// 🔥 DEBUG CRÍTICO
-	std::cerr << "DIR: " << dir << std::endl;
-	if (chdir(dir.c_str()) != 0)
+
+	//AÑADIMOS / AL PRINCIPIO POR QUE SI NO DA ERROR, PABLO EN EL PARSEO LOS QUITA
+	// 🔹 5. FIX PARSER: añadir "/" al inicio para que sea ruta absoluta
+    std::string absoluteDir = "/";
+    absoluteDir += dir;
+	if (chdir(absoluteDir.c_str()) != 0)
 	{
 		perror("chdir failed");
 		exit(1);
@@ -479,25 +487,38 @@ void CGIProcess::setupChildProcess(const Request& request)
 	// Fallaría aunque el archivo exista ❌
 	
 	
-    // 🔹 3. Preparar argv
+	// 🔹 7. Obtener SOLO el nombre del script
+    // Ej: "sgoinfre/.../cgi-bin/test.py" → "test.py"
+    std::string scriptName = _fullPath.substr(_fullPath.find_last_of('/') + 1);
+
+
+	
+    // 🔹 8. Preparar argumentos para execve
     char *argv[3];
 
-    argv[0] = const_cast<char*>(_cgiPass.c_str());   // ej: /usr/bin/python3
-    argv[1] = const_cast<char*>(_fullPath.c_str());  // script.py
+	//SE AÑADE / AL PRINCIIO DE _cgiPass por que si no no funciona
+    argv[0] = strdup(("/" + _cgiPass).c_str());  // "/usr/bin/python3"
+    argv[1] = strdup(scriptName.c_str());        // "test.py"
     argv[2] = NULL;
 
-    // 🔹 4. Crear entorno
+
+    // 🔹 9. Construir entorno CGI
     char **env = buildEnv(request);
 
-	// Es un mensaje para verificar un error
+	// Es un mensaje para verificar un error. Aqui no hay / al principio
 	std::cerr << "CGI cgiPass: [" << _cgiPass << "]" << std::endl;
 
-    // 🔹 5. Ejecutar CGI
-	//Un debug por que no entiendo
-	std::cerr << "DEBUG: execve, script: " << _fullPath << std::endl;
-	std::cerr << "DEBUG: argv[0] = " << argv[0] << ", argv[1] = " << argv[1] << std::endl;
+	//DEBUG TRAS AÑADIR / EN EL ARGV[0]
+	std::cerr << "CGI cgiPass2: [" << argv[0] << "]" << std::endl;
+
+	// 🔹 DEBUG útil por que no entiendo
+	std::cerr << "EXECVE PATH: " << argv[0] << std::endl;
+    std::cerr << "SCRIPT: " << argv[1] << std::endl;
+    std::cerr << "CWD: " << absoluteDir << std::endl;
 	std::cerr << "DEBUG: ejecutando execve" << std::endl;
-    execve(_cgiPass.c_str(), argv, env);
+
+	// 🔹 10. Ejecutar CGI
+    execve(argv[0], argv, env);
 
     // 🔴 Si llega aquí → error
     perror("execve failed");
