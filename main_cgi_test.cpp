@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 16:30:12 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/15 20:08:52 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/21 16:06:01 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ server createServer()
 void createRequests(Request &req1, Request &req2)
 {
     std::string raw_request1 =
-        "POST /cgi/test.py HTTP/1.1\r\n"
+        "DELET /cgi/test.py HTTP/1.1\r\n"
         "Host: localhost\r\n"
         "Content-Length: 11\r\n"
         "Content-Type: text/plain\r\n"
