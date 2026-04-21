@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>400 - Bad Request</title>
+<title>413 - Payload Too Large</title>
 
 <link rel="stylesheet" href="error.css">
 
@@ -14,12 +14,12 @@
 
 <div class="card">
 
-<h1 class="error">400</h1>
+<h1 class="error">413</h1>
 
-<h2>Bad Request</h2>
+<h2>Payload Too Large</h2>
 
 <p>
-El servidor no pudo procesar la solicitud enviada por el cliente.
+El tamaño de la solicitud excede el límite permitido por el servidor.
 </p>
 
 <p>
@@ -27,9 +27,9 @@ Esto puede ocurrir por:
 </p>
 
 <ul style="text-align:left;max-width:400px;margin:auto;">
-<li>Headers inválidos</li>
-<li>Body mal formado</li>
-<li>Petición HTTP corrupta</li>
+<li>Archivo subido demasiado grande</li>
+<li>Límite de client_max_body_size excedido</li>
+<li>Body de la petición demasiado pesado</li>
 </ul>
 
 <a class="button" href="/">Volver al inicio</a>

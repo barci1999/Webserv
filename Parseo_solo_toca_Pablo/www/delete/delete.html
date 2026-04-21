@@ -1,161 +1,90 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Eliminar post</title>
+    <meta charset="UTF-8">
+    <title>DELETE</title>
 
-<style>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
 
-body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#111827;
-    margin:0;
-}
+        a.back { color: #7f5af0; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
 
-header{
-    background:#1f2937;
-    color:white;
-    padding:20px 40px;
-}
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h1 span { color: #e53835; }
 
-header h1{
-    margin:0;
-}
+        .test-card {
+            background: #141414;
+            border: 1px solid #1e1e1e;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
 
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:40px;
-}
+        input {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 0.5rem;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
 
-.card{
-    background:white;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
+        button {
+            background: linear-gradient(135deg, #e53835, #7f5af0);
+            border: none;
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
 
-label{
-    font-weight:bold;
-    display:block;
-    margin-top:20px;
-}
-
-input{
-    width:100%;
-    padding:10px;
-    margin-top:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-
-button{
-    margin-top:25px;
-    background:#dc2626;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#b91c1c;
-}
-
-.info{
-    margin-top:30px;
-    background:#fef2f2;
-    padding:20px;
-    border-radius:8px;
-}
-
-code{
-    background:#e5e7eb;
-    padding:4px 6px;
-    border-radius:4px;
-}
-
-#result{
-    margin-top:20px;
-    font-weight:bold;
-}
-
-</style>
-
+        .result {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+    </style>
 </head>
 
 <body>
-
-<header>
-<h1>MiniForum</h1>
-<p>Eliminar hilo</p>
-</header>
-
 <div class="container">
 
-<div class="card">
+    <a class="back" href="/">← Back</a>
 
-<h2>Eliminar un Post</h2>
+    <h1>DELETE <span>File</span></h1>
 
-<p>Introduce el ID del post que deseas eliminar.</p>
+    <div class="test-card">
 
-<label>ID del post</label>
-<input type="text" id="postId" placeholder="Ej: 42">
+        <input id="filename" type="text" placeholder="example.txt">
 
-<button onclick="deletePost()">Eliminar Post</button>
+        <button onclick="deleteFile()">Delete</button>
 
-<p id="result"></p>
+        <div id="result" class="result"></div>
 
-</div>
-
-<div class="info">
-
-<h3>Información para probar DELETE</h3>
-
-<p>La página enviará una petición:</p>
-
-<code>DELETE /delete/post_id</code>
-
-<p>Ejemplo:</p>
-
-<code>DELETE /delete/42</code>
-
-<p>También puedes probar con curl:</p>
-
-<pre>
-curl -X DELETE http://localhost:8080/delete/42
-</pre>
-
-</div>
+    </div>
 
 </div>
 
 <script>
+function deleteFile() {
+    const file = document.getElementById("filename").value;
 
-function deletePost() {
-
-    const id = document.getElementById("postId").value;
-
-    if(!id){
-        alert("Introduce un ID");
-        return;
-    }
-
-    fetch("/delete/" + id, {
+    fetch("/delete/" + file, {
         method: "DELETE"
     })
-    .then(response => {
-        document.getElementById("result").innerText =
-            "Respuesta del servidor: " + response.status;
+    .then(res => {
+        if (res.ok)
+            document.getElementById("result").innerText = "Deleted OK";
+        else
+            document.getElementById("result").innerText = "Error deleting file";
     })
-    .catch(error => {
-        document.getElementById("result").innerText =
-            "Error al enviar DELETE";
+    .catch(err => {
+        document.getElementById("result").innerText = "Network error";
     });
 }
-
 </script>
 
 </body>

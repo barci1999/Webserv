@@ -8,7 +8,7 @@ int main()
 	try
 	{
 		Parser parser;
-		std::vector<server> Servers = parser.parseFile("Parseo_solo_toca_Pablo/hola.conf");
+		std::vector<server> Servers = parser.parseFile("conf_test_response.txt");
 		for (std::vector<server>::iterator it = Servers.begin(); it != Servers.end(); ++it)
 		{
 			std::cout<<*it<<std::endl;

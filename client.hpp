@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:22:31 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/12 20:04:54 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/19 18:34:19 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ class client
 private:
 	listener *ptr;
 	int fd;
-	std::string request;
 public:
+	std::string request;
 	client();
 	client(int fd);
 	~client();

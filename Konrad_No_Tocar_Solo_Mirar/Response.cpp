@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/14 16:50:58 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/21 16:35:16 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,8 @@ std::string Response::select_valuePhrase(unsigned int status)
 		return("Payload Too Large");
 	case 414:
 		return("URI Too Long");
+	case 415:
+		return("Unsupported Media Type");
 	case 500:
 		return("Internal Server Error");
 	case 501:
@@ -175,7 +177,9 @@ void Response::make_Get(const Request to_check,const server server_config)
 			index = search_directive("index", best_location);
 
 		if (index.name.empty())
+		{
 			index = server_config.get_srvIndex();
+		}
 		if (!index.name.empty())
 		{
 			
@@ -415,6 +419,53 @@ void Response::make_Delete(const Request to_check,const server server_config)
 	// si el archivo existe (sobreescribir el archivo) y montar un response 200 (hedares = Content-Length: 0 / Connection: close)
 	// si el archivo no existe (crear el archivo y escribir en el) u montar un 201 (hedares = Content-Length: 0 / Connection: close)
 	// si no se puede abrir o falla la escritura sacar un 500
+std::string Response::extract_boundry(const std::string& raw_boundry)
+{
+	size_t pos = raw_boundry.find("boundary=");
+	if (pos == std::string::npos)
+	{
+		return "";
+	}
+	return raw_boundry.substr(pos + 9);
+	
+}
+std::string Response::extract_filename(const std::string& raw_body)
+{
+    if (raw_body.empty())
+        return "";
+
+    size_t pos = raw_body.find("filename=\"");
+    if (pos == std::string::npos)
+        return "";
+
+    pos += 10; // saltar filename="
+
+    size_t end = raw_body.find("\"", pos);
+    if (end == std::string::npos)
+        return "";
+
+    return raw_body.substr(pos, end - pos);
+}
+std::string Response::extract_body(const std::string& body, const std::string& boundary)
+{
+    size_t start = body.find("\r\n\r\n");
+    if (start == std::string::npos)
+        return "";
+
+    start += 4;
+
+    size_t end = body.find("\r\n--" + boundary, start);
+    if (end == std::string::npos)
+        return "";
+
+    std::string content = body.substr(start, end - start);
+
+    // quitar \r\n final
+    if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
+        content = content.substr(0, content.size() - 2);
+
+    return content;
+}
 void Response::make_Post(const Request to_check,const server server_config)
 {
 	std::string path = to_check.get_path();
@@ -441,17 +492,40 @@ void Response::make_Post(const Request to_check,const server server_config)
 
 	std::vector<std::string>::iterator it_up = std::find(upload.args.begin(),upload.args.end(),"on");
 	if(it_up == upload.args.end()) {set_error(*this,403,server_config); return;}
-
+	
 	if (to_check.get_body().size() > static_cast<size_t>(server_config.get_srvClientMaxBody()))
 	{
 		set_error(*this,413,server_config); return;
 	}
+	std::string content_type = to_check.get_a_header("content-type");
+	if(content_type.empty()){set_error(*this,415,server_config); return;}
+	
+	std::string boundry = extract_boundry(content_type);
+	if(boundry.empty()){set_error(*this,415,server_config); return;}
+	
+	std::string file_name = extract_filename(to_check.get_body());
+	if(file_name.empty()){set_error(*this,400,server_config); return;}
+	
+	std::string clean_body = extract_body(to_check.get_body(),boundry);
+	std::cout<<"aaaaaaaaaaaaaa"<<clean_body<<std::endl;
 	
 	size_t max_len = loc.getName().length();
+
 	std::string root_path = root.args[0];
 	std::string relative = path.substr(max_len);
-	std::string full_path = root_path + relative;
-	
+	if (!relative.empty() && relative[0] == '/')
+		relative.erase(0, 1);
+	if (!root_path.empty() && root_path[root_path.size() - 1] != '/')
+		root_path += '/';
+	std::string full_path = root_path;
+	if (!relative.empty())
+	{
+		full_path += relative;
+		if (full_path[full_path.size() - 1] != '/')
+			full_path += '/';
+	}
+	full_path += file_name;
+	std::cout<< full_path<< " >>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
 	int fd_file = 0;
 	if (file_exist(full_path))
 	{
@@ -486,10 +560,10 @@ void Response::make_Post(const Request to_check,const server server_config)
 	}
 	
 	size_t total_bits = 0;
-	std::string body = to_check.get_body();
-	while (total_bits < body.size())
+
+	while (total_bits < clean_body.size())
 	{
-		ssize_t w = write(fd_file,body.c_str() + total_bits, body.size() - total_bits);
+		ssize_t w = write(fd_file,clean_body.c_str() + total_bits, clean_body.size() - total_bits);
 		if (w <= 0)
 		{
 			close(fd_file);

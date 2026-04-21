@@ -14,13 +14,8 @@
      try
      {
          Parser parser;
-         Block root = parser.parseFile("hola.conf");
-         const std::list<Block> hola = root.getBlocks();
-         Block prueba(hola.begin());
-         std::vector<server> general;
-         general.push_back(server(prueba));
-         std::cout << "hola se instancion bien la clase" << std::endl;
-         pollLoop(general);
+         std::vector<server> root = parser.parseFile("conf_test_response.txt");
+         pollLoop(root);
          Directive crocqueta;
          std::string *haa  = crocqueta.args.data();
          if (haa)

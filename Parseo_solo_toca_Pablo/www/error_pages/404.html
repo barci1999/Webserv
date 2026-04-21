@@ -2,67 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>404 - Página no encontrada</title>
+<title>404 - Not Found</title>
 
-<style>
-
-body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#111827;
-    margin:0;
-}
-
-header{
-    background:#1f2937;
-    color:white;
-    padding:20px 40px;
-}
-
-.container{
-    max-width:800px;
-    margin:auto;
-    padding:60px;
-}
-
-.card{
-    background:white;
-    padding:40px;
-    border-radius:10px;
-    text-align:center;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-
-.error{
-    font-size:80px;
-    color:#dc2626;
-    margin:0;
-}
-
-.button{
-    display:inline-block;
-    margin-top:20px;
-    background:#2563eb;
-    color:white;
-    padding:12px 20px;
-    border-radius:6px;
-    text-decoration:none;
-    font-weight:bold;
-}
-
-.button:hover{
-    background:#1d4ed8;
-}
-
-</style>
+<link rel="stylesheet" href="error.css">
 
 </head>
 
 <body>
-
-<header>
-<h1>MiniForum</h1>
-<p>Error del servidor</p>
-</header>
 
 <div class="container">
 
@@ -70,13 +16,23 @@ header{
 
 <h1 class="error">404</h1>
 
-<h2>Página no encontrada</h2>
+<h2>Not Found</h2>
 
 <p>
-El recurso que estás buscando no existe en este servidor.
+El recurso solicitado no existe en el servidor.
 </p>
 
-<a class="button" href="../index.html">Volver al inicio</a>
+<p>
+Esto puede ocurrir por:
+</p>
+
+<ul style="text-align:left;max-width:400px;margin:auto;">
+<li>URL incorrecta</li>
+<li>Archivo eliminado o movido</li>
+<li>Ruta no definida en el servidor</li>
+</ul>
+
+<a class="button" href="/">Volver al inicio</a>
 
 </div>
 

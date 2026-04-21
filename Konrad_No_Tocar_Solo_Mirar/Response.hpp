@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/14 15:33:09 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/20 14:26:42 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,10 @@ public:
 
 	std::string getContentType(const std::string& to_check);
 	std::string generate_autoindex(const std::string& ful_path,const std::string& request_path);
-
+	std::string extract_body(const std::string& raw_body, const std::string& boundry);
+	std::string extract_boundry(const std::string& raw_boundry);
+	std::string extract_filename(const std::string& raw_body);
+	
 	const std::string get_version() const {	return this->_version ;}
 	unsigned int get_statusCode() const { return this->_statusCode ;}
 	const std::string get_reasonPhrase() const {return this->_reasonPhrase;}

@@ -104,6 +104,7 @@ $(PARSEO_DIR)/%.o: $(PARSEO_DIR)/%.cpp
 clean:
 	rm -f *.o $(KONRAD_OBJ) $(PARSEO_OBJ) $(UTILS_OBJ) \
 	$(MAIN_REQUEST_OBJ) $(MAIN_RESPONSE_OBJ) $(MAIN_CONF_OBJ) \
-	$(MAIN_REQUEST) $(MAIN_RESPONSE) $(MAIN_CONF) $(MAIN_CGI)
+	$(MAIN_REQUEST) $(MAIN_RESPONSE) $(MAIN_CONF) $(MAIN_CGI) \
+	$(MAIN_LOOP) $(MAIN_LOOP_OBJ)
 
 .PHONY: all request response conf cgi clean

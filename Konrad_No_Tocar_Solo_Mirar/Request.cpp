@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 15:26:58 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/17 12:15:37 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/19 20:38:12 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,16 @@ Request::Request(const Request& other)
 	this->_body = other.get_body();
 	this->_final_status = other.get_final_status();
 	this->_status_code = other.get_status_code();
+}
+const std::string  Request::get_a_header(std::string to_find) const
+{
+	std::map<std::string,std::string>::const_iterator it = this->_headers.find(to_find);
+	if (it != this->_headers.end())
+	{
+		return it->second;
+	}
+	return "";
+	
 }
 std::ostream& operator<<(std::ostream& out ,const Request& other)
 {

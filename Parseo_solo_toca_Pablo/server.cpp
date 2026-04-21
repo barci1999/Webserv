@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/12 17:39:31 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/19 15:00:39 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,13 +285,14 @@ Directive server::check_index(const Directive& to_check)
 
     if (to_check.args.empty())
         return Directive();
-
-    const std::string& idx = to_check.args[0];
+	Directive clean = to_check;
+    std::string& idx = clean.args[0];
 
     if (!idx.empty() && idx[0] == '/')
-        return Directive();
-
-    return to_check;
+	{
+        idx.erase(0,1);
+	}
+    return clean;
 }
 Directive server::check_root(const Directive& to_check)
 {

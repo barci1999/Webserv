@@ -1,0 +1,140 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    max-width: 700px;
+    padding: 2rem;
+    text-align: center;
+}
+
+/* =========================
+   ERROR CODE (BIG NUMBER)
+========================= */
+h1 {
+    font-size: 6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #e53835, #7f5af0);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+/* =========================
+   TITLE / MESSAGE
+========================= */
+.subtitle {
+    font-size: 1.3rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+/* =========================
+   DESCRIPTION
+========================= */
+.desc {
+    font-size: 0.95rem;
+    color: #888;
+    margin-bottom: 2rem;
+}
+
+/* =========================
+   STATUS BADGE (OPTIONAL)
+========================= */
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 999px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+    color: #aaa;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background: #e53835;
+    border-radius: 50%;
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* =========================
+   INFO BOX (DETAILS)
+========================= */
+.info-card {
+    background: #141414;
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: left;
+}
+
+.info-card h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.info-card p {
+    font-size: 0.95rem;
+    color: #ccc;
+}
+
+/* =========================
+   BUTTON / LINK BACK HOME
+========================= */
+a {
+    display: inline-block;
+    margin-top: 2rem;
+    color: #7f5af0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    background: #1a1a2e;
+    transition: 0.2s;
+}
+
+a:hover {
+    background: #2a2a4e;
+    border-color: #7f5af0;
+}
+
+/* =========================
+   SMALL FOOTER (OPTIONAL)
+========================= */
+footer {
+    margin-top: 2rem;
+    font-size: 0.75rem;
+    color: #444;
+}
+
+footer a {
+    color: #666;
+    text-decoration: none;
+}

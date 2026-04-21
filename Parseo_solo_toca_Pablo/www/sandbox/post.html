@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>POST Upload</title>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        a.back {
+            color: #7f5af0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h1 span { color: #7f5af0; }
+
+        .desc { color: #888; margin-bottom: 2rem; }
+
+        .test-card {
+            background: #141414;
+            border: 1px solid #1e1e1e;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        input {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 0.5rem;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00babc, #7f5af0);
+            border: none;
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .result {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #aaa;
+            white-space: pre-wrap;
+        }
+
+        .ok { color: #22c55e; }
+        .err { color: #e53835; }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <a class="back" href="/">← Back</a>
+
+    <h1>POST <span>Upload</span></h1>
+    <p class="desc">Multipart upload using fetch (no reload)</p>
+
+    <div class="test-card">
+
+        <input type="file" id="fileInput" required>
+
+        <button type="button" onclick="uploadFile()">Upload file</button>
+
+        <div id="result" class="result"></div>
+
+    </div>
+
+</div>
+
+<script>
+function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    const result = document.getElementById("result");
+
+    if (!fileInput.files.length) {
+        result.innerText = "No file selected";
+        result.className = "result err";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    fetch("/upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(async (res) => {
+        if (res.ok) {
+            result.innerText = "✔ Upload successful";
+            result.className = "result ok";
+        } else {
+            const text = await res.text();
+            result.innerText = "✖ Error uploading file\n" + text;
+            result.className = "result err";
+        }
+    })
+    .catch(() => {
+        result.innerText = "✖ Network error";
+        result.className = "result err";
+    });
+}
+</script>
+
+</body>
+</html>

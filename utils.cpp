@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/11 18:54:11 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/19 16:14:00 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,20 +45,39 @@ bool is_directory(const std::string& path)
 bool file_exist(const std::string file)
 {
 	struct stat buffer;
-	return (stat(file.c_str(),&buffer) == 0);
+	if (stat(file.c_str(), &buffer) == 0)
+    {
+        //std::cout << "[EXISTS OK] " << file << std::endl;
+        return true;
+    }
+    else
+    {
+        //std::cout << "[EXISTS FAIL] " << file << std::endl;
+        return false;
+    }
 }
 bool is_file(const std::string file)
 {
 	struct stat buffer;
 	if (stat(file.c_str(),&buffer) != 0)
 	{
+		//std::cout<<"NO SOY UN FILE"<<std::endl;
 		return false;
 	}
 	return S_ISREG(buffer.st_mode);
 }
 bool can_read(const std::string file)
 {
-	return (access(file.c_str(),R_OK) == 0);
+    if (access(file.c_str(), R_OK) == 0)
+    {
+        //std::cout << "[READ OK] " << file << std::endl;
+        return true;
+    }
+    else
+    {
+        //std::cout << "[READ FAIL] " << file << std::endl;
+        return false;
+    }
 }
 bool can_write(const std::string file)
 {

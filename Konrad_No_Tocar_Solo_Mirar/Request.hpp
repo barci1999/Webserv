@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:00:37 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/03/16 12:54:29 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/19 20:35:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ class Request
 		const std::string get_query() const { return this->_query;}
 		const std::string get_version() const {return this->_version;}
 		const std::map<std::string,std::string>& get_headers() const {return this->_headers;}
+		const std::string get_a_header(std::string to_find) const;
 		const std::string get_body() const {return this->_body;}
 		const std::string get_final_status() const {return this->_final_status;}
 		unsigned int get_status_code() const {return this->_status_code;}

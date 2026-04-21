@@ -21,6 +21,8 @@
 # include "./Parseo_solo_toca_Pablo/Directive.hpp"
 # include "./Parseo_solo_toca_Pablo/Parser.hpp"
 # include "./Parseo_solo_toca_Pablo/server.hpp"
+# include "Konrad_No_Tocar_Solo_Mirar/RequestParser.hpp"
+#include "Konrad_No_Tocar_Solo_Mirar/Response.hpp"
 # include "client.hpp"
 # include "listener.hpp"
 # include "poll.h"

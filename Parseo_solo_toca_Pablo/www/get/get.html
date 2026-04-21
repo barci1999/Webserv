@@ -1,171 +1,118 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Ver post</title>
-
-<style>
-
-body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#111827;
-    margin:0;
-}
-
-header{
-    background:#1f2937;
-    color:white;
-    padding:20px 40px;
-}
-
-header h1{
-    margin:0;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-    padding:40px;
-}
-
-.card{
-    background:white;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-
-label{
-    font-weight:bold;
-    display:block;
-    margin-top:20px;
-}
-
-input{
-    width:100%;
-    padding:10px;
-    margin-top:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-
-button{
-    margin-top:25px;
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#1d4ed8;
-}
-
-.post{
-    margin-top:30px;
-    padding:20px;
-    border-left:5px solid #2563eb;
-    background:#f9fafb;
-}
-
-.info{
-    margin-top:30px;
-    background:#eef2ff;
-    padding:20px;
-    border-radius:8px;
-}
-
-code{
-    background:#e5e7eb;
-    padding:4px 6px;
-    border-radius:4px;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GET Tests - 42 Webserv</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        a.back { color: #7f5af0; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
+        a.back:hover { text-decoration: underline; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h1 span { color: #00babc; }
+        .desc { color: #888; margin-bottom: 2rem; }
+        .section-title { font-size: 1.3rem; color: #ccc; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 0.5rem; }
+        .section-title .icon { font-size: 1.1rem; }
+        .test-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        .test-card h3 { font-size: 0.9rem; color: #ccc; margin-bottom: 0.5rem; }
+        .test-card p { font-size: 0.8rem; color: #666; margin-bottom: 1rem; }
+        .test-card input { background: #0a0a0a; border: 1px solid #333; color: #ccc; padding: 0.5rem; border-radius: 6px; width: 100%; margin-bottom: 0.75rem; font-family: monospace; }
+        button { background: linear-gradient(135deg, #00babc, #7f5af0); border: none; color: #fff; padding: 0.5rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        button:hover { opacity: 0.9; }
+        .result { background: #0a0a0a; border: 1px solid #222; border-radius: 8px; padding: 1rem; margin-top: 1rem; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; word-break: break-all; color: #aaa; display: none; }
+        .result.show { display: block; }
+        .status-code { font-weight: 700; margin-bottom: 0.5rem; }
+        .status-code.ok { color: #22c55e; }
+        .status-code.err { color: #e53835; }
+        .cgi-card { border-color: #2a2a4a; }
+        .cgi-badge { display: inline-block; background: #7f5af022; color: #7f5af0; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
+    </style>
 </head>
-
 <body>
+    <div class="container">
+        <a class="back" href="/index.html">&larr; Back to home</a>
+        <h1><span>GET</span> Method Tests</h1>
+        <p class="desc">Test GET requests against your webserver</p>
 
-<header>
-<h1>MiniForum</h1>
-<p>Ver hilo del foro</p>
-</header>
+        <!-- BASIC REQUESTS -->
+        <div class="section-title"><span class="icon">📡</span> Basic Requests</div>
 
-<div class="container">
+        <div class="test-card">
+            <h3>Basic GET Request</h3>
+            <p>Fetch a resource from the server</p>
+            <input type="text" id="get-url" value="/" placeholder="Enter path, e.g. /index.html">
+            <button onclick="doFetch('get-url','get-result')">Send GET</button>
+            <div class="result" id="get-result"></div>
+        </div>
 
-<div class="card">
+        <div class="test-card">
+            <h3>GET with Query Parameters</h3>
+            <p>Send query string parameters</p>
+            <input type="text" id="get-query-url" value="/search?q=hello&lang=en" placeholder="/path?key=value">
+            <button onclick="doFetch('get-query-url','get-query-result')">Send GET</button>
+            <div class="result" id="get-query-result"></div>
+        </div>
 
-<h2>Buscar Post</h2>
+        <div class="test-card">
+            <h3>GET Directory Listing</h3>
+            <p>Request a directory to test autoindex</p>
+            <input type="text" id="get-dir-url" value="/directory/" placeholder="/directory/">
+            <button onclick="doFetch('get-dir-url','get-dir-result')">Send GET</button>
+            <div class="result" id="get-dir-result"></div>
+        </div>
 
-<p>Introduce el ID del post para recuperarlo.</p>
+        <div class="test-card">
+            <h3>GET Non-Existent Resource (404 Test)</h3>
+            <p>Request a path that doesn't exist</p>
+            <input type="text" id="get-404-url" value="/this-does-not-exist" placeholder="/nonexistent">
+            <button onclick="doFetch('get-404-url','get-404-result')">Send GET</button>
+            <div class="result" id="get-404-result"></div>
+        </div>
 
-<label>ID del post</label>
-<input type="text" id="postId" placeholder="Ej: 42">
+        <!-- CGI REQUESTS -->
+        <div class="section-title"><span class="icon">⚙️</span> CGI Requests</div>
 
-<button onclick="getPost()">Buscar Post</button>
+        <div class="test-card cgi-card">
+            <h3>CGI Python Script <span class="cgi-badge">CGI</span></h3>
+            <p>Execute a Python CGI script via GET</p>
+            <input type="text" id="cgi-py-url" value="/cgi-bin/script.py" placeholder="/cgi-bin/script.py">
+            <button onclick="doFetch('cgi-py-url','cgi-py-result')">Send GET</button>
+            <div class="result" id="cgi-py-result"></div>
+        </div>
 
-<div id="postResult"></div>
+        <div class="test-card cgi-card">
+            <h3>CGI with Query String <span class="cgi-badge">CGI</span></h3>
+            <p>Pass parameters to a CGI script via QUERY_STRING</p>
+            <input type="text" id="cgi-qs-url" value="/cgi-bin/script.py?name=42&action=test" placeholder="/cgi-bin/script.py?key=value">
+            <button onclick="doFetch('cgi-qs-url','cgi-qs-result')">Send GET</button>
+            <div class="result" id="cgi-qs-result"></div>
+        </div>
 
-</div>
+        <div class="test-card cgi-card">
+            <h3>CGI Shell Script <span class="cgi-badge">CGI</span></h3>
+            <p>Execute a shell CGI script</p>
+            <input type="text" id="cgi-sh-url" value="/cgi-bin/script.sh" placeholder="/cgi-bin/script.sh">
+            <button onclick="doFetch('cgi-sh-url','cgi-sh-result')">Send GET</button>
+            <div class="result" id="cgi-sh-result"></div>
+        </div>
+    </div>
 
-<div class="info">
-
-<h3>Información para probar GET</h3>
-
-<p>La página enviará una petición:</p>
-
-<code>GET /get/post_id</code>
-
-<p>Ejemplo:</p>
-
-<code>GET /get/42</code>
-
-<p>También puedes probar desde terminal:</p>
-
-<pre>
-curl http://localhost:8080/get/42
-</pre>
-
-</div>
-
-</div>
-
-<script>
-
-function getPost(){
-
-    const id = document.getElementById("postId").value;
-
-    if(!id){
-        alert("Introduce un ID");
-        return;
-    }
-
-    fetch("/get/" + id)
-    .then(response => response.text())
-    .then(data => {
-
-        document.getElementById("postResult").innerHTML =
-        "<div class='post'>" +
-        "<h3>Post ID: " + id + "</h3>" +
-        "<p>" + data + "</p>" +
-        "</div>";
-
-    })
-    .catch(error => {
-
-        document.getElementById("postResult").innerHTML =
-        "<p>Error al obtener el post.</p>";
-
-    });
-
-}
-
-</script>
-
+    <script>
+        async function doFetch(inputId, resultId) {
+            const url = document.getElementById(inputId).value;
+            const el = document.getElementById(resultId);
+            el.classList.add('show');
+            el.innerHTML = 'Loading...';
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                el.innerHTML = `<div class="status-code ${res.ok ? 'ok' : 'err'}">HTTP ${res.status} ${res.statusText}</div>\n${text.substring(0, 2000)}`;
+            } catch (e) {
+                el.innerHTML = `<div class="status-code err">Error</div>\n${e.message}`;
+            }
+        }
+    </script>
 </body>
 </html>
