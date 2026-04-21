@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/16 17:53:55 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/21 16:06:48 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,6 +276,16 @@ void CGIProcess::execute(const Request& request, const server& server_config)
         const std::string& body = request.get_body();
         write(_inputPipe[1], body.c_str(), body.size());
     }
+	else if (request.get_method() == "DELETE")
+    {
+        std::string msg = "DELETE";
+        write(_inputPipe[1], msg.c_str(), msg.size());
+    }
+	    else
+    {
+        std::cerr << "Metodo no soportado en CGI\n\n\n";
+    }
+	
 
     close(_inputPipe[1]);
 }
