@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/20 14:26:42 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:23:03 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,15 +37,16 @@ private:
 	std::string _body;
 	
 
-	void set_error(Response& modifi,unsigned int error,const server& server_config);
 public:
+	std::string toHTTPString() const;
 	Response();
 	Response(const Request to_check,const server server_config);
 	Response(const Response& other);
 	Response(std::string,unsigned int,std::string,std::map<std::string,std::string>,std::string);
 	Response &operator=(const Response& other);
 	~Response();
-
+	
+	void set_error(Response& modifi,unsigned int error,const server& server_config);
 	std::string getContentType(const std::string& to_check);
 	std::string generate_autoindex(const std::string& ful_path,const std::string& request_path);
 	std::string extract_body(const std::string& raw_body, const std::string& boundry);

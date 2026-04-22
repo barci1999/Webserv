@@ -51,5 +51,11 @@ server {
         root /Parseo_solo_toca_Pablo/www/sandbox;
         index test.html;
     }
+    
+    location /cgi {
+        root /sgoinfre/students/ksudyn/GITHUB/Webserv/test/cgi-bin;
+        cgi_extension .py;
+        cgi_pass /usr/bin/python3;
+    }
 
 }

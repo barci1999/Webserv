@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/04/21 14:57:49 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/21 17:56:15 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,8 +160,9 @@ int pollLoop(std::vector<server> general)
 				RequestParser::parse(full_request,req);
 				RequestParser::valid_request(req);
 				std::cout<<req<<std::endl;
+                std::cout<<"CCCCCCCCCCCCCCCCCCCCC"<<std::endl;
 				
-				Response resp(req,general[0]);
+				Response resp = handleRequest(req,general[0]);
 				//std::cout<<general[0]<<std::endl;
 				std::cout<<res_to_str(resp)<<std::endl;
 				std::string response_str = res_to_str(resp);

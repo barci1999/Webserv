@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:21:24 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/15 18:38:17 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/22 15:23:47 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,28 @@
 #include <unistd.h>
 #include <poll.h>
 
+
+std::string Response::toHTTPString() const
+{
+    std::ostringstream oss;
+
+    oss << "HTTP/1.1 " << _statusCode << " " << _reasonPhrase << "\r\n";
+
+    for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
+         it != _headers.end(); ++it)
+    {
+        oss << it->first << ": " << it->second << "\r\n";
+    }
+
+    oss << "\r\n";
+    oss << _body;
+
+    return oss.str();
+}
+
 std::vector<Response> CGI_Response(std::vector<Request>& requests, server& srv)
 {
+    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
     std::vector<Response> responses;
 
     std::vector<pollfd> pollfds;
@@ -106,7 +126,7 @@ Response handleRequest(Request& req, server& srv)
     {
         std::vector<Request> reqs;
         reqs.push_back(req);
-
+        std::cout<<"BBBBBBBBBBBBBBBBBBBBBBBBBBBB"<<std::endl;
         std::vector<Response> resps = CGI_Response(reqs, srv);
 
         if (!resps.empty())
@@ -117,6 +137,7 @@ Response handleRequest(Request& req, server& srv)
         error.set_statuscode(500);
         error.set_reasonphrase("Internal Server Error");
         error.set_body("CGI failed");
+        error.set_error(error,500,srv);
         return error;
     }
 
