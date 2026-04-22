@@ -27,6 +27,7 @@
 # include "listener.hpp"
 # include "poll.h"
 # include <unistd.h>
+# include "Konrad_No_Tocar_Solo_Mirar/ResponseCGI.hpp"
 
 int pollLoop(std::vector<server> general);
 

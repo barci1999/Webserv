@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:02:17 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/15 18:22:54 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/22 15:22:21 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,3 +22,4 @@
 //QUE TIENE QUE VER LA SQUERY CON EL CGI BUSCAR, POR QUE PABLO NO LAS USA
 
 std::vector<Response> CGI_Response(std::vector<Request>& requests, server& srv);
+Response handleRequest(Request& req, server& srv);

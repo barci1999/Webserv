@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/21 16:06:48 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/22 15:46:19 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -696,6 +696,7 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 {
 	Response response;
 
+	//DESDE AQUI 
 	// size_t pos = output.find("\r\n\r\n");
 
 	// if (pos == std::string::npos)
@@ -710,6 +711,8 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 
 	// std::string headerPart = output.substr(0, pos);
 	// std::string bodyPart = output.substr(pos + 4);
+	//HASTA AQUI SE COMENTA Y TAL VEZ SE QUITE AL FINAL TODO
+	
 
 	size_t pos = output.find("\r\n\r\n");
 	size_t separator_len = 4;
@@ -777,6 +780,13 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 	}
 
 	response.set_body(bodyPart);
+
+	// AQUÍ SE GENRAL EL HTTP
+	response.set_version("HTTP/1.1");
+	response.set_statuscode(200);
+
+	response.addback_headers("Content-Length", toString(bodyPart.size()));
+	response.addback_headers("Connection", "close");
 
 	return response;
 }
