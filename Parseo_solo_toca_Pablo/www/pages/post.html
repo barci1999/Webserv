@@ -102,13 +102,16 @@ function uploadFile() {
         body: formData
     })
     .then(async (res) => {
+        const text = await res.text();
+
         if (res.ok) {
             result.innerText = "✔ Upload successful";
             result.className = "result ok";
         } else {
-            const text = await res.text();
-            result.innerText = "✖ Error uploading file\n" + text;
-            result.className = "result err";
+            // 👉 renderiza la página de error completa
+            document.open();
+            document.write(text);
+            document.close();
         }
     })
     .catch(() => {

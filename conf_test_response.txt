@@ -12,6 +12,8 @@ server {
     error_page 405 /Parseo_solo_toca_Pablo/www/error_pages/405.html;
     error_page 500 /Parseo_solo_toca_Pablo/www/error_pages/500.html;
 
+	client_max_body_size 1k;
+
     # 🔵 Página upload
     location /upload_page {
         root /Parseo_solo_toca_Pablo/www/sandbox;
@@ -23,7 +25,7 @@ server {
     location /upload {
         root /Parseo_solo_toca_Pablo/www/upload;
         upload_enable on;
-        allowed_methods POST;
+        allowed_methods GET;
     }
 
     # 🔵 Autoindex

@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/19 15:00:39 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/22 17:36:45 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,11 +351,11 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
         throw std::runtime_error("Missing mandatory directive: listen");
     if (this->_srvRoot.name.empty())
         throw std::runtime_error("Missing mandatory directive: root");
-    if (this->_srvIndex.name.empty())
-    {
-        this->_srvIndex.name = "index";
-        this->_srvIndex.args.push_back("index.html");
-    }
+    // if (this->_srvIndex.name.empty())
+    // {
+    //     this->_srvIndex.name = "index";
+    //     this->_srvIndex.args.push_back("index.html");
+    // }
     if (this->_srvAutoindex.name.empty())
     {
         this->_srvAutoindex.name = "autoindex";
