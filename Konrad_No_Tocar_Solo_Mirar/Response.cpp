@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/21 16:43:53 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/22 17:46:19 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,6 +148,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 	std::string path = to_check.get_path();
     if (path.empty()) {	set_error(*this,404,server_config); return; }
     Block best_location = find_best_location(path,server_config);
+	std::cout<<best_location.getName()<<std::endl;
     size_t max_len = best_location.getName().length();
 	Directive root;
 	bool has_loc = false;
@@ -162,6 +163,9 @@ void Response::make_Get(const Request to_check,const server server_config)
 	std::string relative = path.substr(max_len);
 	std::string full_path = root_path + relative;
 	std::string body;
+	std::cout << "ROOT: [" << root_path << "]" << std::endl;
+	std::cout << "REL : [" << relative << "]" << std::endl;
+    std::cout << "FULL: [" << full_path << "]" << std::endl;
 	if (!file_exist(full_path)) 
 	{
 		set_error(*this,404,server_config);
@@ -176,13 +180,13 @@ void Response::make_Get(const Request to_check,const server server_config)
 		if (has_loc)
 			index = search_directive("index", best_location);
 
-		if (index.name.empty())
-		{
-			index = server_config.get_srvIndex();
-		}
+		// if (index.name.empty())
+		// {
+		// 	index = server_config.get_srvIndex();
+		// }
 		if (!index.name.empty())
 		{
-			
+			std::cout<<"AAAAAAAAAAAAAAAAA"<<index.args[0]<<std::endl;
 			for (std::vector<std::string>::iterator it = index.args.begin(); it != index.args.end(); ++it)
 			{
 				std::string temp = full_path + *it;
@@ -210,6 +214,7 @@ void Response::make_Get(const Request to_check,const server server_config)
 		}
 		if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on")
 		{
+			std::cout<<"VVVVVVVVVVVVVVVVVVVVVVVVVV"<<std::endl;
 			body = generate_autoindex(full_path,path);
 			if (body.empty()){set_error(*this, 500,server_config);return;}
 			set_version("HTTP/1.1");
@@ -353,7 +358,7 @@ std::string res_to_str(const Response& to_change)
 void Response::make_Delete(const Request to_check,const server server_config)
 {
 	std::string path = to_check.get_path();
-    if (path.empty()) {(*this,404,server_config);	return;	}
+    if (path.empty()) {set_error(*this,404,server_config);	return;	}
 	
 	Block best_loc = find_best_location(path,server_config);
 	if (best_loc.getName().empty())	{	set_error(*this,404,server_config);	return;	}
@@ -492,7 +497,7 @@ void Response::make_Post(const Request to_check,const server server_config)
 
 	std::vector<std::string>::iterator it_up = std::find(upload.args.begin(),upload.args.end(),"on");
 	if(it_up == upload.args.end()) {set_error(*this,403,server_config); return;}
-	
+	std::cout<<to_check.get_body().size()<<"|"<<server_config.get_srvClientMaxBody()<<std::endl;
 	if (to_check.get_body().size() > static_cast<size_t>(server_config.get_srvClientMaxBody()))
 	{
 		set_error(*this,413,server_config); return;

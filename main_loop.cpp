@@ -14,7 +14,7 @@
      try
      {
          Parser parser;
-         std::vector<server> root = parser.parseFile("conf_test_response.txt");
+         std::vector<server> root = parser.parseFile("conf_curl_test");
          pollLoop(root);
          Directive crocqueta;
          std::string *haa  = crocqueta.args.data();

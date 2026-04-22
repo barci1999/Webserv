@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/19 16:14:00 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/22 17:01:37 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,24 +94,58 @@ bool read_file(const std::string& path, std::string& out)
     out = buffer.str();
     return true;
 }
+static std::string normalize(const std::string& p)
+{
+    if (p.empty())
+        return p;
+
+    std::string res = p;
+
+    while (res.size() > 1 && res[res.size() - 1] == '/')
+        res.erase(res.size() - 1);
+
+    return res;
+}
 
 Block find_best_location(const std::string& path, const server& server_config)
 {
-	Block best;
-	size_t max_len = 0;
+    Block best;
+    size_t max_len = 0;
+    bool found = false;
 
-	for (std::list<Block>::const_iterator it = server_config.get_srvLocations().begin();
-		it != server_config.get_srvLocations().end(); ++it)
-	{
-		std::string loc = it->getName();
+    std::string norm_path = normalize(path);
 
-		if (path.find(loc) == 0 && (path.length() == loc.length() || path[loc.length()] == '/') && loc.length() > max_len)
-		{
-			best = *it;
-			max_len = loc.length();
-		}
-	}
-	return best;
+    const std::list<Block>& locs = server_config.get_srvLocations();
+
+    for (std::list<Block>::const_iterator it = locs.begin();
+         it != locs.end(); ++it)
+    {
+        std::string loc = normalize(it->getName());
+
+        if (loc.empty())
+            continue;
+
+        if (norm_path.compare(0, loc.size(), loc) == 0 &&
+            (norm_path.size() == loc.size() ||
+             norm_path[loc.size()] == '/'))
+        {
+            if (!found || loc.size() > max_len)
+            {
+                best = *it;
+                max_len = loc.size();
+                found = true;
+            }
+        }
+    }
+
+    if (!found)
+    {
+        Block empty;
+        empty.setName(""); // importante: estado explícito
+        return empty;
+    }
+
+    return best;
 }
 
 //Guarda lo que hay despues del . en la extension | Saca la extensión de un archivo (.php, .py)
