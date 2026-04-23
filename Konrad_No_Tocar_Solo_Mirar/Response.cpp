@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/22 17:46:19 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/22 20:10:26 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,13 +186,15 @@ void Response::make_Get(const Request to_check,const server server_config)
 		// }
 		if (!index.name.empty())
 		{
-			std::cout<<"AAAAAAAAAAAAAAAAA"<<index.args[0]<<std::endl;
 			for (std::vector<std::string>::iterator it = index.args.begin(); it != index.args.end(); ++it)
 			{
 				std::string temp = full_path + *it;
 				if (file_exist(temp) && is_file(temp) && can_read(temp))
 				{
-					if (!read_file(temp, body)){ set_error(*this, 500,server_config); return; }
+					if (!read_file(temp, body)){ 
+						set_error(*this, 500,server_config); 
+						return;
+					}
 					set_version("HTTP/1.1");
 					set_statuscode(200);
 					set_reasonphrase("OK");
@@ -214,7 +216,6 @@ void Response::make_Get(const Request to_check,const server server_config)
 		}
 		if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on")
 		{
-			std::cout<<"VVVVVVVVVVVVVVVVVVVVVVVVVV"<<std::endl;
 			body = generate_autoindex(full_path,path);
 			if (body.empty()){set_error(*this, 500,server_config);return;}
 			set_version("HTTP/1.1");
@@ -512,7 +513,7 @@ void Response::make_Post(const Request to_check,const server server_config)
 	if(file_name.empty()){set_error(*this,400,server_config); return;}
 	
 	std::string clean_body = extract_body(to_check.get_body(),boundry);
-	std::cout<<"aaaaaaaaaaaaaa"<<clean_body<<std::endl;
+
 	
 	size_t max_len = loc.getName().length();
 

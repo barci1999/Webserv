@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DELETE</title>
+    <title>CGI</title>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,7 +12,7 @@
         a.back { color: #7f5af0; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
 
         h1 { font-size: 2rem; margin-bottom: 1rem; }
-        h1 span { color: #e53835; }
+        h1 span { color: #0f8abf; }
 
         .test-card {
             background: #141414;
@@ -29,6 +29,7 @@
             padding: 0.5rem 1rem;
             border-radius: 6px;
             cursor: pointer;
+            margin-left: 0.5rem;
         }
 
         input {
@@ -45,14 +46,22 @@
         .file-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 0.5rem;
         }
 
         .result {
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            color: #aaa;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            background: #0a0a0a;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #222;
+            white-space: pre-wrap;
         }
+
+        .error { color: #e53835; }
+        .ok { color: #22c55e; }
     </style>
 </head>
 
@@ -61,54 +70,49 @@
 
     <a class="back" href="/">← Back</a>
 
-    <h1>DELETE <span>File</span></h1>
+    <h1>CGI <span>Scripts</span></h1>
 
-    <!-- LISTA DE ARCHIVOS -->
+    <!-- ===================== UPLOAD FILES ===================== -->
+
+    <!-- ===================== CGI ===================== -->
     <div class="test-card">
-        <h3 style="margin-bottom:1rem;">Files in /upload</h3>
-        <button onclick="loadFiles()">Refresh</button>
-        <div id="file-list" style="margin-top:1rem;"></div>
+        <h3 style="margin-bottom:1rem;">CGI Scripts (/cgi-bin)</h3>
+        <button onclick="loadCGIs()">Refresh</button>
+        <div id="cgi-list" style="margin-top:1rem;"></div>
     </div>
-
 
 </div>
 
 <script>
-async function loadFiles() {
-    const container = document.getElementById("file-list");
+
+// ================= CGI =================
+async function loadCGIs() {
+    const container = document.getElementById("cgi-list");
     container.innerHTML = "Loading...";
 
     try {
-        const res = await fetch("/upload/");
+        const res = await fetch("/cgi-bin/");
 
-        // 🔥 manejar errores del servidor
         if (!res.ok) {
-            if (res.status === 404) {
-                container.innerHTML = "<div style='color:#e53835;'>❌ Upload folder not found</div>";
-            } else {
-                container.innerHTML = "<div style='color:#e53835;'>⚠️ Error: " + res.status + "</div>";
-            }
+            container.innerHTML = "<div class='error'>❌ CGI folder not found</div>";
             return;
         }
 
         const html = await res.text();
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
+        const doc = new DOMParser().parseFromString(html, "text/html");
 
         const links = [...doc.querySelectorAll("a")]
             .map(a => a.getAttribute("href"))
             .filter(href => href && !href.includes("..") && href !== "/");
 
         if (links.length === 0) {
-            container.innerHTML = "📂 Folder is empty";
+            container.innerHTML = "⚙️ No CGI scripts found";
             return;
         }
 
         container.innerHTML = "";
 
         links.forEach(file => {
-            // evitar directorios
             if (file.endsWith("/")) return;
 
             const row = document.createElement("div");
@@ -118,45 +122,48 @@ async function loadFiles() {
             name.innerText = file;
 
             const btn = document.createElement("button");
-            btn.innerText = "Delete";
-            btn.onclick = () => deleteFile(file);
+            btn.innerText = "Run";
+            btn.onclick = () => runCGI(file);
 
             row.appendChild(name);
             row.appendChild(btn);
-
             container.appendChild(row);
         });
 
-    } catch (e) {
-        container.innerHTML = "<div style='color:#e53835;'>🌐 Network error</div>";
+    } catch {
+        container.innerHTML = "<div class='error'>🌐 Network error</div>";
     }
 }
 
-function deleteFile(file = null) {
-    const filename = file || document.getElementById("filename").value;
+async function runCGI(file) {
+    const container = document.getElementById("cgi-list");
 
-    if (!filename) return;
+    const result = document.createElement("div");
+    result.className = "result";
+    result.innerText = "Executing " + file + "...";
 
-    fetch("/delete/" + filename, {
-        method: "DELETE"
-    })
-    .then(res => {
-        const result = document.getElementById("result");
+    container.appendChild(result);
 
-        if (res.ok) {
-            result.innerText = "Deleted OK: " + filename;
-            loadFiles(); // refrescar lista
-        } else {
-            result.innerText = "Error deleting file";
-        }
-    })
-    .catch(() => {
-        document.getElementById("result").innerText = "Network error";
-    });
+    try {
+        const res = await fetch("/cgi-bin/" + file);
+        const text = await res.text();
+
+        result.innerHTML = 
+            "<div class='" + (res.ok ? "ok" : "error") + "'>" +
+            "HTTP " + res.status +
+            "</div>\n" +
+            text.substring(0, 2000);
+
+    } catch {
+        result.innerHTML = "<div class='error'>Error executing CGI</div>";
+    }
 }
 
-// 🔥 cargar automáticamente al entrar
-window.onload = loadFiles;
+// auto load
+window.onload = () => {
+
+    loadCGIs();
+};
 </script>
 
 </body>

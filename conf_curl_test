@@ -2,30 +2,37 @@ server {
     listen 8080;
 
     root Parseo_solo_toca_Pablo/www;
-	index index.html;
+	#index index.html;
 
     client_max_body_size 1000000;
 
-    error_page 400 /error_pages/400.html;
-    error_page 403 /error_pages/403.html;
-    error_page 404 /error_pages/404.html;
-    error_page 405 /error_pages/405.html;
-    error_page 413 /error_pages/413.html;
-    error_page 415 /error_pages/415.html;
-    error_page 500 /error_pages/500.html;
-    error_page 501 /error_pages/501.html;
+    error_page 400 Parseo_solo_toca_Pablo/www/error_pages/400.html;
+    error_page 403 Parseo_solo_toca_Pablo/www/error_pages/403.html;
+    error_page 404 Parseo_solo_toca_Pablo/www/error_pages/404.html;
+    error_page 405 Parseo_solo_toca_Pablo/www/error_pages/405.html;
+    error_page 413 Parseo_solo_toca_Pablo/www/error_pages/413.html;
+    error_page 415 Parseo_solo_toca_Pablo/www/error_pages/415.html;
+    error_page 500 Parseo_solo_toca_Pablo/www/error_pages/500.html;
+    error_page 501 Parseo_solo_toca_Pablo/www/error_pages/501.html;
 
     # 🔵 HOME
-    location /pepe {
+    location / {
 		root Parseo_solo_toca_Pablo/www;
+		index index.html;
         allowed_methods GET;
-        autoindex on;
     }
 
+	location /pepe {
+		root Parseo_solo_toca_Pablo/www;
+		allowed_methods GET;
+		autoindex on;
+	}
+
     # 🟣 TEST
-    location /test {
-		root Parseo_solo_toca_Pablo/www/test;
+    location /parrot {
+		root Parseo_solo_toca_Pablo/www/parrot;
         allowed_methods GET;
+		#autoindex on;
         index parrot.html;
     }
 
@@ -48,12 +55,28 @@ server {
         root Parseo_solo_toca_Pablo/www/upload;
         allowed_methods POST;
         upload_enable on;
+		autoindex on;
     }
+	location /cgi-bin {
+		root Parseo_solo_toca_Pablo/www/test/cgi-bin;
+		cgi_extension .py;
+		cgi_pass  usr/bin/python3;
+		autoindex on;
+	}
+	location /autoindex {
+		root Parseo_solo_toca_Pablo/www;
+		autoindex on;
+	}
 	location /upload_page {
         root Parseo_solo_toca_Pablo/www/pages;
         index post.html;
         allowed_methods GET;
     }
+	location /cgi_page {
+		root Parseo_solo_toca_Pablo/www/pages;
+		index scripts.html;
+		allowed_methods GET;
+	}
 
     # 🔴 ENDPOINT DELETE
     location /delete {
