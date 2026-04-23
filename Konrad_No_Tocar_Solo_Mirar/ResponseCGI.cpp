@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseCGI.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:21:24 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/22 15:23:47 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/22 20:46:22 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ std::string Response::toHTTPString() const
 
 std::vector<Response> CGI_Response(std::vector<Request>& requests, server& srv)
 {
-    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
     std::vector<Response> responses;
 
     std::vector<pollfd> pollfds;
@@ -126,7 +125,6 @@ Response handleRequest(Request& req, server& srv)
     {
         std::vector<Request> reqs;
         reqs.push_back(req);
-        std::cout<<"BBBBBBBBBBBBBBBBBBBBBBBBBBBB"<<std::endl;
         std::vector<Response> resps = CGI_Response(reqs, srv);
 
         if (!resps.empty())

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/22 15:46:19 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/23 15:14:36 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,7 +197,12 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 		root_path += '/';
 
 	std::string scriptPath = root_path + relative;
-
+	std::string temp ="/";
+	if (!scriptPath.empty() && scriptPath[0] !='/')
+	{
+		scriptPath = temp + scriptPath;
+	}
+	
 	// 🔥 DEBUG AQUÍ
 	std::cout << "PATH: " << path << std::endl;
 	std::cout << "RELATIVE: " << relative << std::endl;
@@ -271,21 +276,11 @@ void CGIProcess::execute(const Request& request, const server& server_config)
     close(_outputPipe[1]);
 
 	//Una vez que se haga no bloqueante esto desde aqui hasta el final se quitara de esta funcion.
-    if (request.get_method() == "POST")
+    if (request.get_method() == "GET")
     {
         const std::string& body = request.get_body();
         write(_inputPipe[1], body.c_str(), body.size());
-    }
-	else if (request.get_method() == "DELETE")
-    {
-        std::string msg = "DELETE";
-        write(_inputPipe[1], msg.c_str(), msg.size());
-    }
-	    else
-    {
-        std::cerr << "Metodo no soportado en CGI\n\n\n";
-    }
-	
+    }	
 
     close(_inputPipe[1]);
 }
@@ -482,12 +477,15 @@ void CGIProcess::setupChildProcess(const Request& request)
 	// 🔹 4. Obtener el directorio del script (SIN el nombre del archivo)
     // Ej: "sgoinfre/.../cgi-bin/test.py" → "sgoinfre/.../cgi-bin"
 	std::string dir = _fullPath.substr(0, _fullPath.find_last_of('/'));
+	if (!dir.empty() && dir[0] == '/')
+	{
+		dir.erase(0,1);
+	}
+	
 
 	//AÑADIMOS / AL PRINCIPIO POR QUE SI NO DA ERROR, PABLO EN EL PARSEO LOS QUITA
 	// 🔹 5. FIX PARSER: añadir "/" al inicio para que sea ruta absoluta
-    std::string absoluteDir = "/";
-    absoluteDir += dir;
-	if (chdir(absoluteDir.c_str()) != 0)
+	if (chdir(dir.c_str()) != 0)
 	{
 		perror("chdir failed");
 		exit(1);
@@ -524,7 +522,7 @@ void CGIProcess::setupChildProcess(const Request& request)
 	// 🔹 DEBUG útil por que no entiendo
 	std::cerr << "EXECVE PATH: " << argv[0] << std::endl;
     std::cerr << "SCRIPT: " << argv[1] << std::endl;
-    std::cerr << "CWD: " << absoluteDir << std::endl;
+    std::cerr << "CWD: " << dir << std::endl;
 	std::cerr << "DEBUG: ejecutando execve" << std::endl;
 
 	// 🔹 10. Ejecutar CGI
@@ -795,25 +793,3 @@ const std::string& CGIProcess::getBuffer() const
 {
     return _buffer;
 }
-
-
-
-
-
-//Esta funcion decide que hacer en base a si es CGI o no
-// std::string CGIProcess::handleRequest(Request& request, Block& location)
-// {
-// 	CGIProcess cgi;
-
-// 	if (cgi.isCGI(request, location))
-// 	{
-// 		Response temp = execute(request, location);
-// 		return res_to_str(temp);
-// 	}
-// 	else
-// 	{
-// 		Response temp(request,location);
-// 		return res_to_str(temp);
-// 	}
-// }
-// YA NO SE UTILIZA AQUI, LO QUE HACE SE DEBE HACER EN EL SERVER
