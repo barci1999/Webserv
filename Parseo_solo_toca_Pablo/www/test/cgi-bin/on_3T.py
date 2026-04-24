@@ -10,13 +10,11 @@ print()
 
 print("<html><body style='font-family: Arial; text-align:center;'>")
 
-print("<h1>🦜 PARROT CGI ACTIVADO 🦜</h1>")
+print("<h1>Felicidades erer un Nakama</h1>")
 
-print("<h2>⏳ Cargando sabiduria divina...</h2>")
+print("<h2>Pero no tengo nada para ti asi que disfruta de este Homer Bailando</h2>")
 print()
 time.sleep(3)
-
-print("<h2>💃 Cuando tu CGI fufona:</h2>")
 
 # GIF estilo Homer bailando (puedes cambiar la URL)
 
