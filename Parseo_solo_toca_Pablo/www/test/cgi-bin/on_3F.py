@@ -5,12 +5,18 @@ print()
 
 print("""
 <html>
+<style>
+.myimg{
+	width : 80%;
+}
+</style>
 <body style="text-align:center;">
 
 <h1> Game Over</h1>
 
-<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWlsZml2cGgya2t5NW1oc2VoYWM5NGR5dnAxYmJuNXg3NW15dWh1byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SxAZTit0Yzjs6ltZpY/giphy.gif" width="800">
-<h2>No era tan dificil...</h2>
+<img class="myimg" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmV2a3Fhb2w0MTI2cWxqaGowa3NzcXRodDNpYXM4cWx4ZWoxN3h1eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/GKjO1Ej9uH9rG/giphy.gif">
+<h2>Como dijeron tus padres:</h2>
+<h3>No esperaba nada y aun asi me decepcionas T.T</3>
 
 </body>
 </html>

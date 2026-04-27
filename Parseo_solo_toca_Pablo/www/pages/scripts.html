@@ -32,17 +32,6 @@
             margin-left: 0.5rem;
         }
 
-        input {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            color: #ccc;
-            padding: 0.5rem;
-            border-radius: 6px;
-            width: 100%;
-            margin-bottom: 1rem;
-            font-family: monospace;
-        }
-
         .file-row {
             display: flex;
             justify-content: space-between;
@@ -51,14 +40,24 @@
         }
 
         .result {
-            margin-top: 0.5rem;
-            font-size: 0.8rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
             background: #0a0a0a;
-            padding: 0.5rem;
+            padding: 1rem;
             border-radius: 6px;
             border: 1px solid #222;
-            white-space: pre-wrap;
+
+			max-height: 500px;
+			overflow: auto;
         }
+		.result img {
+			max-width: 100%;
+			max-height: 250px;
+			width: 900;
+			height: 900;
+			object-fit: contain;
+			border-radius: 8px;
+		}
 
         .error { color: #e53835; }
         .ok { color: #22c55e; }
@@ -72,13 +71,14 @@
 
     <h1>CGI <span>Scripts</span></h1>
 
-    <!-- ===================== UPLOAD FILES ===================== -->
-
-    <!-- ===================== CGI ===================== -->
     <div class="test-card">
         <h3 style="margin-bottom:1rem;">CGI Scripts (/cgi-bin)</h3>
         <button onclick="loadCGIs()">Refresh</button>
+
         <div id="cgi-list" style="margin-top:1rem;"></div>
+
+        <!-- 🔥 RESULTADO ÚNICO -->
+        <div id="cgi-result" class="result"></div>
     </div>
 
 </div>
@@ -123,7 +123,7 @@ async function loadCGIs() {
 
             const btn = document.createElement("button");
             btn.innerText = "Run";
-            btn.onclick = () => runCGI(file);
+            btn.onclick = () => runCGI("/cgi-bin/" + file);
 
             row.appendChild(name);
             row.appendChild(btn);
@@ -135,35 +135,73 @@ async function loadCGIs() {
     }
 }
 
-async function runCGI(file) {
-    const container = document.getElementById("cgi-list");
+// ================= RUN CGI =================
+async function runCGI(url, options = {}) {
+    const result = document.getElementById("cgi-result");
 
-    const result = document.createElement("div");
-    result.className = "result";
-    result.innerText = "Executing " + file + "...";
-
-    container.appendChild(result);
+    result.innerText = "Executing " + url + "...";
 
     try {
-        const res = await fetch("/cgi-bin/" + file);
+        const res = await fetch(url, options);
         const text = await res.text();
 
-        result.innerHTML = 
+        result.innerHTML =
             "<div class='" + (res.ok ? "ok" : "error") + "'>" +
             "HTTP " + res.status +
             "</div>\n" +
-            text.substring(0, 2000);
+            text;
+
+        // 🔥 scroll automático
+        result.scrollIntoView({ behavior: "smooth" });
 
     } catch {
         result.innerHTML = "<div class='error'>Error executing CGI</div>";
     }
 }
 
+// ================= INTERCEPTAR LINKS =================
+document.addEventListener("click", function(e) {
+    const link = e.target.closest("a");
+
+    if (!link) return;
+
+    const href = link.getAttribute("href");
+
+    if (href && href.startsWith("/cgi-bin/")) {
+        e.preventDefault();
+        runCGI(href);
+    }
+});
+
+// ================= INTERCEPTAR FORMULARIOS =================
+document.addEventListener("submit", async function(e) {
+    const form = e.target;
+
+    if (!form.action.includes("/cgi-bin/")) return;
+
+    e.preventDefault();
+
+    const method = (form.method || "GET").toUpperCase();
+    const formData = new FormData(form);
+
+    let url = form.action;
+    let options = { method };
+
+    if (method === "GET") {
+        const params = new URLSearchParams(formData).toString();
+        if (params) url += "?" + params;
+    } else {
+        options.body = formData;
+    }
+
+    runCGI(url, options);
+});
+
 // auto load
 window.onload = () => {
-
     loadCGIs();
 };
+
 </script>
 
 </body>
