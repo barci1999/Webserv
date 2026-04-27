@@ -16,10 +16,13 @@ int main()
 	{
 	/* code */
 	std::string raw_request =
-"GET /index.html HTTP/1.1\r\n"
+"INVALID //// HTTP/1.1\r\n"
 "Host: localhost\r\n"
-"Transfer-Encoding: chunked\r\n"
+"Content-Length: 999999999\r\n"
+"Content-Length: 5\r\n"
+"Connection: close\r\n"
 "\r\n";
+
 	Request req;
 	RequestParser::parse(raw_request,req);
 	std::cout<<"=============================================================="<<std::endl;
@@ -36,8 +39,8 @@ int main()
 	// std::cout<<Server<<std::endl;
 	// std::cout << "======================================================" <<std::endl;
 	
-	// Response hola(req,Server);
-	// std::cout << res_to_str(hola) << std::endl;
+	 Response hola(req,Server);
+	 std::cout << res_to_str(hola) << std::endl;
 
 	// std::cout << "======================================================" <<std::endl;
 	
