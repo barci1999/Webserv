@@ -24,7 +24,7 @@ print("""
 </a>
 
   <!-- chainsawman -->
-<a href="/cgi-bin/slow.py">
+<a href="/cgi-bin/cm_1.py">
   <img class="my-img" src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdXZvbXZ3d3E3dmV3eXQ2bXZ2aXQzcnI2NWsxanBiaHk1MzIxcnFsdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/uU42RblvcIOLWwxfEx/giphy.gif" >
 </a>
 
