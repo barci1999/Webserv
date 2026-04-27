@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/14 14:57:24 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/27 14:39:44 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -436,7 +436,7 @@ bool RequestParser::valid_request(Request& to_check)
 
 	if (to_check.get_status_code() != 200 && to_check.get_status_code() != 0)
 	{
-		std::cout << to_check.get_status_code()<<std::endl;
+		//std::cout << to_check.get_status_code()<<std::endl;
 		return false;
 	}
 	validator validators[] = {

@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/04/22 20:07:03 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/27 19:41:39 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,11 +86,11 @@ int pollLoop(std::vector<server> general)
         }
     }
     for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-        std::cout << it->second.get_lstPort() << std::endl;
+        //std::cout << it->second.get_lstPort() << std::endl;
         fds.fd = it->second.get_lstSocket_fd();
 		fds.events = POLLIN;
 		fds.revents = 0;
-        std::cout << "fds listeners " << fds.fd <<std::endl;
+        //std::cout << "fds listeners " << fds.fd <<std::endl;
         pollFds.push_back(fds);
     }
     while (true)
@@ -132,7 +132,7 @@ int pollLoop(std::vector<server> general)
 
                 pollFds.push_back(new_poll);
 
-                std::cout << "Nuevo cliente: " << client_fd << std::endl;
+                //std::cout << "Nuevo cliente: " << client_fd << std::endl;
             }
             else
             {
@@ -156,18 +156,20 @@ int pollLoop(std::vector<server> general)
 				cl.request.clear();
 
 				Request req;
-				std::cout<<full_request<<std::endl;
+				//std::cout<<full_request<<std::endl;
 				RequestParser::parse(full_request,req);
 				RequestParser::valid_request(req);
-				std::cout<<req<<std::endl;
+				//std::cout<<">>>>>"<<std::endl;
+				//std::cout<<req<<std::endl;
                 
 				
 				Response resp = handleRequest(req,general[0]);
 				//std::cout<<general[0]<<std::endl;
-				std::cout<<res_to_str(resp)<<std::endl;
+				//std::cout<<res_to_str(resp)<<std::endl;
+				//std::cout << resp.get_statusCode()<<std::endl;
 				std::string response_str = res_to_str(resp);
 				send(fd, response_str.c_str(), response_str.size(), 0);
-                std::cout << "Datos recibidos de " << fd << std::endl;
+                //std::cout << "Datos recibidos de " << fd << std::endl;
 
                 // aquí luego parsear HTTP
             }

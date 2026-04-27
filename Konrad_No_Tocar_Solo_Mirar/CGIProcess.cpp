@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/23 15:53:25 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/27 14:39:37 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,13 +59,13 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server& serv
 
 	if (ext.name.empty())
 	{
-		std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
+		//std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
 		//Mensaje de error de que no se encunentra, buscar para ver que clase de erro, si mensaje o htlm
 	}
 
 	if (pass.name.empty())
 	{
-		std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" << std::endl;
+		//std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" << std::endl;
 		//Mensaje de error de que no se encunentra
 	}
 
@@ -116,8 +116,8 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 
 	Block best_location = find_best_location(path, server_config);
 
-	std::cout << "PATH: " << path << std::endl;
-	std::cout << "BEST LOCATION: " << best_location.getName() << std::endl;
+	//std::cout << "PATH: " << path << std::endl;
+	//std::cout << "BEST LOCATION: " << best_location.getName() << std::endl;
 
 	if (best_location.getName().empty())
 		return false;
@@ -204,10 +204,10 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 	}
 	
 	// 🔥 DEBUG AQUÍ
-	std::cout << "PATH: " << path << std::endl;
-	std::cout << "RELATIVE: " << relative << std::endl;
-	std::cout << "ROOT: " << root_path << std::endl;
-	std::cout << "SCRIPT PATH: " << scriptPath << std::endl;
+	// std::cout << "PATH: " << path << std::endl;
+	// std::cout << "RELATIVE: " << relative << std::endl;
+	// std::cout << "ROOT: " << root_path << std::endl;
+	// std::cout << "SCRIPT PATH: " << scriptPath << std::endl;
 
 	return scriptPath;
 }
