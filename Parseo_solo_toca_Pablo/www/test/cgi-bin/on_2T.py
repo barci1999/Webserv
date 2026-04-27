@@ -5,6 +5,11 @@ print()
 
 print("""
 <html>
+<style>
+.myimg{
+	width : 80%;
+}
+</style>
 <body style="text-align:center; font-family:Arial;">
 
 <h1> Buena respuesta</h1>
@@ -12,25 +17,24 @@ print("""
 
 <h2>El manga sigue en emision</h2>
 
-<div style="position:relative; display:inline-block;">
+<div style="display:flex; justify-content:center; gap:40px;">
 
-  <!-- GIF -->
-  <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDQ3Y3hyamRmb3FqMnE4ZTFxb3g4dWVrcTFtaHM5N2s5c25oajZheSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5iWX6XFTndU0YP0Yut/giphy.gif"
-       width="500">
+  <!-- OPCIÓN 1 -->
+  <div>
+    <a href="/cgi-bin/on_3T.py">
+       <img class="myimg" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnRiMmxzOXN0YXpkaWk1dmlmemc3eXBvNXFzZ2t6YjFodGV0MjdzbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/qXJsxIBYlQmEYSVYQi/giphy.gif">
+    </a>
+  </div>
 
-  <!-- ZONA IZQUIERDA (SI) -->
-  <a href="/cgi-bin/on_3T.py"
-     style="position:absolute; left:0; top:0; width:50%; height:100%; display:block;">
-  </a>
-
-  <!-- ZONA DERECHA (NO) -->
-  <a href="/cgi-bin/on_3F.py"
-     style="position:absolute; right:0; top:0; width:50%; height:100%; display:block;">
-  </a>
+  <!-- OPCIÓN 2 -->
+  <div>
+    <a href="/cgi-bin/on_3F.py">
+      <img class="myimg" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMm1tdGJmcGtjcXkxMGp0bGFpdWthY2V6aGYxcTNxNWUzc2V0djcxOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/iB1FbEBfilsmhLKAf9/giphy.gif">
+    </a>
+  </div>
 
 </div>
 
-<h2> SI_____________________NO</h2>
 
 </body>
 </html>

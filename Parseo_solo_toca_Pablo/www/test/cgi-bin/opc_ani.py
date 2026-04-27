@@ -7,6 +7,11 @@ time.sleep(2)
 
 print("""
 <html>
+<style>
+	.my-img {
+		width: 90%;
+	}
+</style>
 <body style="text-align:center;">
 
 <h1>           Elige un anime</h1>
@@ -15,12 +20,12 @@ print("""
 
   <!-- ONE PIECE -->
 <a href="/cgi-bin/on_1.py">
-  <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHlteWV5aWtocHR2OGttc2F4NXlzaXkxbHdjYWp2c2FkejY1MGdyNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/dmqnEU3LCyOkM/giphy.gif" width="250">
+  <img class="my-img" src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTA2Ym84ZDhqOHQxajh1a3RqaWF6MHg5ZmZic3NzZG1kcGlqdDJ0cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C3brYLms1bhv2/giphy.gif" >
 </a>
 
   <!-- chainsawman -->
 <a href="/cgi-bin/slow.py">
-  <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXU4OG5odnl4azFwbTlwaGczcHhrdTYwYWhpZTNoMWY4azV1NHF3MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ppsHFdRAAlG8UapZXc/giphy.gif" width="250">
+  <img class="my-img" src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdXZvbXZ3d3E3dmV3eXQ2bXZ2aXQzcnI2NWsxanBiaHk1MzIxcnFsdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/uU42RblvcIOLWwxfEx/giphy.gif" >
 </a>
 
 </div>
