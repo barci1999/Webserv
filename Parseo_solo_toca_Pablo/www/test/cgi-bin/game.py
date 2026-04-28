@@ -1,123 +1,149 @@
 #!/usr/bin/env python3
 import os
+from urllib.parse import parse_qs
+from data import DATA, IMAGES
 
-print("Content-Type: text/html")
-print()
+print("Content-Type: text/html\n")
 
-# 📦 DATOS DEL JUEGO (AQUÍ ESTÁ LA MAGIA)
-DATA = {
-    "onepiece": {
-        "name": "One Piece",
-        "gif": "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTA2Ym84ZDhqOHQxajh1a3RqaWF6MHg5ZmZic3NzZG1kcGlqdDJ0cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C3brYLms1bhv2/giphy.gif",
-        "q1": {
-            "question": "¿Cómo se llama el creador?",
-            "correct": "Eiichiro Oda",
-            "wrong": "Akira Toriyama"
-        },
-        "final_win": "Eres un Nakama 😎",
-        "final_gif": "https://media1.giphy.com/media/2nNI9yM6bxPxBhSCcA/giphy.gif"
-    },
+# -------- helpers --------
 
-    "chainsaw": {
-        "name": "Chainsaw Man",
-        "gif": "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdXZvbXZ3d3E3dmV3eXQ2bXZ2aXQzcnI2NWsxanBiaHk1MzIxcnFsdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/uU42RblvcIOLWwxfEx/giphy.gif",
-        "q1": {
-            "question": "¿Quién es el protagonista?",
-            "correct": "Denji",
-            "wrong": "Naruto"
-        },
-        "final_win": "Eres un cazador de demonios 🔪",
-        "final_gif": "https://media.giphy.com/media/ppsHFdRAAlG8UapZXc/giphy.gif"
-    }
-}
+def render_image(key, size="60%"):
+    url = IMAGES.get(key, "")
+    return f"<img src='{url}' style='width:{size}'>"
 
-# 📥 PARÁMETROS
-query = os.environ.get("QUERY_STRING", "")
-params = {}
 
-for p in query.split("&"):
-    if "=" in p:
-        k, v = p.split("=")
-        params[k] = v
+def get_params():
+    params = parse_qs(os.environ.get("QUERY_STRING", ""))
+    anime = params.get("anime", [""])[0]
+    step = params.get("step", ["menu"])[0]
+    return anime, step
 
-anime = params.get("anime", "")
-step = params.get("step", "0")
-res = params.get("res", "")
+
+# -------- HTML base --------
 
 print("""
 <html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body { text-align:center; font-family:Arial; }
-.myimg { width: 80%; }
-img:hover { transform: scale(1.1); }
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial;
+    background: #111;
+    color: white;
+    text-align: center;
+}
+
+/* contenedor principal */
+.page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+
+    min-width: 700px; 
+}
+
+/* links blancos */
+a {
+    color: white;
+    text-decoration: none;
+}
+
+/* opciones */
+.container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* tarjetas */
+.option {
+    width: 250px;
+}
+
+/* imágenes */
+img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* texto */
+h1, h2, h3 {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
 </style>
+
+</head>
 <body>
+<div class="page">
 """)
 
-# 🟢 STEP 0 → elegir anime
-if step == "0":
-    print("<h1>Elige un anime</h1><div style='display:flex; justify-content:center;'>")
+anime, step = get_params()
 
-    for key, data in DATA.items():
+# -------- MENU --------
+
+if step == "menu":
+    print("<h1>🎌 Elige un anime</h1>")
+    print("<div class='container'>")
+
+    for key, anime_data in DATA.items():
         print(f"""
-        <a href="/cgi-bin/game.py?anime={key}&step=1">
-            <img class="myimg" src="{data['gif']}">
-        </a>
+        <div class="option">
+            <a href="/cgi-bin/game.py?anime={key}&step=start">
+                {render_image(anime_data['start_img'], "80%")}
+                <h2>{anime_data['name']}</h2>
+            </a>
+        </div>
         """)
 
     print("</div>")
 
-# 🟡 STEP 1 → pregunta 1
-elif step == "1":
 
-    data = DATA[anime]
+# -------- GAME --------
 
-    print(f"""
-    <h1>{data['q1']['question']}</h1>
+else:
+    data = DATA[anime]["steps"][step]
 
-    <a href="/cgi-bin/game.py?anime={anime}&step=2&res=ok">
-        <h2>{data['q1']['correct']} ✅</h2>
-    </a>
+    if "messages" in data:
+        for msg in data["messages"]:
+            print(f"<h2>{msg}</h2>")
 
-    <a href="/cgi-bin/game.py?anime={anime}&step=2&res=fail">
-        <h2>{data['q1']['wrong']} ❌</h2>
-    </a>
-    """)
+    elif "message" in data:
+        print(f"<h2>{data['message']}</h2>")
 
-# 🔵 STEP 2 → pregunta común (Matrix)
-elif step == "2":
+    if "question" in data:
+        print(f"<h1>{data['question']}</h1>")
 
-    titulo = "✅ Buena respuesta" if res == "ok" else "❌ Mala respuesta, última oportunidad"
+    if "image" in data:
+        print(render_image(data["image"]))
 
-    print(f"""
-    <h1>{titulo}</h1>
-    <h2>¿El manga sigue en emisión?</h2>
+    if "options" in data:
+        print("<div class='container'>")
 
-    <div style="position:relative; display:inline-block;">
-        <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDQ3Y3hyamRmb3FqMnE4ZTFxb3g4dWVrcTFtaHM5N2s5c25oajZheSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5iWX6XFTndU0YP0Yut/giphy.gif" width="500">
+        for opt in data["options"]:
+            img_html = ""
+            if "image" in opt:
+                img_html = render_image(opt["image"], "70%")
 
-        <a href="/cgi-bin/game.py?anime={anime}&step=3&res=ok"
-           style="position:absolute; left:0; top:0; width:50%; height:100%;"></a>
+            print(f"""
+            <div class="option">
+                <a href="/cgi-bin/game.py?anime={anime}&step={opt['next']}">
+                    {img_html}
+                    <h3>{opt['text']}</h3>
+                </a>
+            </div>
+            """)
 
-        <a href="/cgi-bin/game.py?anime={anime}&step=3&res=fail"
-           style="position:absolute; right:0; top:0; width:50%; height:100%;"></a>
-    </div>
-    """)
+        print("</div>")
 
-# 🔴 FINAL
-elif step == "3":
 
-    data = DATA[anime]
-
-    if res == "ok":
-        print(f"""
-        <h1>🎉 {data['final_win']}</h1>
-        <img class="myimg" src="{data['final_gif']}">
-        """)
-    else:
-        print("""
-        <h1>💀 Game Over</h1>
-        <img class="myimg" src="https://media3.giphy.com/media/GKjO1Ej9uH9rG/giphy.gif">
-        """)
-
-print("</body></html>")
+print("</div></body></html>")
