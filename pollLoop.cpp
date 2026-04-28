@@ -76,17 +76,19 @@ int pollLoop(std::vector<server> general)
     pollfd fds;
     int eventFd;
     int active;
-
+    int i = 0;
     for (std::vector<server>::iterator it = general.begin(); it!=general.end();it++){
         srvPorts=it->get_srvPorts();
         Ports=srvPorts.args;
         for (std::vector<std::string>::iterator it2 = Ports.begin(); it2!=Ports.end();it2++){
             listener temp(*it2);
+            temp.set_originalsrv(&general[i]);
             srvListeners.insert(std::make_pair(temp.get_lstSocket_fd(), temp));
         }
+        i++;
     }
     for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-        //std::cout << it->second.get_lstPort() << std::endl;
+        std::cout << it->second.get_originalsrv() << std::endl;
         fds.fd = it->second.get_lstSocket_fd();
 		fds.events = POLLIN;
 		fds.revents = 0;
@@ -124,6 +126,13 @@ int pollLoop(std::vector<server> general)
 
                 client clnt(client_fd);
                 srvClients[client_fd] = clnt;
+                std::map<int, listener>::iterator it = srvListeners.find(fd);
+
+                if (it != srvListeners.end())
+                {
+                    srvClients[client_fd].set_ptr(&it->second);
+                }
+            
 
                 pollfd new_poll;
                 new_poll.fd = client_fd;
@@ -132,7 +141,7 @@ int pollLoop(std::vector<server> general)
 
                 pollFds.push_back(new_poll);
 
-                //std::cout << "Nuevo cliente: " << client_fd << std::endl;
+                std::cout << "Nuevo cliente: " << client_fd << std::endl;
             }
             else
             {
@@ -154,16 +163,17 @@ int pollLoop(std::vector<server> general)
 				}
 				std::string full_request = extract_full_request(cl.request);
 				cl.request.clear();
+                const listener *tmp = cl.get_ptr();
 
 				Request req;
-				//std::cout<<full_request<<std::endl;
+				std::cout<<full_request<<std::endl;
 				RequestParser::parse(full_request,req);
 				RequestParser::valid_request(req);
-				//std::cout<<">>>>>"<<std::endl;
+				std::cout<<">>>>>  "<< tmp<<std::endl;
 				//std::cout<<req<<std::endl;
                 
 				
-				Response resp = handleRequest(req,general[0]);
+				Response resp = handleRequest(req,tmp->get_originalsrv());
 				//std::cout<<general[0]<<std::endl;
 				//std::cout<<res_to_str(resp)<<std::endl;
 				//std::cout << resp.get_statusCode()<<std::endl;
