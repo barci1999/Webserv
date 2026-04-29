@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/04/27 19:41:39 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/29 15:24:43 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ int pollLoop(std::vector<server> general)
         i++;
     }
     for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-        std::cout << it->second.get_originalsrv() << std::endl;
+        //std::cout << it->second.get_originalsrv() << std::endl;
         fds.fd = it->second.get_lstSocket_fd();
 		fds.events = POLLIN;
 		fds.revents = 0;
@@ -141,7 +141,7 @@ int pollLoop(std::vector<server> general)
 
                 pollFds.push_back(new_poll);
 
-                std::cout << "Nuevo cliente: " << client_fd << std::endl;
+                //std::cout << "Nuevo cliente: " << client_fd << std::endl;
             }
             else
             {
@@ -166,10 +166,10 @@ int pollLoop(std::vector<server> general)
                 const listener *tmp = cl.get_ptr();
 
 				Request req;
-				std::cout<<full_request<<std::endl;
+				//std::cout<<full_request<<std::endl;
 				RequestParser::parse(full_request,req);
 				RequestParser::valid_request(req);
-				std::cout<<">>>>>  "<< tmp<<std::endl;
+				//std::cout<<">>>>>  "<< tmp<<std::endl;
 				//std::cout<<req<<std::endl;
                 
 				
