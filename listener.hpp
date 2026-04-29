@@ -39,10 +39,12 @@ public:
 	const int get_lstPort() const;
 	const int get_lstSocket_fd() const;
 	const sockaddr_in get_lstSocketAddr() const;
+	server &get_originalsrv() const;
 
 	void set_lstPort(int _lstPort);
 	void set_lstSocket_fd(int _lstSocket_fd);
 	void set_lstSocketAddr(sockaddr_in _lstSocketAddr);
+	void set_originalsrv(server *);
 };
 
 #endif

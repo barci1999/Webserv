@@ -66,6 +66,12 @@ const sockaddr_in listener::get_lstSocketAddr() const
 	return this->_lstSocketAddr;
 }
 
+server &listener::get_originalsrv() const
+{
+	std::cout << originalsrv << std::endl;
+	return *originalsrv;
+}
+
 void listener::set_lstPort(int _lstPort)
 {
 	this->_lstPort = _lstPort;
@@ -77,6 +83,11 @@ void listener::set_lstSocket_fd(int _lstSocket_fd)
 void listener::set_lstSocketAddr(sockaddr_in _lstSocketAddr)
 {
 	this->_lstSocketAddr = _lstSocketAddr;
+}
+
+void listener::set_originalsrv(server *originalsrv)
+{
+	this->originalsrv = originalsrv;
 }
 
 void listener::init_lstSocketAddr(void)
