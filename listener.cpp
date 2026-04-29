@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:36:03 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/16 12:53:27 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/29 20:36:35 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,15 @@ listener::listener(std::string port)
 	this->originalsrv=NULL;
 	parse_input(port);
 	this->_lstSocket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	std::cout<<this->_lstPort<<"||||||||||||||||||||||"<<std::endl;
 	setsockopt(this->_lstSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	init_lstSocketAddr();
-	bind(this->_lstSocket_fd,(struct sockaddr*) &this->_lstSocketAddr, sizeof(this->_lstSocketAddr));
+	if(bind(this->_lstSocket_fd,(struct sockaddr*) &this->_lstSocketAddr, sizeof(this->_lstSocketAddr)) == -1)
+	{
+		close(this->_lstSocket_fd);
+		throw std::invalid_argument("Failed bind");
+		
+	}
 	listen(this->_lstSocket_fd,3);
 }
 
@@ -47,17 +53,17 @@ void listener::parse_input(const std::string& input)
 		throw std::runtime_error("Port must be a numeric value");
 	if (*endptr != '\0')
 		throw std::runtime_error("Port must contain only digits");
-	if (errno == ERANGE || port < 0 || port > 65535)
-		throw std::runtime_error("Port out of valid range (0-65535)");
+	if (errno == ERANGE || port < 1024 || port > 65535)
+		throw std::runtime_error("Port out of valid range (1024-65535)");
 	this->_lstPort = static_cast<int>(port);
 }
 listener::~listener(){}
 
-const int listener::get_lstPort() const
+int listener::get_lstPort() const
 {
 	return this->_lstPort;
 }
-const int listener::get_lstSocket_fd() const
+int listener::get_lstSocket_fd() const
 {
 	return this->_lstSocket_fd;
 }

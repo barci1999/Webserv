@@ -1,5 +1,5 @@
 server {
-    listen 8080;
+    listen 9080;
 
     root Parseo_solo_toca_Pablo/www;
     index index.html;

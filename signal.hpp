@@ -1,44 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.cpp                                         :+:      :+:    :+:   */
+/*   signal.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/19 14:02:23 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/29 20:30:53 by pablalva         ###   ########.fr       */
+/*   Created: 2026/04/29 20:10:35 by pablalva          #+#    #+#             */
+/*   Updated: 2026/04/29 20:13:47 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "client.hpp"
+#pragma once
+#include <csignal>
+class Signal
+{
+	public:
+		static volatile sig_atomic_t runnin;
+		static void reginster_singal();
+		static void handler(int);
+};
 
-client::client()
-{
-	this->ptr = NULL;
-	this->fd = -1;
-}
-
-client::client(int fd)
-{
-	this->ptr = NULL;
-	this->fd = fd;
-}
-
-client::~client(){}
-
-const listener* client::get_ptr() const
-{
-	return this->ptr;
-}
-int client::get_fd() const
-{
-	return this->fd;
-}
-void client::set_ptr(listener* ptr)
-{
-	this->ptr = ptr;
-}
-void client::set_fd(int fd)
-{
-	this->fd = fd;
-}
