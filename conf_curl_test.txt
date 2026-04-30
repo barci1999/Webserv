@@ -1,8 +1,8 @@
 server {
-    listen 8080 3333;
-
+    listen 1024;
     root Parseo_solo_toca_Pablo/www;
 	index index.html;
+	host 127.0.0.1;
 
     client_max_body_size 1000000;
 
@@ -84,11 +84,13 @@ server {
         allowed_methods DELETE;
     }
 }
+
 server {
-    listen 9090;
+    listen 8080;
 
     root Parseo_solo_toca_Pablo/www;
     index index.html;
+	host 10.13.5.1;
 
     client_max_body_size 1000000;
 

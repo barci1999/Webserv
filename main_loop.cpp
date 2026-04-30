@@ -7,10 +7,12 @@
 #include "listener.hpp"
 #include "poll.h"
 #include <unistd.h>
+#include "signal.hpp"
 
  
  int main()
  {
+	Signal::reginster_singal();
      try
      {
          Parser parser;
@@ -18,11 +20,6 @@
          pollLoop(root);
          Directive crocqueta;
          std::string *haa  = crocqueta.args.data();
-         if (haa)
-         {
-             /* code */
-         }
-        
      }
      catch (std::exception& e)
      {

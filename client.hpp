@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:22:31 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/19 18:34:19 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/29 20:21:34 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ public:
 	~client();
 	
 	const listener* get_ptr() const;
-	const int get_fd() const;
+	int get_fd() const;
 
 	void set_ptr(listener *ptr);
 	void set_fd(int fd);

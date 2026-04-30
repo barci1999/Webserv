@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:23:37 by pablalva          #+#    #+#             */
-/*   Updated: 2026/03/16 12:53:19 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 16:03:57 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <exception>
 # include <iostream>
 # include "Parseo_solo_toca_Pablo/server.hpp"
+# include <unistd.h>
 
 class listener
 {
@@ -32,12 +33,12 @@ private:
 	void parse_input(const std::string& input);
 	void init_lstSocketAddr();
 public:
-	listener(std::string port);
+	listener(std::string port,server& conf);
 	listener(const listener& to_copy);
 	~listener();
 
-	const int get_lstPort() const;
-	const int get_lstSocket_fd() const;
+	int get_lstPort() const;
+	int get_lstSocket_fd() const;
 	const sockaddr_in get_lstSocketAddr() const;
 	server &get_originalsrv() const;
 

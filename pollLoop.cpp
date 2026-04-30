@@ -6,11 +6,14 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/04/29 15:24:43 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 16:06:15 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pollLoop.hpp"
+#include <csignal>
+#include "signal.hpp"
+
 
 bool is_request_complete(const std::string& buffer)
 {
@@ -74,28 +77,47 @@ int pollLoop(std::vector<server> general)
     std::map<int,client> srvClients;
     std::vector<pollfd> pollFds;
     pollfd fds;
-    int eventFd;
-    int active;
     int i = 0;
-    for (std::vector<server>::iterator it = general.begin(); it!=general.end();it++){
-        srvPorts=it->get_srvPorts();
-        Ports=srvPorts.args;
-        for (std::vector<std::string>::iterator it2 = Ports.begin(); it2!=Ports.end();it2++){
-            listener temp(*it2);
-            temp.set_originalsrv(&general[i]);
-            srvListeners.insert(std::make_pair(temp.get_lstSocket_fd(), temp));
-        }
-        i++;
-    }
-    for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-        //std::cout << it->second.get_originalsrv() << std::endl;
-        fds.fd = it->second.get_lstSocket_fd();
-		fds.events = POLLIN;
-		fds.revents = 0;
-        //std::cout << "fds listeners " << fds.fd <<std::endl;
-        pollFds.push_back(fds);
-    }
-    while (true)
+	
+	for(std::vector<server>::iterator it = general.begin(); it != general.end();++it)
+	{
+		std::cout << *it<<std::endl;
+	}
+	try
+	{
+		/* code */
+		for (std::vector<server>::iterator it = general.begin(); it!=general.end();it++){
+			srvPorts=it->get_srvPorts();
+			Ports=srvPorts.args;
+			for (std::vector<std::string>::iterator it2 = Ports.begin(); it2!=Ports.end();it2++){
+				listener temp(*it2,*it);
+				temp.set_originalsrv(&general[i]);
+				srvListeners.insert(std::make_pair(temp.get_lstSocket_fd(), temp));
+			}
+			i++;
+		}
+		for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
+			//std::cout << it->second.get_originalsrv() << std::endl;
+			fds.fd = it->second.get_lstSocket_fd();
+			fds.events = POLLIN;
+			fds.revents = 0;
+			//std::cout << "fds listeners " << fds.fd <<std::endl;
+			pollFds.push_back(fds);
+		}
+	}
+	catch(const std::invalid_argument& e)
+	{
+		std::cerr << e.what() << '\n';
+		std::cout<<"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
+		for (std::map<int,listener>::iterator it = srvListeners.begin(); it != srvListeners.end(); ++it)
+		{
+			close(it->second.get_lstSocket_fd());
+		}
+		Signal::runnin = 0;
+		
+	}
+	
+    while (Signal::runnin == 1)
     {
 
 		int active = poll(pollFds.data(), pollFds.size(), -1);
@@ -185,5 +207,9 @@ int pollLoop(std::vector<server> general)
             }
         }
     }
+	for (std::map<int,listener>::iterator it = srvListeners.begin(); it != srvListeners.end(); ++it)
+	{
+		close(it->second.get_lstSocket_fd());
+	}
     return (0);
 }

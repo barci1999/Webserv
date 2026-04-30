@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:28:51 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/11 17:34:07 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 12:51:27 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 #include <iostream>
 #include <sstream>
 #include<sys/stat.h>
+
+class server;
 enum tokens
 {
 	EMPTY,
