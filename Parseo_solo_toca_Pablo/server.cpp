@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/30 14:50:43 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 20:54:39 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,8 +121,8 @@ bool server::check_location_block(const Block& loc)
         }
         else if (d.name == "cgi_pass")
         {
-            if (d.args.size() != 1 || d.args[0].empty())
-                throw std::runtime_error("cgi_pass requires exactly one non-empty argument");
+            if (d.args.empty() || d.args.size() > 2)
+	            throw std::runtime_error("cgi_pass must have 1 or 2 arguments");
         }
         else if (d.name == "upload_enable")
         {
