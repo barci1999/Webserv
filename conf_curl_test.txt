@@ -90,11 +90,11 @@ server {
 
     root Parseo_solo_toca_Pablo/www;
     index index.html;
-	host 10.13.5.1;
+	host 10.13.6.1;
 
     client_max_body_size 1000000;
 
-    error_page 404 Parseo_solo_toca_Pablo/www/error_pages/501.html;
+    #error_page 404 Parseo_solo_toca_Pablo/www/error_pages/501.html;
 
     location / {
         root Parseo_solo_toca_Pablo/www;

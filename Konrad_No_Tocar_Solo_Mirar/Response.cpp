@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/27 14:40:06 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 17:47:44 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,30 @@ std::string Response::select_valuePhrase(unsigned int status)
 	}
 }
 Response::~Response(){}
+std::string gen_error_body(unsigned int error)
+{
+	switch (error)
+	{
+	case 400:
+		return "<h1>400 - Bad Request</h1>";
+	case 403:
+		return "<h1>403 - Forbidden</h1>";
+	case 404:
+		return "<h1>404 - Not Found</h1>";
+	case 405:
+		return "<h1>405 - Method Not Allowed</h1>";
+	case 413:
+		return "<h1>413 - Payload Too Large</h1>";
+	case 415:
+		return "<h1>415 - Unsupported Media Type</h1>";
+	case 500:
+		return "<h1>500 - Internal Server Error</h1>";
+	case 501:
+		return "<h1>501 - Not Implemented</h1>";
+	default:
+		return "<h1>Error</h1>";
+	}
+}
 
 std::string Response::generate_autoindex(const std::string& full_path,const std::string& request_path)
 {
@@ -273,9 +297,9 @@ void Response::set_error(Response& modifi,unsigned int error,const server& serve
 	}
 	if (error_path.empty())
 	{
-		modifi.set_statuscode(500);
-		modifi.set_reasonphrase("Internal Server Error");
-		body = "<h1>500 - Internal Server Error</h1><p>Ocurrió un error al intentar acceder al archivo.</p> <p>Por favor, inténtalo más tarde.</p>";
+		modifi.set_statuscode(error);
+		modifi.set_reasonphrase(select_valuePhrase(error));
+		body = gen_error_body(modifi.get_statusCode());
 	}
 	else
 	{
@@ -285,9 +309,9 @@ void Response::set_error(Response& modifi,unsigned int error,const server& serve
 		}
 		else
 		{
-			modifi.set_statuscode(500);
-			modifi.set_reasonphrase("Internal Server Error");
-			body = "<h1>500 - Internal Server Error</h1><p>Ocurrió un error al intentar acceder al archivo.</p> <p>Por favor, inténtalo más tarde.</p>";
+			modifi.set_statuscode(error);
+			modifi.set_reasonphrase(select_valuePhrase(error));
+			body = gen_error_body(modifi.get_statusCode());
 		}
 	}
     modifi.set_body(body);
