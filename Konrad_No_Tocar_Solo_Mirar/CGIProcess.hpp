@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/15 18:20:56 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/29 19:36:18 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ class CGIProcess
 		void readFromPipe(); //comprueba si el CGI terminó
 		Response buildResponse(); // construye la respuesta final
 		
-		const std::string& getBuffer() const;
+		std::map<std::string, std::string> _cgiMap;
 		//std::string handleRequest(Request& request, Block& location);//ESTA AL FINCLA DEL ARCHIVO .cpp
 
 };

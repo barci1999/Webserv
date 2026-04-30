@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/27 14:39:37 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/29 20:33:35 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,14 +59,12 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server& serv
 
 	if (ext.name.empty())
 	{
-		//std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
-		//Mensaje de error de que no se encunentra, buscar para ver que clase de erro, si mensaje o htlm
+		std::cout << "extension empty" << std::endl;
 	}
 
 	if (pass.name.empty())
 	{
-		//std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" << std::endl;
-		//Mensaje de error de que no se encunentra
+		std::cout << "pass empty" << std::endl;
 	}
 
 	if (!ext.args.empty())
@@ -787,9 +785,4 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 	response.addback_headers("Connection", "close");
 
 	return response;
-}
-
-const std::string& CGIProcess::getBuffer() const
-{
-    return _buffer;
 }
