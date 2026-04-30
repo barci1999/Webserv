@@ -29,6 +29,7 @@
 # include <unistd.h>
 # include "Konrad_No_Tocar_Solo_Mirar/ResponseCGI.hpp"
 
+class listener;
 int pollLoop(std::vector<server> general);
 
 #endif

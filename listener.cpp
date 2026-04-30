@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:36:03 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/29 20:36:35 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 16:15:04 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 #include <stdlib.h>
 
 
-listener::listener(std::string port)
+listener::listener(std::string port,server& conf)
 {
 	int opt = 1;
 
-	this->originalsrv=NULL;
+
+	this->originalsrv = &conf;
 	parse_input(port);
 	this->_lstSocket_fd = socket(AF_INET, SOCK_STREAM, 0);
-	std::cout<<this->_lstPort<<"||||||||||||||||||||||"<<std::endl;
 	setsockopt(this->_lstSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	init_lstSocketAddr();
 	if(bind(this->_lstSocket_fd,(struct sockaddr*) &this->_lstSocketAddr, sizeof(this->_lstSocketAddr)) == -1)
@@ -100,7 +100,8 @@ void listener::init_lstSocketAddr(void)
 {
 	this->_lstSocketAddr.sin_family = AF_INET;
 	this->_lstSocketAddr.sin_port = htons(this->_lstPort);
-	this->_lstSocketAddr.sin_addr.s_addr = INADDR_ANY;
+	std::cout <<this->originalsrv->get_srvHost().args[0]<<std::endl;
+	this->_lstSocketAddr.sin_addr.s_addr = inet_addr(this->originalsrv->get_srvHost().args[0].c_str());
 	this->_lstSocketAddr = _lstSocketAddr;
 }
 

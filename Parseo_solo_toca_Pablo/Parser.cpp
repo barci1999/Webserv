@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 01:10:56 by pablo             #+#    #+#             */
-/*   Updated: 2026/04/19 14:49:52 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 11:58:16 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ Directive Parser::parseDirective(const std::string& line)
     std::string level[] = {
         "server_name","listen","root","index","error_page",
         "client_max_body_size","autoindex","cgi_extension",
-        "upload_enable","upload_store","cgi_pass","allowed_methods"
+        "upload_enable","upload_store","cgi_pass","allowed_methods","host"
     };
     std::string to_check = trim(line);
     if (to_check.empty() || to_check[to_check.length() - 1] != ';')

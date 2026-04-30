@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/04/29 20:35:21 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 16:06:15 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ int pollLoop(std::vector<server> general)
 			srvPorts=it->get_srvPorts();
 			Ports=srvPorts.args;
 			for (std::vector<std::string>::iterator it2 = Ports.begin(); it2!=Ports.end();it2++){
-				listener temp(*it2);
+				listener temp(*it2,*it);
 				temp.set_originalsrv(&general[i]);
 				srvListeners.insert(std::make_pair(temp.get_lstSocket_fd(), temp));
 			}

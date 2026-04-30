@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:23:37 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/29 20:21:49 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 16:03:57 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ private:
 	void parse_input(const std::string& input);
 	void init_lstSocketAddr();
 public:
-	listener(std::string port);
+	listener(std::string port,server& conf);
 	listener(const listener& to_copy);
 	~listener();
 

@@ -40,7 +40,7 @@ int main(void)
 	tests3.push_back("GET / HTTP/1.1\r\nHost:\r\n\r\n"); // host vacion
 	tests3.push_back("GET / HTTP/1.1\r\nHost: \r\n\r\n"); //host solo espacios
 	tests3.push_back("GET / HTTP/1.1\r\nHost: example.com\r\nContent-Length: abc\r\n\r\n");// content lenth no numerico
-	tests3.push_back("POST /test HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nContent-Length: -5\r\n\r\nhello");
+	tests3.push_back("POST /test HTTP/1.1\r\nHoSt: example.com\r\nContent-Type: text/plain\r\nContent-Length: -5\r\n\r\nhello");
 	tests3.push_back("POST /test HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nContent-Length: 0\r\n\r\nhello");
 	tests3.push_back("POST /test HTTP/1.1\r\nHost: example.com\r\nContent-Type: text/plain\r\nContent-Length: 5\r\n\r\nhelloEXTRA");
 	tests3.push_back("INVALID / HTTP/1.1\r\nHost: example.com\r\n\r\n");

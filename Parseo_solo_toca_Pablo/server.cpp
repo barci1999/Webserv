@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/22 17:36:45 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 14:50:43 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,6 +214,10 @@ std::ostream& operator<<(std::ostream& out, const server& s) {
     printVector(out, s.get_srvPorts().args);
     out << std::endl;
 
+	out << "Host: " << s.get_srvHost().name << " -> ";
+    printVector(out, s.get_srvHost().args);
+    out << std::endl;
+
     out << "Root: " << s.get_srvRoot().name << " -> ";
     printVector(out, s.get_srvRoot().args);
     out << std::endl;
@@ -321,6 +325,65 @@ Directive server::check_listen(const Directive& to_check)
     }
     return to_check;
 }
+Directive server::check_host(const Directive& to_check)
+{
+	
+	if (to_check.name.empty() || to_check.name != "host")
+	{
+		std::cerr << "hola" << std::endl;
+        return Directive();
+	}
+	if (to_check.args.empty() || to_check.args.size() != 1)
+	{
+		std::cerr << 0 << std::endl;
+        return Directive();
+	}
+	Directive clean = to_check;
+	std::string& ip = clean.args[0];
+	std::vector<std::string> tokens;
+	std::stringstream input(ip);
+	std::string buffer;
+	std::cerr << clean.args[0]<<std::endl;
+	while (std::getline(input,buffer,'.'))
+		tokens.push_back(buffer);
+	if (tokens.empty() || tokens.size() != 4)
+	{
+		std::cerr << 1 << std::endl;
+		return Directive();
+	}
+	for (size_t i= 0; i < tokens.size(); ++i)
+	{
+		if(!is_valid_number(tokens[i]))
+		{
+			std::cerr << 2 << std::endl;
+			return Directive();
+		}
+		int value = std::atoi(tokens[i].c_str());
+		if (value < 0 || value > 255)
+		{
+			std::cerr << 3 << std::endl;
+			return Directive();
+		}
+		if (tokens[i].size() > 1 && tokens[i][0] == '0')
+        {
+			std::cerr << 4 << std::endl; 
+			return Directive();
+		}
+	}
+	int first = std::atoi(tokens[0].c_str());
+	if (first >= 224)
+	{
+		std::cerr << 5 << std::endl;
+		return Directive();
+	}
+	if (ip == "255.255.255.255")
+	{
+		std::cerr << 6 << std::endl;
+		return Directive();
+	}
+	std::cout<<clean.name<<std::endl;
+	return clean;
+}
 int server::insert_directives(const std::vector<Directive>& to_insert)
 {
     std::set<std::string> seen;
@@ -344,6 +407,7 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
         else if (it->name == "root")      this->_srvRoot = check_root(*it);
         else if (it->name == "index")     this->_srvIndex = check_index(*it);
         else if (it->name == "autoindex") this->_srvAutoindex = check_autoindex(*it);
+		else if (it->name == "host") this->_srvHost = check_host(*it);
         else if (it->name == "client_max_body_size")
             this->_srvClientMaxBody = check_client_max_body(*it);
     }
@@ -351,11 +415,11 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
         throw std::runtime_error("Missing mandatory directive: listen");
     if (this->_srvRoot.name.empty())
         throw std::runtime_error("Missing mandatory directive: root");
-    // if (this->_srvIndex.name.empty())
-    // {
-    //     this->_srvIndex.name = "index";
-    //     this->_srvIndex.args.push_back("index.html");
-    // }
+	std::cout <<"holaaaaaaaaa" <<this->_srvHost.name<<std::endl;
+	if (this->_srvHost.name.empty())
+	{
+		throw std::runtime_error("Invalid ip");
+	}
     if (this->_srvAutoindex.name.empty())
     {
         this->_srvAutoindex.name = "autoindex";

@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 19:02:54 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/12 17:38:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/04/30 12:28:17 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include <sstream>
 # include <map>
 # include <stdlib.h>
+# include "../utils.hpp"
 # include <set>
 class server
 {
@@ -32,6 +33,7 @@ private:
 //valores para konrad:
 
 	std::string _srvName;
+	Directive _srvHost;
 	Directive _srvPorts;
 	Directive _srvRoot;
 	Directive _srvIndex;
@@ -54,6 +56,7 @@ private:
 	Directive check_error_page(const Directive& to_check);
 	Directive check_root(const Directive& to_check);
 	Directive check_listen(const Directive& to_check);
+	Directive check_host(const Directive& to_check);
 	void normalize_location(Block& loc);
 	
 	
@@ -70,6 +73,7 @@ private:
 	const	std::list<Block>& get_srvLocations()	const	{return this->_srvLocations;}
 	const	size_t& get_srvClientMaxBody()	const	{return this->_srvClientMaxBody;}
 	const	Directive& get_srvAutoindex()	const {return this->_srvAutoindex;}
+	const	Directive& get_srvHost()	const {return this->_srvHost;}
 	
 	void	set_srvName(std::string srvname)	{this->_srvName = srvname;}
 	void	set_srvPorts(Directive& srvports)	{this->_srvPorts = srvports;}
@@ -79,6 +83,7 @@ private:
 	void	set_srvLocations(std::list<Block>& srvlocations)	{this->_srvLocations = srvlocations;}
 	void	set_srvClientMaxBody(size_t srvclientmaxbody)	{this->_srvClientMaxBody = srvclientmaxbody;}
 	void	set_srvAutoindex(Directive& srvautoindex)	{this->_srvAutoindex = srvautoindex;}
+	void	set_srvHost(Directive& srvhost)	{this->_srvHost = srvhost;}
 
 	Directive	take_concret_direc(const std::string& to_search, const std::vector<Directive>& to_check);
 	
