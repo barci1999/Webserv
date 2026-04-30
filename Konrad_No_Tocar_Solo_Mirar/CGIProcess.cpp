@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/29 20:33:35 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/04/30 21:10:10 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,27 +51,28 @@
 //Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
 void CGIProcess::extractCGIConfig(const Block& best_location, const server& server_config)
 {
-	_cgiExtension.clear();
-	_cgiPass.clear();
+	_cgiHandlers.clear();
 
 	Directive ext = search_directive("cgi_extension", best_location);
 	Directive pass = search_directive("cgi_pass", best_location);
 
-	if (ext.name.empty())
+	if (ext.args.empty() || pass.args.empty())
+		return;
+
+	if (ext.args.size() != pass.args.size())
 	{
-		std::cout << "extension empty" << std::endl;
+		std::cerr << "CGI config mismatch: extensions and passes size differ" << std::endl;
+		return;
 	}
 
-	if (pass.name.empty())
+	for (size_t i = 0; i < ext.args.size(); i++)
 	{
-		std::cout << "pass empty" << std::endl;
+		std::string extension = ext.args[i];
+		std::string binary = pass.args[i];
+
+		if (!extension.empty() && extension[0] == '.')
+			_cgiHandlers[extension] = binary;
 	}
-
-	if (!ext.args.empty())
-		_cgiExtension = ext.args[0];
-
-	if (!pass.args.empty())
-		_cgiPass = pass.args[0];
 }
 
 
@@ -114,26 +115,29 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 
 	Block best_location = find_best_location(path, server_config);
 
-	//std::cout << "PATH: " << path << std::endl;
-	//std::cout << "BEST LOCATION: " << best_location.getName() << std::endl;
-
 	if (best_location.getName().empty())
 		return false;
 
 	extractCGIConfig(best_location, server_config);
 
-	if (_cgiExtension.empty() || _cgiPass.empty())
-		return false;
-
 	std::string extension = extractExtension(path);
 
-	if (extension == _cgiExtension)
+	std::map<std::string, std::string>::iterator it = _cgiHandlers.find(extension);
+	if (it != _cgiHandlers.end())
 	{
 		_scriptPath = path;
+		_cgiPass = it->second;
+		std::cerr << "CGI EXT: " << extension << std::endl;//DEBUS que puse para la parte bonus
+		std::cerr << "CGI PAS: " << _cgiPass << std::endl;
 		return true;
 	}
 	return false;
 }
+// El sistema asume que el archivo de configuración es coherente.
+// Si el orden entre cgi_extension y cgi_pass no coincide,
+// el comportamiento será incorrecto, ya que el emparejamiento se hace por posición.
+// Si nos pasan .py .php y en la extension usr/bin/php usr/bin/python no funcionaria.
+
 
 
 //////////////////////////////////////////////

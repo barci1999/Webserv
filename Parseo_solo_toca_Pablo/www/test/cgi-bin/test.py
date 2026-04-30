@@ -9,10 +9,10 @@ print("Content-Type: text/html")
 print()
 time.sleep(2)
 
-print("<h2>⌛ Procesando muy muy fuerte...<h2>")
+print("<h2>⌛ Procesando muy muy fuerte...</h2>")
 time.sleep(2)
 
-print("💡 Ahora sí. Ya lo tengo!")
+print("<h2>💡 Ahora sí. Ya lo tengo!</h2>")
 print()
 time.sleep(1)
 
