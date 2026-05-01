@@ -165,13 +165,13 @@ DATA = {
                 "options": [
                     {
                         "text": "SI",
-                        "next": "win",
+                        "next": "lose",
                         "image": "yes",
                         "style": "width:80%"
                     },
                     {
                         "text": "NO",
-                        "next": "lose",
+                        "next": "win",
                         "image": "no",
                         "style": "width:80%"
                     }
@@ -189,13 +189,13 @@ DATA = {
                 "options": [
                     {
                         "text": "SI",
-                        "next": "win",
+                        "next": "lose",
                         "image": "yes",
                         "style": "width:80%"
                     },
                     {
                         "text": "NO",
-                        "next": "lose",
+                        "next": "win",
                         "image": "no",
                         "style": "width:80%"
                     }
