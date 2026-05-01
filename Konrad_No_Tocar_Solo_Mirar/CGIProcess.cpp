@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/30 21:10:10 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/01 17:22:16 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,37 +21,13 @@
 /*
  * extractCGIConfig(const Block& best_location, const server& server_config)
  * ------------------------------------------------------------------------
- * Obtiene la configuración necesaria para ejecutar CGI:
- * - extensión del script (ej: .py, .php)
- * - ejecutable (ej: /usr/bin/python3)
- *
- * Parámetros:
- * - best_location: location seleccionada para esta request
- * - server_config: bloque server completo (fallback)
- *
- * Cómo funciona:
- * 1. Busca "cgi_extension" y "cgi_pass" en la location.
- * 2. Si no existen, busca en el server (fallback global).
- * 3. Guarda los valores en variables internas:
- *    - _cgiExtension
- *    - _cgiPass
- *
- * Relación con Webserv:
- * - Permite configuraciones como:
- *
- *   location /cgi-bin/ {
- *       cgi_extension .py;
- *       cgi_pass /usr/bin/python3;
- *   }
- *
- * - O configuración global en server.
- */
-
-//Se busca cgi_extension y cgi_pass y se guarda en la variables, al principio las inicializo vacias
-//Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias, guardamos el primer argumento
+	Se busca cgi_extension y cgi_pass y se guarda en la variables, se usa el contenedor map para guardar datos
+	Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias,
+	guardamos los argumentos usando el for recorriendo los argumentos que hay
+*/
 void CGIProcess::extractCGIConfig(const Block& best_location, const server& server_config)
 {
-	_cgiHandlers.clear();
+	_cgimap.clear();
 
 	Directive ext = search_directive("cgi_extension", best_location);
 	Directive pass = search_directive("cgi_pass", best_location);
@@ -68,10 +44,10 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server& serv
 	for (size_t i = 0; i < ext.args.size(); i++)
 	{
 		std::string extension = ext.args[i];
-		std::string binary = pass.args[i];
+		std::string route = pass.args[i];
 
 		if (!extension.empty() && extension[0] == '.')
-			_cgiHandlers[extension] = binary;
+			_cgimap[extension] = route;
 	}
 }
 
@@ -79,36 +55,11 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server& serv
 /*
  * isCGI(const Request& request, const Block& server_config)
  * ---------------------------------------------------------
- * Determina si la request debe ejecutarse como CGI.
- *
- * Parámetros:
- * - request: petición HTTP del cliente
- * - server_config: bloque server completo
- *
- * Cómo funciona:
- * 1. Obtiene el path de la request.
- * 2. Encuentra la mejor location (longest match).
- * 3. Extrae la configuración CGI (extensión + ejecutable).
- * 4. Extrae la extensión del archivo solicitado.
- * 5. Compara con la extensión CGI configurada.
- *
- * Resultado:
- * - true  → es CGI → hay que hacer fork + execve
- * - false → es archivo normal (GET)
- *
- * Ejemplo:
- *   request = "/cgi-bin/test.py"
- *   cgi_extension = ".py"
- *   → devuelve true
- *
- * Importancia:
- * - Decide el flujo principal del servidor:
- *   - CGI → proceso hijo
- *   - Static → make_Get()
- *
+ 	Determina si la request debe ejecutarse como CGI.
+ 	Aquí buscamos la extensión y obtenemos el ejecutable correspondiente.
+	Además, guardamos la ruta del script para poder construir la ruta completa
+	y ejecutarlo correctamente.
  */
-// Aquí verifico que si el contenido del request es el mismo que la extension del location
-//Comprueba si la request es CGI comparando extensión
 bool CGIProcess::isCGI(const Request& request, const server& server_config)
 {
 	std::string path = request.get_path();
@@ -122,8 +73,8 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 
 	std::string extension = extractExtension(path);
 
-	std::map<std::string, std::string>::iterator it = _cgiHandlers.find(extension);
-	if (it != _cgiHandlers.end())
+	std::map<std::string, std::string>::iterator it = _cgimap.find(extension);
+	if (it != _cgimap.end())
 	{
 		_scriptPath = path;
 		_cgiPass = it->second;
@@ -145,37 +96,12 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 //////////////////////////////////////////////
 
 //CREAMOS EL FULLPATH
-// Construye la ruta real del archivo en disco
 /*
  * buildFullPath(const Request& request, const server& server_config)
  * ------------------------------------------------------------------
- * Construye la ruta real en disco del recurso solicitado.
- *
- * Parámetros:
- * - request: petición HTTP
- * - server_config: configuración del server
- *
- * Cómo funciona:
- * 1. Encuentra la mejor location para el path.
- * 2. Obtiene el root:
- *    - primero intenta en location
- *    - si no existe → usa root del server
- * 3. Calcula el path relativo eliminando el prefijo de la location.
- * 4. Une root + relative path.
- *
- * Ejemplo:
- *   request: "/cgi-bin/test.py"
- *   location: "/cgi-bin/"
- *   root: "/var/www/cgi/"
- *
- *   → full_path = "/var/www/cgi/test.py"
- *
- * Importancia:
- * - Necesario para:
- *   - abrir archivos
- *   - ejecutar scripts CGI
- *   - evitar errores de ruta en execve()
- *
+ * Construye la ruta absoluta del script.
+ * Usa root de la location o del server.
+ * Elimina el prefijo de la location y concatena.
  */
 std::string CGIProcess::buildFullPath(const Request& request, const server& server_config)
 {
@@ -219,45 +145,13 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 // 🔹 EJECUCION CGI (CORE)
 //////////////////////////////////////////////
 
-//Inicio de prueba de execute
-
-//Lanza el proceso CGI (fork + pipes) | ESta es la vieja, la dejo por si hay que revisar algo 
-
-//Nuevo execute, una version no bloqueante
-
 /*
  * execute(const Request& request, const server& server_config)
  * ------------------------------------------------------------
  * Lanza la ejecución de un CGI de forma NO BLOQUEANTE.
- *
- * Parámetros:
- * - request: petición HTTP del cliente
- * - server_config: configuración del servidor
- *
- * Cómo funciona:
- * 1. Construye la ruta real del script con buildFullPath().
- * 2. Inicializa estado interno (_finished = false, buffer vacío).
- * 3. Crea pipes para comunicación padre ↔ hijo.
- * 4. Hace fork():
- *    - Hijo → ejecuta setupChildProcess() + execve()
- *    - Padre → prepara comunicación (no bloquea)
- * 5. Cierra extremos innecesarios en el padre.
- * 6. Si es POST:
- *    - Escribe el body en el pipe de entrada (NO bloqueante).
- * 7. Cierra el pipe de escritura → importante para EOF.
- *
- * NO BLOQUEANTE:
- * - NO lee la salida aquí.
- * - NO hace waitpid bloqueante.
- * - La lectura se hace después con poll() + readFromPipe().
- *
- * Relación con Webserv:
- * - Este método SOLO inicia el CGI.
- * - El servidor (poll loop) continuará leyendo poco a poco.
- *
- * Importancia:
- * - Permite manejar múltiples clientes sin bloquear el servidor.
- *
+ * Lanza el CGI de forma no bloqueante.
+ * Crea pipes, hace fork y ejecuta el hijo.
+ * El padre solo escribe (POST) y continúa.
  */
 void CGIProcess::execute(const Request& request, const server& server_config)
 {
@@ -292,16 +186,7 @@ void CGIProcess::execute(const Request& request, const server& server_config)
  * createPipes()
  * --------------
  * Crea los pipes de comunicación entre proceso padre e hijo.
- *
- * Cómo funciona:
- * 1. Crea:
- *    - _inputPipe  → padre escribe → hijo lee (stdin)
- *    - _outputPipe → hijo escribe → padre lee (stdout)
- * 2. Configura ambos en modo NO BLOQUEANTE con fcntl().
- *
- * Importancia:
- * - Permite comunicación asíncrona sin bloquear el servidor.
- *
+ * Configura lectura/escritura en modo no bloqueante.
  */
 void CGIProcess::createPipes()
 {
@@ -325,16 +210,7 @@ void CGIProcess::createPipes()
  * forkProcess()
  * --------------
  * Duplica el proceso en padre e hijo.
- *
- * Cómo funciona:
- * 1. Llama a fork().
- * 2. Guarda el PID:
- *    - 0 → proceso hijo
- *    - >0 → proceso padre
- *
- * Importancia:
- * - Permite ejecutar el CGI en un proceso separado.
- *
+ * Hace fork y guarda el PID.
  */
 void CGIProcess::forkProcess()
 {
@@ -349,38 +225,15 @@ void CGIProcess::forkProcess()
  * buildEnv(const Request& request)
  * --------------------------------
  * Construye las variables de entorno necesarias para ejecutar el CGI.
- *
- * Parámetros:
- * - request: petición HTTP del cliente
- *
- * Cómo funciona:
- * 1. Crea un vector<string> con variables CGI estándar:
- *    - REQUEST_METHOD
- *    - SERVER_PROTOCOL
- *    - QUERY_STRING
- *    ...
- * 2. Añade información del script:
- *    - SCRIPT_FILENAME → ruta absoluta
- *    - SCRIPT_NAME     → path original
- * 3. Añade headers importantes:
- *    - CONTENT_LENGTH
- *    - CONTENT_TYPE
- * 4. Añade variable especial:
- *    - REDIRECT_STATUS=200 (necesaria para PHP)
- * 5. Convierte vector<string> → char** (formato execve)
- *
- * Formato final:
- *   ["KEY=VALUE", "KEY=VALUE", ..., NULL]
- *
+ * Incluye método, path, headers y datos necesarios para PHP.
+ * 
  * Importancia:
  * - El CGI depende completamente de estas variables.
  * - Sin ellas:
  *   - PHP no funciona ❌
  *   - POST no funciona ❌
  *   - QUERY_STRING vacío ❌
- *
  */
-//Construye variables de entorno para el CGI (muy importante para PHP)
 char **CGIProcess::buildEnv(const Request& request)
 {
     std::vector<std::string> env;
@@ -407,7 +260,7 @@ char **CGIProcess::buildEnv(const Request& request)
     if (headers.count("Content-Type"))
         env.push_back("CONTENT_TYPE=" + headers.at("Content-Type"));
 
-    // 🔥 Muy importante para PHP
+    // Importante para PHP
     env.push_back("REDIRECT_STATUS=200");
 
     // Convertir a char**
@@ -426,41 +279,9 @@ char **CGIProcess::buildEnv(const Request& request)
  * setupChildProcess(const Request& request)
  * ------------------------------------------
  * Configura el proceso hijo antes de ejecutar el CGI.
- *
- * Parámetros:
- * - request: petición HTTP
- *
- * Cómo funciona:
- * 1. Redirige:
- *    - stdin  ← pipe de entrada (POST)
- *    - stdout → pipe de salida (respuesta CGI)
- *
- * 2. Cierra todos los pipes innecesarios.
- *
- * 3. Cambia el directorio de trabajo al del script:
- *    - IMPORTANTE para rutas relativas
- *
- * 4. Prepara argv:
- *    - argv[0] → ejecutable (ej: python3)
- *    - argv[1] → script
- *
- * 5. Construye variables de entorno con buildEnv()
- *
- * 6. Ejecuta execve():
- *    - reemplaza el proceso hijo por el CGI
- *
- * 7. Si falla:
- *    → imprime error y termina
- *
- * Relación con CGI:
- * - Esto es literalmente lo que hace Apache/nginx internamente.
- *
- * Importancia:
- * - Aquí ocurre la magia:
- *   fork + execve = CGI real
- *
+ * Configura el hijo:
+ * redirige stdin/stdout, hace chdir y ejecuta execve.
  */
-//Configura el hijo: redirige stdin/stdout y ejecuta el CGI
 void CGIProcess::setupChildProcess(const Request& request)
 {
     // 🔹 1. Redirigir stdin (pipe entrada) → STDIN del CGI
@@ -475,7 +296,6 @@ void CGIProcess::setupChildProcess(const Request& request)
     close(_outputPipe[0]);
     close(_outputPipe[1]);
 
-
 	// 🔹 4. Obtener el directorio del script (SIN el nombre del archivo)
     // Ej: "sgoinfre/.../cgi-bin/test.py" → "sgoinfre/.../cgi-bin"
 	std::string dir = _fullPath.substr(0, _fullPath.find_last_of('/'));
@@ -483,27 +303,23 @@ void CGIProcess::setupChildProcess(const Request& request)
 	{
 		dir.erase(0,1);
 	}
-	
 
-	//AÑADIMOS / AL PRINCIPIO POR QUE SI NO DA ERROR, PABLO EN EL PARSEO LOS QUITA
-	// 🔹 5. FIX PARSER: añadir "/" al inicio para que sea ruta absoluta
+	// 🔹 5. Crear el directorio
 	if (chdir(dir.c_str()) != 0)
 	{
 		perror("chdir failed");
 		exit(1);
 	}
 	// Si NO haces chdir():
-	// Buscaría en el directorio donde lanzaste el server ❌
-	// Fallaría aunque el archivo exista ❌
+	// Buscaría en el directorio donde se lanzo el server
+	// Fallaría aunque el archivo exista
 	
 	
-	// 🔹 7. Obtener SOLO el nombre del script
+	// 🔹 6. Obtener SOLO el nombre del script
     // Ej: "sgoinfre/.../cgi-bin/test.py" → "test.py"
     std::string scriptName = _fullPath.substr(_fullPath.find_last_of('/') + 1);
-
-
 	
-    // 🔹 8. Preparar argumentos para execve
+    // 🔹 7. Preparar argumentos para execve
     char *argv[3];
 
 	//SE AÑADE / AL PRINCIIO DE _cgiPass por que si no no funciona
@@ -511,26 +327,24 @@ void CGIProcess::setupChildProcess(const Request& request)
     argv[1] = strdup(scriptName.c_str());        // "test.py"
     argv[2] = NULL;
 
-
-    // 🔹 9. Construir entorno CGI
+    // 🔹 8. Construir entorno CGI
     char **env = buildEnv(request);
 
+	//DESDE AQUI
 	// Es un mensaje para verificar un error. Aqui no hay / al principio
 	std::cerr << "CGI cgiPass: [" << _cgiPass << "]" << std::endl;
-
 	//DEBUG TRAS AÑADIR / EN EL ARGV[0]
 	std::cerr << "CGI cgiPass2: [" << argv[0] << "]" << std::endl;
-
 	// 🔹 DEBUG útil por que no entiendo
 	std::cerr << "EXECVE PATH: " << argv[0] << std::endl;
     std::cerr << "SCRIPT: " << argv[1] << std::endl;
     std::cerr << "CWD: " << dir << std::endl;
 	std::cerr << "DEBUG: ejecutando execve" << std::endl;
+	//HASTA AQUI SON DEBUGS QUE SE PUEDEN QUITAR AL FINAL
 
-	// 🔹 10. Ejecutar CGI
+	// 🔹 9. Ejecutar CGI
     execve(argv[0], argv, env);
 
-    // 🔴 Si llega aquí → error
     perror("execve failed");
     exit(127);
 }
@@ -541,15 +355,7 @@ void CGIProcess::setupChildProcess(const Request& request)
 
 /*
  * getFD() const
- * --------------
- * Devuelve el file descriptor del pipe de salida del CGI.
- *
- * Retorno:
- * - fd que debe ser monitorizado con poll()
- *
- * Importancia:
- * - Permite al servidor saber cuándo hay datos listos para leer.
- *
+ * Devuelve el fd de salida del CGI (para poll).
  */
 int CGIProcess::getFD() const
 {
@@ -560,19 +366,8 @@ int CGIProcess::getFD() const
  * readFromPipe()
  * ----------------
  * Lee la salida del CGI de forma NO BLOQUEANTE.
- *
- * Cómo funciona:
- * 1. Intenta leer datos del pipe en un bucle.
- * 2. Si hay datos → los añade a _buffer.
- * 3. Si read() devuelve:
- *    - >0 → sigue leyendo
- *    - 0  → EOF → el CGI terminó → _finished = true
- *    - -1 → EAGAIN → no hay datos aún (NO error)
- *
- * Relación con poll():
- * - Se llama cuando poll() indica que hay datos disponibles.
- *
- * Importancia:
+ * Guarda datos en _buffer.
+ * EOF → marca como terminado.
  * - Permite leer progresivamente sin bloquear el servidor.
  *
  */
@@ -600,17 +395,7 @@ void CGIProcess::readFromPipe()
  * isFinished()
  * --------------
  * Comprueba si el CGI ha terminado.
- *
- * Cómo funciona:
- * 1. Si _finished ya es true → retorna true.
- * 2. Llama a waitpid() con WNOHANG:
- *    - 0 → sigue ejecutándose
- *    - >0 → terminó
- * 3. Si terminó → marca _finished = true.
- *
- * Importancia:
- * - Permite saber cuándo construir la respuesta final.
- *
+ * Usa waitpid no bloqueante.
  */
 bool CGIProcess::isFinished()
 {
@@ -628,20 +413,7 @@ bool CGIProcess::isFinished()
 	return true;
 }
 
-/*
- * buildResponse()
- * ----------------
- * Construye la Response HTTP a partir de la salida del CGI.
- *
- * Cómo funciona:
- * 1. Usa el buffer acumulado (_buffer).
- * 2. Llama a parseCGIResponse().
- * 3. Devuelve un objeto Response listo.
- *
- * Importancia:
- * - Convierte salida CGI → respuesta HTTP real.
- *
- */
+// Es solo encapsulamiento para no llamar al _buffer y antes habia mas cosas y ya la dejo así
 Response CGIProcess::buildResponse()
 {
 	return parseCGIResponse(_buffer);
@@ -656,63 +428,12 @@ Response CGIProcess::buildResponse()
 /*
  * parseCGIResponse(const std::string& output)
  * --------------------------------------------
- * Convierte la salida RAW de un CGI en una Response HTTP.
- *
- * Parámetros:
- * - output: string con toda la salida del CGI (headers + body)
- *
- * Cómo funciona:
- * 1. Busca la separación entre headers y body:
- *    "\r\n\r\n"
- * 2. Si no existe:
- *    → error → devuelve 500 (CGI mal formado)
- * 3. Divide:
- *    - headerPart → cabeceras CGI
- *    - bodyPart   → contenido
- * 4. Procesa cada línea de header:
- *    - Busca "key: value"
- *    - Limpia espacios y '\r'
- * 5. Caso especial:
- *    - "Status" → define código HTTP y reason phrase
- * 6. El resto de headers:
- *    → se añaden a la Response
- * 7. Asigna el body final
- *
- * Relación con CGI:
- * - Un CGI devuelve algo como:
- *
- *   Status: 200 OK\r\n
- *   Content-Type: text/html\r\n
- *   \r\n
- *   <html>...</html>
- *
- * Importancia:
- * - Traduce salida CGI → respuesta HTTP válida.
- * - Sin esto, el navegador no entiende nada.
- *
+ * Parsea la salida del CGI (headers + body).
+ * Convierte a Response HTTP válida.
  */
-//Convierte la salida del CGI en una Response HTTP
 Response CGIProcess::parseCGIResponse(const std::string& output)
 {
 	Response response;
-
-	//DESDE AQUI 
-	// size_t pos = output.find("\r\n\r\n");
-
-	// if (pos == std::string::npos)
-    // 	pos = output.find("\n\n");
-	// if (pos == std::string::npos)
-	// {
-	// 	response.set_statuscode(500);
-	// 	response.set_reasonphrase("Internal Server Error");
-	// 	response.set_body("CGI malformed response");
-	// 	return response;
-	// }
-
-	// std::string headerPart = output.substr(0, pos);
-	// std::string bodyPart = output.substr(pos + 4);
-	//HASTA AQUI SE COMENTA Y TAL VEZ SE QUITE AL FINAL TODO
-	
 
 	size_t pos = output.find("\r\n\r\n");
 	size_t separator_len = 4;
