@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:36:03 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/30 16:15:04 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 15:02:56 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ const sockaddr_in listener::get_lstSocketAddr() const
 
 server &listener::get_originalsrv() const
 {
-	std::cout << originalsrv << std::endl;
+	//std::cout << originalsrv << std::endl;
 	return *originalsrv;
 }
 
@@ -100,7 +100,7 @@ void listener::init_lstSocketAddr(void)
 {
 	this->_lstSocketAddr.sin_family = AF_INET;
 	this->_lstSocketAddr.sin_port = htons(this->_lstPort);
-	std::cout <<this->originalsrv->get_srvHost().args[0]<<std::endl;
+	//std::cout <<this->originalsrv->get_srvHost().args[0]<<std::endl;
 	this->_lstSocketAddr.sin_addr.s_addr = inet_addr(this->originalsrv->get_srvHost().args[0].c_str());
 	this->_lstSocketAddr = _lstSocketAddr;
 }

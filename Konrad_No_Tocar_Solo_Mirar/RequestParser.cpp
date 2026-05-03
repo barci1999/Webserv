@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/27 14:39:44 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 15:30:38 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,11 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 
 	while (std::getline(stream, line))
 	{
-		if (line.empty())
-			continue;
+		if (line.empty() || line == "\r")
+		{
+			RequestParser::set_error(request,400,"Bad Request");
+			return;
+		}
 		size_t colon = line.find(':');
 		if (colon != std::string::npos)
 		{
@@ -87,6 +90,11 @@ void RequestParser::ParseHeaders(const std::string& headersText, Request& reques
 						return;
 					}
 				}
+			}
+			if(request.get_headers().find(key) != request.get_headers().end())
+			{
+				RequestParser::set_error(request,400,"Bad Request");
+				return;
 			}
 			request.set_a_header(key,value);
 		}

@@ -4,7 +4,7 @@ server {
 	index index.html;
 	host 127.0.0.1;
 
-    client_max_body_size 1000000;
+    client_max_body_size 1;
 
     error_page 400 Parseo_solo_toca_Pablo/www/error_pages/400.html;
     error_page 403 Parseo_solo_toca_Pablo/www/error_pages/403.html;
