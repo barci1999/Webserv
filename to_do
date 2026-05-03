@@ -1,1 +1,6 @@
-gestionar que todos los archivos que haya en el conf tengan extension y que sea valida
+cambiar el main para que reciba argumentos y si no los reciba que use un default
+fodificar el makefile para que coja solo un main y compile todos
+hacer pruebas con curl
+hacer diferentes archivod de configuracion
+hacer algun tipo de printeo de informacion de las request recibidar + configuracion inicial de los servidores
+eliminar readmes innecesarios 

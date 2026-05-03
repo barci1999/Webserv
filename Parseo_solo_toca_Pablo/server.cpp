@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/05/03 15:03:58 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 17:06:51 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,8 +288,11 @@ Directive server::check_index(const Directive& to_check)
         return Directive();
 
     if (to_check.args.empty())
+	{
         return Directive();
+	}	
 	Directive clean = to_check;
+
     std::string& idx = clean.args[0];
 
     if (!idx.empty() && idx[0] == '/')
@@ -414,7 +417,9 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
     if (this->_srvPorts.name.empty())
         throw std::runtime_error("Missing mandatory directive: listen");
     if (this->_srvRoot.name.empty())
+	{
         throw std::runtime_error("Missing mandatory directive: root");
+	}
 	if (this->_srvHost.name.empty())
 	{
 		throw std::runtime_error("Invalid ip");

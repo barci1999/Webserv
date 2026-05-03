@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/01 17:22:16 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/03 17:04:51 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 void CGIProcess::extractCGIConfig(const Block& best_location, const server& server_config)
 {
 	_cgimap.clear();
-
+	(void)server_config;
 	Directive ext = search_directive("cgi_extension", best_location);
 	Directive pass = search_directive("cgi_pass", best_location);
 

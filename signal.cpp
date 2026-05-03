@@ -10,7 +10,7 @@ void Signal::handler(int sig)
 {
 	if (sig == SIGINT)
 	{
-		std::cout << "ctrl + c detected"<<std::endl;
+		std::cout <<std::endl <<"ctrl + c detected"<<std::endl;
 		Signal::runnin = 0;
 	}
 	

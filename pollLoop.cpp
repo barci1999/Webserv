@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/03 15:03:28 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 17:12:45 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,14 +104,8 @@ int pollLoop(std::vector<server> general)
     std::vector<pollfd> pollFds;
     pollfd fds;
     int i = 0;
-	
-	for(std::vector<server>::iterator it = general.begin(); it != general.end();++it)
-	{
-		//std::cout << *it<<std::endl;
-	}
 	try
 	{
-		/* code */
 		for (std::vector<server>::iterator it = general.begin(); it!=general.end();it++){
 			srvPorts=it->get_srvPorts();
 			Ports=srvPorts.args;
@@ -123,11 +117,9 @@ int pollLoop(std::vector<server> general)
 			i++;
 		}
 		for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-			//std::cout << it->second.get_originalsrv() << std::endl;
 			fds.fd = it->second.get_lstSocket_fd();
 			fds.events = POLLIN;
 			fds.revents = 0;
-			//std::cout << "fds listeners " << fds.fd <<std::endl;
 			pollFds.push_back(fds);
 		}
 	}
@@ -138,13 +130,10 @@ int pollLoop(std::vector<server> general)
 		{
 			close(it->second.get_lstSocket_fd());
 		}
-		Signal::runnin = 0;
-		
+		Signal::runnin = 0;	
 	}
-	
     while (Signal::runnin == 1)
     {
-
 		int active = poll(pollFds.data(), pollFds.size(), -1);
 		
         if (active < 0)
@@ -174,21 +163,16 @@ int pollLoop(std::vector<server> general)
                 client clnt(client_fd);
                 srvClients[client_fd] = clnt;
                 std::map<int, listener>::iterator it = srvListeners.find(fd);
-
                 if (it != srvListeners.end())
                 {
                     srvClients[client_fd].set_ptr(&it->second);
                 }
-            
-
                 pollfd new_poll;
                 new_poll.fd = client_fd;
                 new_poll.events = POLLIN;
                 new_poll.revents = 0;
 
                 pollFds.push_back(new_poll);
-
-                //std::cout << "Nuevo cliente: " << client_fd << std::endl;
             }
             else
             {
@@ -217,13 +201,9 @@ int pollLoop(std::vector<server> general)
 					req.set_status_code(413);
 					req.set_final_status("Payload Too Large");
 				}
-				
-				
 				std::string full_request = extract_full_request(cl.request);
 				cl.request.clear();
                 const listener *tmp = cl.get_ptr();
-
-				//std::cout<<full_request<<std::endl;
 				RequestParser::parse(full_request,req);
 				RequestParser::valid_request(req);
 				Response resp = handleRequest(req,tmp->get_originalsrv());
