@@ -1,5 +1,6 @@
 server {
     listen 8080;
+	host 0.0.0.0;
     root /Parseo_solo_toca_Pablo/www/sandbox;
     error_page 400 /Parseo_solo_toca_Pablo/www/error_pages/400.html;
     error_page 403 /Parseo_solo_toca_Pablo/www/error_pages/403.html;
