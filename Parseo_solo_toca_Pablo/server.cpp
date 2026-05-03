@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/05/03 17:06:51 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 18:19:18 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -333,12 +333,10 @@ Directive server::check_host(const Directive& to_check)
 	
 	if (to_check.name.empty() || to_check.name != "host")
 	{
-		std::cerr << "hola" << std::endl;
         return Directive();
 	}
 	if (to_check.args.empty() || to_check.args.size() != 1)
 	{
-		std::cerr << 0 << std::endl;
         return Directive();
 	}
 	Directive clean = to_check;
@@ -346,45 +344,37 @@ Directive server::check_host(const Directive& to_check)
 	std::vector<std::string> tokens;
 	std::stringstream input(ip);
 	std::string buffer;
-	std::cerr << clean.args[0]<<std::endl;
 	while (std::getline(input,buffer,'.'))
 		tokens.push_back(buffer);
 	if (tokens.empty() || tokens.size() != 4)
 	{
-		std::cerr << 1 << std::endl;
 		return Directive();
 	}
 	for (size_t i= 0; i < tokens.size(); ++i)
 	{
 		if(!is_valid_number(tokens[i]))
 		{
-			std::cerr << 2 << std::endl;
 			return Directive();
 		}
 		int value = std::atoi(tokens[i].c_str());
 		if (value < 0 || value > 255)
 		{
-			std::cerr << 3 << std::endl;
 			return Directive();
 		}
 		if (tokens[i].size() > 1 && tokens[i][0] == '0')
         {
-			std::cerr << 4 << std::endl; 
 			return Directive();
 		}
 	}
 	int first = std::atoi(tokens[0].c_str());
 	if (first >= 224)
 	{
-		std::cerr << 5 << std::endl;
 		return Directive();
 	}
 	if (ip == "255.255.255.255")
 	{
-		std::cerr << 6 << std::endl;
 		return Directive();
 	}
-	std::cout<<clean.name<<std::endl;
 	return clean;
 }
 int server::insert_directives(const std::vector<Directive>& to_insert)

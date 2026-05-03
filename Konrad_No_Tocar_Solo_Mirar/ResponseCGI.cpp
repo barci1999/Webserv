@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:21:24 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/22 20:46:22 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 20:14:42 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ std::vector<Response> CGI_Response(std::vector<Request>& requests, server& srv)
         cgi_map[fd] = cgi;
     }
 
-    // 🔥 2. LOOP ÚNICO (LA CLAVE)
+    // 🔥 2. LOOP ÚNICO (LA CLAVE)!
     while (!cgi_map.empty())
     {
         int ret = poll(&pollfds[0], pollfds.size(), -1);

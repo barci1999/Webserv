@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 11:08:08 by pablalva          #+#    #+#             */
-/*   Updated: 2026/05/03 14:09:56 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 18:17:21 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,7 +172,6 @@ void Response::make_Get(const Request to_check,const server server_config)
 	std::string path = to_check.get_path();
     if (path.empty()) {	set_error(*this,404,server_config); return; }
     Block best_location = find_best_location(path,server_config);
-	//std::cout<<best_location.getName()<<std::endl;
     size_t max_len = best_location.getName().length();
 	Directive root;
 	bool has_loc = false;
@@ -187,9 +186,6 @@ void Response::make_Get(const Request to_check,const server server_config)
 	std::string relative = path.substr(max_len);
 	std::string full_path = root_path + relative;
 	std::string body;
-	// std::cout << "ROOT: [" << root_path << "]" << std::endl;
-	// std::cout << "REL : [" << relative << "]" << std::endl;
-    // std::cout << "FULL: [" << full_path << "]" << std::endl;
 	if (!file_exist(full_path)) 
 	{
 		set_error(*this,404,server_config);
@@ -203,11 +199,6 @@ void Response::make_Get(const Request to_check,const server server_config)
 		Directive index;
 		if (has_loc)
 			index = search_directive("index", best_location);
-
-		// if (index.name.empty())
-		// {
-		// 	index = server_config.get_srvIndex();
-		// }
 		if (!index.name.empty())
 		{
 			for (std::vector<std::string>::iterator it = index.args.begin(); it != index.args.end(); ++it)
@@ -468,7 +459,7 @@ std::string Response::extract_filename(const std::string& raw_body)
     if (pos == std::string::npos)
         return "";
 
-    pos += 10; // saltar filename="
+    pos += 10;
 
     size_t end = raw_body.find("\"", pos);
     if (end == std::string::npos)
@@ -490,7 +481,6 @@ std::string Response::extract_body(const std::string& body, const std::string& b
 
     std::string content = body.substr(start, end - start);
 
-    // quitar \r\n final
     if (content.size() >= 2 && content.substr(content.size() - 2) == "\r\n")
         content = content.substr(0, content.size() - 2);
 
@@ -522,7 +512,6 @@ void Response::make_Post(const Request to_check,const server server_config)
 
 	std::vector<std::string>::iterator it_up = std::find(upload.args.begin(),upload.args.end(),"on");
 	if(it_up == upload.args.end()) {set_error(*this,403,server_config); return;}
-	//std::cout<<to_check.get_body().size()<<"|"<<server_config.get_srvClientMaxBody()<<std::endl;
 	if (to_check.get_body().size() > static_cast<size_t>(server_config.get_srvClientMaxBody()))
 	{
 		set_error(*this,413,server_config); return;

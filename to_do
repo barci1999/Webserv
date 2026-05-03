@@ -1,6 +1,7 @@
-cambiar el main para que reciba argumentos y si no los reciba que use un default
-fodificar el makefile para que coja solo un main y compile todos
+cambiar el main para que reciba argumentos y si no los reciba que use un default FINISH
+fodificar el makefile para que coja solo un main y compile todos FINISH
 hacer pruebas con curl
 hacer diferentes archivod de configuracion
 hacer algun tipo de printeo de informacion de las request recibidar + configuracion inicial de los servidores
 eliminar readmes innecesarios 
+cambiar archivo a .conf

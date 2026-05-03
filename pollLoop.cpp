@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/03 17:12:45 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 19:30:14 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <csignal>
 #include "signal.hpp"
 #include <limits.h>
-
+#include "Logger.hpp"
 
 RequestStatus is_request_complete(const std::string& buffer, const server& Server)
 {
@@ -193,14 +193,17 @@ int pollLoop(std::vector<server> general)
 				if(status == INCOMPLETE) continue;
 				if (status == MALFORMED)
 				{
+					close(fd);
 					req.set_status_code(400);
 					req.set_final_status("Bad Request");
 				}
 				if (status == TOO_LARGE)
 				{
+					close(fd);
 					req.set_status_code(413);
 					req.set_final_status("Payload Too Large");
 				}
+
 				std::string full_request = extract_full_request(cl.request);
 				cl.request.clear();
                 const listener *tmp = cl.get_ptr();
@@ -209,6 +212,8 @@ int pollLoop(std::vector<server> general)
 				Response resp = handleRequest(req,tmp->get_originalsrv());
 				std::string response_str = res_to_str(resp);
 				send(fd, response_str.c_str(), response_str.size(), 0);
+				log_request(req.get_method(),req.get_path(),req.get_version(),resp.get_statusCode());
+				
             }
         }
     }
