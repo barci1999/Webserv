@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:00:37 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/04/21 16:43:20 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/03 14:00:32 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,13 @@
 #include <map>
 #include <iostream>
 
+enum RequestStatus
+{
+	INCOMPLETE,
+	MALFORMED,
+	TOO_LARGE,
+	COMPLETE,
+};
 class Request
 {
 	private:

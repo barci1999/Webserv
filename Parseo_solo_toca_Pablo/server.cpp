@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/30 20:54:39 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/03 15:03:58 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -415,7 +415,6 @@ int server::insert_directives(const std::vector<Directive>& to_insert)
         throw std::runtime_error("Missing mandatory directive: listen");
     if (this->_srvRoot.name.empty())
         throw std::runtime_error("Missing mandatory directive: root");
-	std::cout <<"holaaaaaaaaa" <<this->_srvHost.name<<std::endl;
 	if (this->_srvHost.name.empty())
 	{
 		throw std::runtime_error("Invalid ip");

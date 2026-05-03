@@ -6,41 +6,67 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/04/30 16:06:15 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 15:03:28 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pollLoop.hpp"
 #include <csignal>
 #include "signal.hpp"
+#include <limits.h>
 
 
-bool is_request_complete(const std::string& buffer)
+RequestStatus is_request_complete(const std::string& buffer, const server& Server)
 {
+    // 1. Buscar el final de los encabezados
     size_t header_end = buffer.find("\r\n\r\n");
     if (header_end == std::string::npos)
-        return false;
+        return INCOMPLETE;
 
     std::string headers = buffer.substr(0, header_end);
 
+    if (headers.find("Transfer-Encoding: chunked") != std::string::npos)
+    {
+
+        if (buffer.find("\r\n0\r\n\r\n", header_end) != std::string::npos)
+            return COMPLETE;
+        if (buffer.size() - (header_end + 4) > Server.get_srvClientMaxBody())
+            return TOO_LARGE;
+
+        return INCOMPLETE;
+    }
     size_t pos = headers.find("Content-Length:");
     if (pos == std::string::npos)
-        return true; // sin body → request completa
+    {
+        return COMPLETE;
+    }
 
     pos += 15;
-
-    while (pos < headers.size() && headers[pos] == ' ')
-        pos++;
-
     size_t end_line = headers.find("\r\n", pos);
+    if (end_line == std::string::npos) return MALFORMED;
+
     std::string len_str = headers.substr(pos, end_line - pos);
 
-    size_t content_length = std::atoi(len_str.c_str());
+    if (len_str.empty() || len_str.find_first_not_of(" 0123456789") != std::string::npos)
+        return MALFORMED;
 
+    long content_length = std::atol(len_str.c_str());
+
+    // Validar límites y valores negativos
+    if (content_length < 0)
+        return MALFORMED;
+
+    if (static_cast<size_t>(content_length) > Server.get_srvClientMaxBody())
+        return TOO_LARGE;
+
+    // 4. Comprobar si el cuerpo recibido coincide con lo esperado
     size_t body_start = header_end + 4;
-    size_t body_size = buffer.size() - body_start;
+    size_t bytes_received = buffer.size() - body_start;
 
-    return body_size >= content_length;
+    if (bytes_received >= static_cast<size_t>(content_length))
+        return COMPLETE;
+
+    return INCOMPLETE;
 }
 std::string extract_full_request(const std::string& buffer)
 {
@@ -81,7 +107,7 @@ int pollLoop(std::vector<server> general)
 	
 	for(std::vector<server>::iterator it = general.begin(); it != general.end();++it)
 	{
-		std::cout << *it<<std::endl;
+		//std::cout << *it<<std::endl;
 	}
 	try
 	{
@@ -108,7 +134,6 @@ int pollLoop(std::vector<server> general)
 	catch(const std::invalid_argument& e)
 	{
 		std::cerr << e.what() << '\n';
-		std::cout<<"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
 		for (std::map<int,listener>::iterator it = srvListeners.begin(); it != srvListeners.end(); ++it)
 		{
 			close(it->second.get_lstSocket_fd());
@@ -179,31 +204,31 @@ int pollLoop(std::vector<server> general)
 					continue;
 				}
 				cl.request.append(buffer,bytes);
-				if (!is_request_complete(cl.request))
+				RequestStatus status = is_request_complete(cl.request,cl.get_ptr()->get_originalsrv());
+				Request req;
+				if(status == INCOMPLETE) continue;
+				if (status == MALFORMED)
 				{
-					continue;
+					req.set_status_code(400);
+					req.set_final_status("Bad Request");
 				}
+				if (status == TOO_LARGE)
+				{
+					req.set_status_code(413);
+					req.set_final_status("Payload Too Large");
+				}
+				
+				
 				std::string full_request = extract_full_request(cl.request);
 				cl.request.clear();
                 const listener *tmp = cl.get_ptr();
 
-				Request req;
 				//std::cout<<full_request<<std::endl;
 				RequestParser::parse(full_request,req);
 				RequestParser::valid_request(req);
-				//std::cout<<">>>>>  "<< tmp<<std::endl;
-				//std::cout<<req<<std::endl;
-                
-				
 				Response resp = handleRequest(req,tmp->get_originalsrv());
-				//std::cout<<general[0]<<std::endl;
-				//std::cout<<res_to_str(resp)<<std::endl;
-				//std::cout << resp.get_statusCode()<<std::endl;
 				std::string response_str = res_to_str(resp);
 				send(fd, response_str.c_str(), response_str.size(), 0);
-                //std::cout << "Datos recibidos de " << fd << std::endl;
-
-                // aquí luego parsear HTTP
             }
         }
     }
