@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 14:29:06 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/22 17:01:37 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 18:15:59 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,10 @@ bool file_exist(const std::string file)
 	struct stat buffer;
 	if (stat(file.c_str(), &buffer) == 0)
     {
-        //std::cout << "[EXISTS OK] " << file << std::endl;
         return true;
     }
     else
     {
-        //std::cout << "[EXISTS FAIL] " << file << std::endl;
         return false;
     }
 }
@@ -61,7 +59,6 @@ bool is_file(const std::string file)
 	struct stat buffer;
 	if (stat(file.c_str(),&buffer) != 0)
 	{
-		//std::cout<<"NO SOY UN FILE"<<std::endl;
 		return false;
 	}
 	return S_ISREG(buffer.st_mode);
@@ -70,12 +67,10 @@ bool can_read(const std::string file)
 {
     if (access(file.c_str(), R_OK) == 0)
     {
-        //std::cout << "[READ OK] " << file << std::endl;
         return true;
     }
     else
     {
-        //std::cout << "[READ FAIL] " << file << std::endl;
         return false;
     }
 }
@@ -141,14 +136,13 @@ Block find_best_location(const std::string& path, const server& server_config)
     if (!found)
     {
         Block empty;
-        empty.setName(""); // importante: estado explícito
+        empty.setName("");
         return empty;
     }
 
     return best;
 }
 
-//Guarda lo que hay despues del . en la extension | Saca la extensión de un archivo (.php, .py)
 std::string extractExtension(const std::string& path)
 {
 	size_t dotPos = path.find_last_of('.');
@@ -210,7 +204,7 @@ std::string parse_chunked_body(Request& req)
         if (size == 0)
         {
             found_last_chunk = true;
-            i += 2; // saltar el \r\n después del 0
+            i += 2;
             break;
         }
 

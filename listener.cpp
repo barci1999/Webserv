@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:36:03 by pablalva          #+#    #+#             */
-/*   Updated: 2026/05/03 17:10:03 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/03 18:17:34 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ const sockaddr_in listener::get_lstSocketAddr() const
 
 server &listener::get_originalsrv() const
 {
-	//std::cout << originalsrv << std::endl;
 	return *originalsrv;
 }
 
