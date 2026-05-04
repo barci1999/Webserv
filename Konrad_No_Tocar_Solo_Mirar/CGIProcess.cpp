@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/04 14:15:18 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/04 21:12:36 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,8 +78,6 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 	{
 		_scriptPath = path;
 		_cgiPass = it->second;
-		std::cerr << "CGI EXT: " << extension << std::endl;//DEBUS que puse para la parte bonus
-		std::cerr << "CGI PAS: " << _cgiPass << std::endl;
 		return true;
 	}
 	return false;
@@ -164,20 +162,13 @@ void CGIProcess::execute(const Request& request, const server& server_config)
 
     if (_pid == 0)
     {
+		
         setupChildProcess(request);
         exit(1);
     }
 
     close(_inputPipe[0]);
     close(_outputPipe[1]);
-
-	//Una vez que se haga no bloqueante esto desde aqui hasta el final se quitara de esta funcion.
-    if (request.get_method() == "POST")// TODO: Por que body? En GET no hay body
-    {
-        const std::string& body = request.get_body();
-        write(_inputPipe[1], body.c_str(), body.size());
-    }	
-
     close(_inputPipe[1]);
 }
 
@@ -285,10 +276,10 @@ char **CGIProcess::buildEnv(const Request& request)
 void CGIProcess::setupChildProcess(const Request& request)
 {
     // 🔹 1. Redirigir stdin (pipe entrada) → STDIN del CGI
-    dup2(_inputPipe[0], 0);
+    dup2(_inputPipe[0], STDIN_FILENO);
 
     // 🔹 2. Redirigir stdout (pipe salida) → STDOUT del CGI
-    dup2(_outputPipe[1], 1);
+    dup2(_outputPipe[1], STDOUT_FILENO);
 
     // 🔹 3. Cerrar todos los pipes (ya no se necesitan tras dup2)
     close(_inputPipe[0]);
@@ -330,18 +321,6 @@ void CGIProcess::setupChildProcess(const Request& request)
     // 🔹 8. Construir entorno CGI
     char **env = buildEnv(request);
 
-	//DESDE AQUI
-	// Es un mensaje para verificar un error. Aqui no hay / al principio
-	std::cerr << "CGI cgiPass: [" << _cgiPass << "]" << std::endl;
-	//DEBUG TRAS AÑADIR / EN EL ARGV[0]
-	std::cerr << "CGI cgiPass2: [" << argv[0] << "]" << std::endl;
-	// 🔹 DEBUG útil por que no entiendo
-	std::cerr << "EXECVE PATH: " << argv[0] << std::endl;
-    std::cerr << "SCRIPT: " << argv[1] << std::endl;
-    std::cerr << "CWD: " << dir << std::endl;
-	std::cerr << "DEBUG: ejecutando execve" << std::endl;
-	//HASTA AQUI SON DEBUGS QUE SE PUEDEN QUITAR AL FINAL
-
 	// 🔹 9. Ejecutar CGI
     execve(argv[0], argv, env);
 
@@ -373,21 +352,21 @@ int CGIProcess::getFD() const
  */
 void CGIProcess::readFromPipe()
 {
-	char buffer[4096];
-	ssize_t bytes;
+    char buffer[4096];
+    ssize_t bytes;
 
-	while ((bytes = read(_outputPipe[0], buffer, sizeof(buffer))) > 0)
-	{
-		_buffer.append(buffer, bytes);
-	}
-	
-	if( bytes == 0)
-	{
-		// EOF -> CGI terminó de escribir | No se hace nada con bytes < 0 por que EOF = 0 es que termino
-		// y -1 puede ser EAGAIN por lo que hay que ignoorar
-		_finished = true;
-		close(_outputPipe[0]);
-	}
+    // Lee todo lo que haya en el pipe en este momento
+    while ((bytes = read(_outputPipe[0], buffer, sizeof(buffer))) > 0)
+    {
+        _buffer.append(buffer, bytes);
+    }
+    
+    // Si bytes es 0, es un EOF real (el pipe se cerró)
+    if (bytes == 0)
+        _finished = true;
+        
+    // Si es -1 y errno es EWOULDBLOCK, simplemente no hay más datos por ahora.
+    // Salimos y el pollLoop volverá a llamarnos cuando el CGI escriba más.
 }
 
 
