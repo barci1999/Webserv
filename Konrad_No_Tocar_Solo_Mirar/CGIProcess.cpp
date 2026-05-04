@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/04 21:12:36 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/04 22:00:15 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,12 +128,6 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 	{
 		scriptPath = temp + scriptPath;
 	}
-	
-	// 🔥 DEBUG AQUÍ
-	// std::cout << "PATH: " << path << std::endl;
-	// std::cout << "RELATIVE: " << relative << std::endl;
-	// std::cout << "ROOT: " << root_path << std::endl;
-	// std::cout << "SCRIPT PATH: " << scriptPath << std::endl;
 
 	return scriptPath;
 }
@@ -187,7 +181,6 @@ void CGIProcess::createPipes()
 	if (pipe(_outputPipe) < 0)
 		throw std::runtime_error("pipe failed");
 	
-	// No se si poner los extremos de lectura en non-blocking es aqui, luego se vera.
     int flags = fcntl(_outputPipe[0], F_GETFL, 0);
     fcntl(_outputPipe[0], F_SETFL, flags | O_NONBLOCK);
 
@@ -483,7 +476,7 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 
 	// AQUÍ SE GENRAL EL HTTP
 	response.set_version("HTTP/1.1");
-	response.set_statuscode(200);
+	//response.set_statuscode(200);
 
 	response.addback_headers("Content-Length", toString(bodyPart.size()));
 	response.addback_headers("Connection", "close");
