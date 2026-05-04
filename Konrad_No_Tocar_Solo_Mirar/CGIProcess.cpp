@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/03 20:42:11 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/04 14:15:18 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,7 +172,7 @@ void CGIProcess::execute(const Request& request, const server& server_config)
     close(_outputPipe[1]);
 
 	//Una vez que se haga no bloqueante esto desde aqui hasta el final se quitara de esta funcion.
-    if (request.get_method() == "GET")// TODO: Por que body? En GET no hay body
+    if (request.get_method() == "POST")// TODO: Por que body? En GET no hay body
     {
         const std::string& body = request.get_body();
         write(_inputPipe[1], body.c_str(), body.size());
