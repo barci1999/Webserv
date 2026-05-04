@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/03 19:30:14 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/04 21:10:51 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,129 +97,131 @@ std::string extract_full_request(const std::string& buffer)
 
 int pollLoop(std::vector<server> general)
 {
-    Directive srvPorts;
-    std::vector<std::string> Ports;
-    std::map<int,listener> srvListeners;
-    std::map<int,client> srvClients;
+    std::map<int, listener> srvListeners;
+    std::map<int, client> srvClients;
     std::vector<pollfd> pollFds;
-    pollfd fds;
-    int i = 0;
-	try
-	{
-		for (std::vector<server>::iterator it = general.begin(); it!=general.end();it++){
-			srvPorts=it->get_srvPorts();
-			Ports=srvPorts.args;
-			for (std::vector<std::string>::iterator it2 = Ports.begin(); it2!=Ports.end();it2++){
-				listener temp(*it2,*it);
-				temp.set_originalsrv(&general[i]);
-				srvListeners.insert(std::make_pair(temp.get_lstSocket_fd(), temp));
-			}
-			i++;
-		}
-		for (std::map<int,listener>::iterator it = srvListeners.begin(); it!=srvListeners.end();it++){
-			fds.fd = it->second.get_lstSocket_fd();
-			fds.events = POLLIN;
-			fds.revents = 0;
-			pollFds.push_back(fds);
-		}
-	}
-	catch(const std::invalid_argument& e)
-	{
-		std::cerr << e.what() << '\n';
-		for (std::map<int,listener>::iterator it = srvListeners.begin(); it != srvListeners.end(); ++it)
-		{
-			close(it->second.get_lstSocket_fd());
-		}
-		Signal::runnin = 0;	
-	}
-    while (Signal::runnin == 1)
-    {
-		int active = poll(pollFds.data(), pollFds.size(), -1);
-		
-        if (active < 0)
-        {
-			perror("poll");
-            break;
+
+    // 🔥 SISTEMA DE GESTIÓN ASÍNCRONA
+    std::map<int, CGIProcess*> cgi_map;      // pipe_fd -> proceso
+    std::map<int, int> cgi_to_client;        // pipe_fd -> client_fd
+    std::map<int, Request> pending_requests; // fd_objetivo -> Request (para el log)
+    std::map<int, std::string> out_buffers;  // client_fd -> string a enviar
+
+    try {
+        for (size_t i = 0; i < general.size(); ++i) {
+            Directive srvPorts = general[i].get_srvPorts();
+            for (size_t j = 0; j < srvPorts.args.size(); ++j) {
+                listener temp(srvPorts.args[j], general[i]);
+                temp.set_originalsrv(&general[i]);
+                int l_fd = temp.get_lstSocket_fd();
+                srvListeners.insert(std::make_pair(l_fd, temp));
+                pollfd fds = {l_fd, POLLIN, 0};
+                pollFds.push_back(fds);
+            }
         }
-        for (size_t i = 0; i < pollFds.size(); i++)
-        {
-            if (pollFds[i].revents == 0)
-                continue;
+    } catch (const std::exception& e) { return 1; }
+
+    while (Signal::runnin == 1) {
+        int active = poll(pollFds.data(), pollFds.size(), -1);
+        if (active < 0) break;
+
+        for (size_t i = 0; i < pollFds.size(); i++) {
             int fd = pollFds[i].fd;
-            if (pollFds[i].revents & (POLLHUP | POLLERR))
-            {
-                close(fd);
-                srvClients.erase(fd);
-                pollFds.erase(pollFds.begin() + i);
-                i--;
+            short rev = pollFds[i].revents;
+            if (rev == 0) continue;
+
+            // --- 1. ENVIAR RESPUESTAS (ÚNICO PUNTO DE SEND) ---
+            if (rev & POLLOUT) {
+                if (out_buffers.count(fd)) {
+                    send(fd, out_buffers[fd].c_str(), out_buffers[fd].size(), 0);
+                    
+                    // Loguear usando la request que guardamos
+                    if (pending_requests.count(fd)) {
+                        Request& req = pending_requests[fd];
+                        log_request(req.get_method(), req.get_path(), req.get_version(), 200);
+                        pending_requests.erase(fd);
+                    }
+                    
+                    out_buffers.erase(fd);
+                }
+                pollFds[i].events &= ~POLLOUT; // Quitar interés en escribir
                 continue;
             }
-            if (srvClients.find(fd) == srvClients.end())
-            {
-                int client_fd = accept(fd, NULL, NULL);
-                if (client_fd < 0)
-                    continue;
 
-                client clnt(client_fd);
-                srvClients[client_fd] = clnt;
-                std::map<int, listener>::iterator it = srvListeners.find(fd);
-                if (it != srvListeners.end())
-                {
-                    srvClients[client_fd].set_ptr(&it->second);
+            // --- 2. MANEJO DE CGI ---
+            if (cgi_map.count(fd)) {
+                CGIProcess* cgi = cgi_map[fd];
+                if (rev & POLLIN) cgi->readFromPipe();
+                if (rev & (POLLHUP | POLLERR)) {
+                    cgi->readFromPipe();
+                    int client_fd = cgi_to_client[fd];
+                    
+                    // Preparar respuesta para el "send" centralizado
+                    out_buffers[client_fd] = res_to_str(cgi->buildResponse());
+                    
+                    // Activar POLLOUT en el cliente
+                    for (size_t j = 0; j < pollFds.size(); ++j)
+                        if (pollFds[j].fd == client_fd) pollFds[j].events |= POLLOUT;
+
+                    close(fd);
+                    delete cgi;
+                    cgi_map.erase(fd);
+                    cgi_to_client.erase(fd);
+                    pollFds.erase(pollFds.begin() + i--);
                 }
-                pollfd new_poll;
-                new_poll.fd = client_fd;
-                new_poll.events = POLLIN;
-                new_poll.revents = 0;
-
-                pollFds.push_back(new_poll);
+                continue;
             }
-            else
-            {
-				client& cl = srvClients[fd];
-                char buffer[1024];
-                int bytes = read(fd, buffer, sizeof(buffer));
-				if (bytes <= 0)
-				{
-					close(fd);
-					srvClients.erase(fd);
-					pollFds.erase(pollFds.begin() + i);
-					i--;
-					continue;
-				}
-				cl.request.append(buffer,bytes);
-				RequestStatus status = is_request_complete(cl.request,cl.get_ptr()->get_originalsrv());
-				Request req;
-				if(status == INCOMPLETE) continue;
-				if (status == MALFORMED)
-				{
-					close(fd);
-					req.set_status_code(400);
-					req.set_final_status("Bad Request");
-				}
-				if (status == TOO_LARGE)
-				{
-					close(fd);
-					req.set_status_code(413);
-					req.set_final_status("Payload Too Large");
-				}
 
-				std::string full_request = extract_full_request(cl.request);
-				cl.request.clear();
-                const listener *tmp = cl.get_ptr();
-				RequestParser::parse(full_request,req);
-				RequestParser::valid_request(req);
-				Response resp = handleRequest(req,tmp->get_originalsrv());
-				std::string response_str = res_to_str(resp);
-				send(fd, response_str.c_str(), response_str.size(), 0);
-				log_request(req.get_method(),req.get_path(),req.get_version(),resp.get_statusCode());
-				
+            // --- 3. NUEVAS CONEXIONES ---
+            if (srvListeners.count(fd)) {
+                int c_fd = accept(fd, NULL, NULL);
+                if (c_fd >= 0) {
+                    pollfd n_p = {c_fd, POLLIN, 0};
+                    pollFds.push_back(n_p);
+                    client clnt(c_fd);
+                    clnt.set_ptr(&srvListeners.at(fd));
+                    srvClients[c_fd] = clnt;
+                }
+                continue;
+            }
+
+            // --- 4. PETICIONES DE CLIENTES ---
+            if (srvClients.count(fd)) {
+                if (rev & (POLLHUP | POLLERR)) {
+                    close(fd);
+                    srvClients.erase(fd);
+                    pending_requests.erase(fd);
+                    out_buffers.erase(fd);
+                    pollFds.erase(pollFds.begin() + i--);
+                    continue;
+                }
+
+                client& cl = srvClients[fd];
+                char buf[4096];
+                int b = read(fd, buf, sizeof(buf));
+                if (b <= 0) { /* cerrar igual que arriba */ continue; }
+
+                cl.request.append(buf, b);
+                server s_ptr = cl.get_ptr()->get_originalsrv();
+                if (is_request_complete(cl.request, s_ptr) == INCOMPLETE) continue;
+
+                Request req;
+                RequestParser::parse(extract_full_request(cl.request), req);
+                RequestParser::valid_request(req);
+                cl.request.clear();
+
+                Response resp;
+                bool ready = handleRequest(req, s_ptr, pollFds, cgi_map, cgi_to_client, fd, resp);
+
+                // Guardamos la request para el log futuro (sea CGI o no)
+                pending_requests[fd] = req;
+
+                if (ready) {
+                    out_buffers[fd] = res_to_str(resp);
+                    pollFds[i].events |= POLLOUT;
+                }
             }
         }
     }
-	for (std::map<int,listener>::iterator it = srvListeners.begin(); it != srvListeners.end(); ++it)
-	{
-		close(it->second.get_lstSocket_fd());
-	}
-    return (0);
+    return 0;
 }

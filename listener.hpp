@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   listener.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 10:23:37 by pablalva          #+#    #+#             */
-/*   Updated: 2026/04/30 16:03:57 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/04 20:51:51 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ private:
 	void parse_input(const std::string& input);
 	void init_lstSocketAddr();
 public:
+	listener(){}
 	listener(std::string port,server& conf);
 	listener(const listener& to_copy);
 	~listener();
