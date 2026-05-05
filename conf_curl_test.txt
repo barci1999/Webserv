@@ -1,5 +1,5 @@
 server {
-    listen 1024;
+    listen 1024 8080;
     root Parseo_solo_toca_Pablo/www;
 	index index.html;
 	host 127.0.0.1;
@@ -19,7 +19,7 @@ server {
     location / {
 		root Parseo_solo_toca_Pablo/www;
 		index index.html;
-        allowed_methods GET;
+        allowed_methods GET POST;
     }
 
 	location /pepe {
@@ -86,7 +86,7 @@ server {
 }
 
 server {
-    listen 8080;
+    listen 3333;
 
     root Parseo_solo_toca_Pablo/www;
     index index.html;
