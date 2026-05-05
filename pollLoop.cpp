@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/05 11:36:02 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/05 17:52:47 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,8 +253,19 @@ void handle_send(int fd, std::map<int, std::string>& out_buffers,
     if (pending_requests.count(fd))
     {
         Request& req = pending_requests[fd];
-        log_request(req.get_method(), req.get_path(),
-                    req.get_version(), 200);
+        int status_code = 200;
+        std::string& buffer = out_buffers[fd];
+        size_t first_space = buffer.find(' ');
+        
+        if (first_space != std::string::npos) {
+            size_t second_space = buffer.find(' ', first_space + 1);
+            if (second_space != std::string::npos) {
+                std::string code_str = buffer.substr(first_space + 1, second_space - first_space - 1);
+                status_code = std::atoi(code_str.c_str());
+            }
+        }
+        log_request(req.get_method(), req.get_path(), req.get_version(), status_code);
+        
         pending_requests.erase(fd);
     }
 
@@ -338,8 +349,8 @@ void handle_client(size_t& i, int fd, short rev, std::map<int, client>& srvClien
 
     Response resp;
     bool ready = handleRequest(req, s_ptr, pollFds,
-                               cgi_map, cgi_to_client,
-                               fd, resp);
+                            cgi_map, cgi_to_client,
+                            fd, resp);
 
     pending_requests[fd] = req;
 
