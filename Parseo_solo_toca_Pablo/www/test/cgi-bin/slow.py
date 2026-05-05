@@ -14,7 +14,7 @@ print("<h1>🦜 PARROT CGI ACTIVADO 🦜</h1>")
 
 print("<h2>⏳ Cargando sabiduria divina...</h2>")
 print()
-time.sleep(3)
+time.sleep(2)
 
 print("<h2>💃 Cuando tu CGI fufona:</h2>")
 
