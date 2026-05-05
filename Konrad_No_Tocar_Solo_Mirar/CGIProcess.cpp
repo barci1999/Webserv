@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/04 22:00:15 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/05 11:45:53 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGIProcess.hpp"
 #include "../Parseo_solo_toca_Pablo/server.hpp"
 #include "../utils.hpp"
+#include "../pollLoop.hpp"
 
 //////////////////////////////////////////////
 // 🔹 UTILIDADES (cosas simples)
@@ -145,7 +146,7 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
  * Crea pipes, hace fork y ejecuta el hijo.
  * El padre solo escribe (POST) y continúa.
  */
-void CGIProcess::execute(const Request& request, const server& server_config)
+void CGIProcess::execute(const Request& request, const server& server_config,std::vector<pollfd>& pollFds)
 {
     _fullPath = buildFullPath(request, server_config);
     _finished = false;
@@ -156,6 +157,10 @@ void CGIProcess::execute(const Request& request, const server& server_config)
 
     if (_pid == 0)
     {
+		for (std::vector<pollfd>::iterator it = pollFds.begin(); it != pollFds.end(); ++it)
+		{
+			close(it->fd);
+		}
 		
         setupChildProcess(request);
         exit(1);

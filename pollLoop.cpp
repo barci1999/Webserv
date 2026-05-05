@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/04 21:50:15 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/05 11:36:02 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -415,5 +415,10 @@ int pollLoop(std::vector<server> general)
             }
         }
     }
+	for (std::vector<pollfd>::iterator it = pollFds.begin() ; it != pollFds.end(); ++it)
+	{
+		close(it->fd);
+	}
+	
     return 0;
 }

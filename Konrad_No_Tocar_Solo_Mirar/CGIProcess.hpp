@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/01 17:25:41 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/05 11:47:33 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 #include "Response.hpp"
 #include "../Parseo_solo_toca_Pablo/server.hpp"
 #include "../utils.hpp"
+#include "poll.h"
 
 
 
@@ -63,7 +64,7 @@ class CGIProcess
 		~CGIProcess(){};
 		bool isCGI(const Request& request, const server& location);
 
-		void execute(const Request& request, const server& server_config);
+		void execute(const Request& request, const server& server_config,std::vector<pollfd>& pollFds);
 		
 		int getFD() const; //devuelve el fd para poll
 		bool isFinished(); // lee sin bloquear

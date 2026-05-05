@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ResponseCGI.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:21:24 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/04 21:11:50 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/05 11:48:13 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void CGI_Response(Request& request, server& serv, std::vector<pollfd>& pollFds,
     }
     
     // 🔹 Ejecutar CGI (fork + exec)
-    cgi->execute(request, serv);
+    cgi->execute(request, serv,pollFds);
 
     int fd = cgi->getFD();
 
