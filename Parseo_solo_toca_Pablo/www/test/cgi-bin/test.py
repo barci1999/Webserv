@@ -7,10 +7,10 @@ body = sys.stdin.read()
 print("Status: 200 OK")
 print("Content-Type: text/html")
 print()
-time.sleep(2)
+time.sleep(1)
 
 print("<h2>⌛ Procesando muy muy fuerte...</h2>")
-time.sleep(2)
+time.sleep(1)
 
 print("<h2>💡 Ahora sí. Ya lo tengo!</h2>")
 print()

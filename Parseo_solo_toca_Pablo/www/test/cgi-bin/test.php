@@ -13,10 +13,9 @@ echo "
         }
 
         .center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            display: grid;
+            place-items: center;
+            margin-top: 20px;
         }
     </style>
 </head>
