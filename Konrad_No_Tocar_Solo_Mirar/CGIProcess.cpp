@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/06 16:21:38 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/06 21:30:22 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,20 +194,24 @@ void CGIProcess::execute(const Request& request, const server& server_config, st
 }
 void CGIProcess::writeToPipe()
 {
-    if (_inputPipe[1] == -1 || _bodyToSend.empty())
+    std::cout << "DEBUG: Intentando escribir. Body size: " << _bodyToSend.size() 
+              << " | Bytes sent: " << _byteSent << std::endl;
+
+    if (_inputPipe[1] == -1 || _bodyToSend.empty()) {
+        std::cout << "DEBUG: Abortando write: Pipe cerrado o Body vacío" << std::endl;
         return;
+    }
 
     ssize_t bytes = write(_inputPipe[1], _bodyToSend.c_str() + _byteSent, 
                           _bodyToSend.size() - _byteSent);
     
-    if (bytes > 0)
-    {
+    if (bytes > 0) {
         _byteSent += bytes;
+        std::cout << "DEBUG: Escritos " << bytes << " bytes al CGI" << std::endl;
     }
 
-
-    if (_byteSent >= _bodyToSend.size())
-    {
+    if (_byteSent >= _bodyToSend.size()) {
+        std::cout << "DEBUG: Finalizado. Cerrando pipe de entrada del CGI." << std::endl;
         close(_inputPipe[1]);
         _inputPipe[1] = -1; 
     }
@@ -282,19 +286,33 @@ char **CGIProcess::buildEnv(const Request& request)
     // 📍 Query string (GET)
     env.push_back("QUERY_STRING=" + request.get_query());
 
-    // 📍 Headers importantes
-    const std::map<std::string, std::string>& headers = request.get_headers();
+    // 📍 Manejo de POST (Content-Length y Content-Type)
+    if (request.get_method() == "POST")
+    {
+        // Convertimos el tamaño del body a string usando stringstream (C++98)
+        std::stringstream ss;
+        ss << request.get_body().size();
+        env.push_back("CONTENT_LENGTH=" + ss.str());
 
-    if (headers.count("Content-Length"))
-        env.push_back("CONTENT_LENGTH=" + headers.at("Content-Length"));
-
-    if (headers.count("Content-Type"))
-        env.push_back("CONTENT_TYPE=" + headers.at("Content-Type"));
+        // Buscamos el Content-Type (siendo un poco flexibles con las mayúsculas)
+        const std::map<std::string, std::string>& headers = request.get_headers();
+        if (headers.count("Content-Type"))
+            env.push_back("CONTENT_TYPE=" + headers.at("Content-Type"));
+        else if (headers.count("content-type"))
+            env.push_back("CONTENT_TYPE=" + headers.at("content-type"));
+        else
+            env.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+    }
+    else 
+    {
+        // Para GET, el estándar suele pedir que Content-Length sea 0 o no esté
+        env.push_back("CONTENT_LENGTH=0");
+    }
 
     // Importante para PHP
     env.push_back("REDIRECT_STATUS=200");
 
-    // Convertir a char**
+    // 📍 Convertir a char** para execve
     char **envp = new char*[env.size() + 1];
 
     for (size_t i = 0; i < env.size(); i++)
@@ -308,7 +326,6 @@ bool CGIProcess::isBodyfinished()
 {
 	return _byteSent >=_bodyToSend.size();
 }
-
 /*
  * setupChildProcess(const Request& request)
  * ------------------------------------------
@@ -339,12 +356,11 @@ void CGIProcess::setupChildProcess(const Request& request)
 		exit(1);
 	}
     std::string scriptName = _fullPath.substr(_fullPath.find_last_of('/') + 1);
-    char *argv[4];
+    char *argv[3];
 
     argv[0] = strdup(("/" + _cgiPass).c_str());  // "/usr/bin/python3"
-	argv[1] = strdup("-u");
-    argv[2] = strdup(scriptName.c_str());        // "test.py"
-    argv[3] = NULL;
+    argv[1] = strdup(scriptName.c_str());        // "test.py"
+    argv[2] = NULL;
 
     char **env = buildEnv(request);
     execve(argv[0], argv, env);
@@ -352,6 +368,7 @@ void CGIProcess::setupChildProcess(const Request& request)
     perror("execve failed");
     exit(127);
 }
+
 
 //////////////////////////////////////////////
 // 🔹 POLL READY (LO NUEVO)

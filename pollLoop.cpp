@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/06 16:22:37 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/06 17:40:36 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,14 +301,12 @@ void handle_cgi(size_t& i, int fd, short rev, std::map<int, CGIProcess*>& cgi_ma
     // 3. CASO LECTURA: El CGI nos envía datos
     if (fd == out_fd && (rev & POLLIN))
     {
-		std::cout<<"juan"<<std::endl;
-        cgi->readFromPipe();
+		cgi->readFromPipe();
     }
 
     // 4. CASO CIERRE/ERROR: El CGI ha terminado (POLLHUP)
     if (fd == out_fd && (rev & (POLLHUP | POLLERR)))
     {
-       std::cout<<"pepe"<<std::endl;
         cgi->readFromPipe();
 
         // Construir la respuesta para el cliente

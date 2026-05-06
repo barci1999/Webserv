@@ -1,208 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>CGI</title>
+<meta charset="UTF-8">
+<title>Panel de Control CGI</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0a0a0a; color: #e0e0e0; padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; color: #7f5af0; margin-bottom: 2rem; }
+    .card {
+        background: #141414; border: 1px solid #1e1e1e;
+        border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    h3 { margin-bottom: 1rem; }
+    button {
+        width: 100%; border: none; color: #fff; padding: 0.8rem;
+        border-radius: 6px; cursor: pointer; font-weight: bold;
+    }
+    .btn-get  { background: #2cb67d; }
+    .btn-php  { background: #0f8abf; }
+    .btn-post { background: #7f5af0; }
+    input {
+        width: 100%; margin-bottom: 10px; padding: 10px;
+        background: #000; color: #fff; border: 1px solid #333; border-radius: 4px;
+    }
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; padding: 2rem; }
-        .container { max-width: 800px; margin: 0 auto; }
+    /* Caja de resultados — contenedor de tamaño fijo */
+    .result-viewport {
+        margin-top: 15px;
+        background: #000;
+        border: 2px solid #222;
+        border-radius: 8px;
+        width: 100%;
+        height: 600px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: none;
+        padding: 15px;
 
-        a.back { color: #7f5af0; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
+        /* Container queries: las imágenes se miden respecto a esta caja */
+        container-type: size;
+    }
 
-        h1 { font-size: 2rem; margin-bottom: 1rem; }
-        h1 span { color: #0f8abf; }
+    /* Estilos para el contenido del juego inyectado */
+    .result-viewport .game-menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 16px;
+    }
+    .result-viewport .option {
+        width: 200px;
+        cursor: pointer;
+        text-align: center;
+        background: #1a1a1a;
+        border-radius: 8px;
+        padding: 10px;
+        transition: transform 0.15s;
+    }
+    .result-viewport .option:hover { transform: scale(1.04); }
+    .result-viewport img {
+        max-width: 100%;
+        max-height: 30cqh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto 8px;
+        border-radius: 6px;
+    }
+    .result-viewport .game-main img { max-height: 55cqh; }
+    .result-viewport h1, .result-viewport h2, .result-viewport h3 {
+        color: #fff; margin: 8px 0;
+    }
 
-        .test-card {
-            background: #141414;
-            border: 1px solid #1e1e1e;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        button {
-            background: linear-gradient(135deg, #e53835, #7f5af0);
-            border: none;
-            color: #fff;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 0.5rem;
-        }
-
-        .file-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .result {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            background: #0a0a0a;
-            padding: 1rem;
-            border-radius: 6px;
-            border: 1px solid #222;
-
-			max-height: 500px;
-			overflow: auto;
-        }
-		.result img {
-			max-width: 100%;
-			max-height: 250px;
-			width: 900;
-			height: 900;
-			object-fit: contain;
-			border-radius: 8px;
-		}
-
-        .error { color: #e53835; }
-        .ok { color: #22c55e; }
-    </style>
+    #res-post {
+        margin-top: 10px; padding: 15px; background: #000;
+        border-radius: 5px; display: none; color: #22c55e;
+        border-left: 4px solid #7f5af0;
+    }
+</style>
 </head>
-
 <body>
 <div class="container">
+	<div class="container">
 
     <a class="back" href="/">← Back</a>
 
-    <h1>CGI <span>Scripts</span></h1>
+</div>
+    <h1>CGI Master Control</h1>
+	
 
-    <div class="test-card">
-        <h3 style="margin-bottom:1rem;">CGI Scripts (/cgi-bin)</h3>
-        <button onclick="loadCGIs()">Refresh</button>
-
-        <div id="cgi-list" style="margin-top:1rem;"></div>
-
-        <!-- 🔥 RESULTADO ÚNICO -->
-        <div id="cgi-result" class="result"></div>
+    <!-- 1. JUEGO (GET) -->
+    <div class="card">
+        <h3>Anime Quiz (game.py)</h3>
+        <button class="btn-get" onclick="loadGame('/cgi-bin/game.py')">Ejecutar Juego</button>
+        <div id="res-game" class="result-viewport"></div>
     </div>
 
+    <!-- 2. PHP (GET) -->
+    <div class="card">
+        <h3>System Info (test.php)</h3>
+        <button class="btn-php" onclick="loadInto('/cgi-bin/test.php', 'res-php')">Ejecutar PHP</button>
+        <div id="res-php" class="result-viewport"></div>
+    </div>
+
+    <!-- 3. POST -->
+    <div class="card" style="border: 1px solid #7f5af0;">
+        <h3>Crear Usuario (POST)</h3>
+        <input type="text" id="post_nombre" placeholder="Nombre">
+        <input type="text" id="post_apellido" placeholder="Apellido">
+        <button class="btn-post" onclick="crearUsuario()">Enviar Datos</button>
+        <div id="res-post"></div>
+    </div>
 </div>
 
 <script>
-
-// ================= CGI =================
-async function loadCGIs() {
-    const container = document.getElementById("cgi-list");
-    container.innerHTML = "Loading...";
-
-    try {
-        const res = await fetch("/cgi-bin/");
-
-        if (!res.ok) {
-            container.innerHTML = "<div class='error'>❌ CGI folder not found</div>";
-            return;
+    // Carga genérica GET dentro de una caja
+    async function loadInto(url, boxId) {
+        const box = document.getElementById(boxId);
+        box.style.display = "block";
+        box.innerHTML = "<div style='padding:20px;'>Cargando...</div>";
+        try {
+            const r = await fetch(url);
+            box.innerHTML = await r.text();
+            box.scrollTop = 0;
+        } catch (e) {
+            box.innerHTML = "<div style='padding:20px;color:red;'>Error al cargar.</div>";
         }
-
-        const html = await res.text();
-        const doc = new DOMParser().parseFromString(html, "text/html");
-
-        const links = [...doc.querySelectorAll("a")]
-            .map(a => a.getAttribute("href"))
-            .filter(href => href && !href.includes("..") && href !== "/");
-
-        if (links.length === 0) {
-            container.innerHTML = "⚙️ No CGI scripts found";
-            return;
-        }
-
-        container.innerHTML = "";
-
-        links.forEach(file => {
-            if (file.endsWith("/")) return;
-
-            const row = document.createElement("div");
-            row.className = "file-row";
-
-            const name = document.createElement("span");
-            name.innerText = file;
-
-            const btn = document.createElement("button");
-            btn.innerText = "Run";
-            btn.onclick = () => runCGI("/cgi-bin/" + file);
-
-            row.appendChild(name);
-            row.appendChild(btn);
-            container.appendChild(row);
-        });
-
-    } catch {
-        container.innerHTML = "<div class='error'>🌐 Network error</div>";
     }
-}
 
-// ================= RUN CGI =================
-async function runCGI(url, options = {}) {
-    const result = document.getElementById("cgi-result");
-
-    result.innerText = "Executing " + url + "...";
-
-    try {
-        const res = await fetch(url, options);
-        const text = await res.text();
-
-        result.innerHTML =
-            "<div class='" + (res.ok ? "ok" : "error") + "'>" +
-            "HTTP " + res.status +
-            "</div>\n" +
-            text;
-
-        // 🔥 scroll automático
-        result.scrollIntoView({ behavior: "smooth" });
-
-    } catch {
-        result.innerHTML = "<div class='error'>Error executing CGI</div>";
+    // Carga del juego — recarga dentro de la misma caja sin redirigir
+    async function loadGame(url) {
+        await loadInto(url, 'res-game');
     }
-}
 
-// ================= INTERCEPTAR LINKS =================
-document.addEventListener("click", function(e) {
-    const link = e.target.closest("a");
-
-    if (!link) return;
-
-    const href = link.getAttribute("href");
-
-    if (href && href.startsWith("/cgi-bin/")) {
+    // Delegación: clicks dentro de #res-game NO redirigen, recargan inline
+    document.getElementById('res-game').addEventListener('click', function(e) {
+        const target = e.target.closest('[data-step]');
+        if (!target) return;
         e.preventDefault();
-        runCGI(href);
+        const anime = target.dataset.anime || '';
+        const step  = target.dataset.step;
+        const qs = new URLSearchParams();
+        if (anime) qs.set('anime', anime);
+        qs.set('step', step);
+        loadGame('/cgi-bin/game.py?' + qs.toString());
+    });
+
+    // POST crear usuario
+    function crearUsuario() {
+        const resDiv = document.getElementById("res-post");
+        const n = document.getElementById("post_nombre").value;
+        const a = document.getElementById("post_apellido").value;
+        resDiv.style.display = "block";
+        resDiv.innerHTML = "Enviando...";
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/cgi-bin/crear_usuario.py", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) resDiv.innerHTML = xhr.responseText;
+        };
+        xhr.send("nombre=" + encodeURIComponent(n) + "&apellido=" + encodeURIComponent(a));
     }
-});
-
-// ================= INTERCEPTAR FORMULARIOS =================
-document.addEventListener("submit", async function(e) {
-    const form = e.target;
-
-    if (!form.action.includes("/cgi-bin/")) return;
-
-    e.preventDefault();
-
-    const method = (form.method || "GET").toUpperCase();
-    const formData = new FormData(form);
-
-    let url = form.action;
-    let options = { method };
-
-    if (method === "GET") {
-        const params = new URLSearchParams(formData).toString();
-        if (params) url += "?" + params;
-    } else {
-        options.body = formData;
-    }
-
-    runCGI(url, options);
-});
-
-// auto load
-window.onload = () => {
-    loadCGIs();
-};
-
 </script>
-
 </body>
 </html>
