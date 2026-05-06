@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:21:24 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/05 11:48:13 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/06 16:22:41 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,32 +26,34 @@
 void CGI_Response(Request& request, server& serv, std::vector<pollfd>& pollFds,
     std::map<int, CGIProcess*>& cgi_map, std::map<int, int>& cgi_to_client, int client_fd)
 {
-    // 🔹 Crear proceso CGI
     CGIProcess* cgi = new CGIProcess();
 
-    // 🔴 Seguridad: comprobar otra vez
     if (!cgi->isCGI(request, serv))
     {
         delete cgi;
         return;
     }
     
-    // 🔹 Ejecutar CGI (fork + exec)
-    cgi->execute(request, serv,pollFds);
+    // 1. execute ya añade los FDs al vector pollFds (según vimos antes)
+    cgi->execute(request, serv, pollFds);
 
-    int fd = cgi->getFD();
+    // 2. Registrar el pipe de LECTURA (Salida del CGI -> Entrada del Server)
+    int out_fd = cgi->getFD(); 
+    cgi_map[out_fd] = cgi;
+    cgi_to_client[out_fd] = client_fd;
 
-    // 🔹 Añadir a poll
-    pollfd poll;
-    poll.fd = fd;
-    poll.events = POLLIN | POLLHUP;
-    poll.revents = 0;
-
-    pollFds.push_back(poll);
-
-    // 🔹 Guardar relaciones
-    cgi_map[fd] = cgi;            // fd → objeto CGI
-    cgi_to_client[fd] = client_fd; // fd → cliente
+    // 3. Registrar el pipe de ESCRITURA (Solo si es POST)
+    int in_fd = cgi->getInputFd();
+	if (out_fd != -1) {
+        cgi_map[out_fd] = cgi;
+        cgi_to_client[out_fd] = client_fd;
+        std::cout << "MAP: Guardado out_fd " << out_fd << std::endl;
+    }
+    if (in_fd != -1) {
+        cgi_map[in_fd] = cgi;
+        cgi_to_client[in_fd] = client_fd;
+        std::cout << "MAP: Guardado in_fd " << in_fd << std::endl;
+    }
 }
 
 // Esta función:
@@ -79,6 +81,12 @@ bool handleRequest(Request& request,server& serv,std::vector<pollfd>& pollFds,
 
     if (tmp.isCGI(request, serv))
     {
+		for (size_t i = 0; i < pollFds.size(); i++) {
+        if (pollFds[i].fd == client_fd) {
+            pollFds[i].events = 0; // Deja de escuchar al cliente mientras el CGI trabaja
+            break;
+        }
+    }
         CGI_Response(request, serv, pollFds, cgi_map, cgi_to_client, client_fd);
         return false; // aqui sún no hay respuesta
     }//Un CGI NO devuelve respuesta…, devuelve un evento futuro

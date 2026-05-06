@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/05 14:27:17 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/06 16:21:38 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,29 +146,71 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
  * Crea pipes, hace fork y ejecuta el hijo.
  * El padre solo escribe (POST) y continúa.
  */
-void CGIProcess::execute(const Request& request, const server& server_config,std::vector<pollfd>& pollFds)
+void CGIProcess::execute(const Request& request, const server& server_config, std::vector<pollfd>& pollFds)
 {
     _fullPath = buildFullPath(request, server_config);
     _finished = false;
     _buffer.clear();
+    _byteSent = 0; 
 
     createPipes();
     forkProcess();
 
     if (_pid == 0)
     {
-		for (std::vector<pollfd>::iterator it = pollFds.begin(); it != pollFds.end(); ++it)
-		{
-			close(it->fd);
-		}
-		
+        for (std::vector<pollfd>::iterator it = pollFds.begin(); it != pollFds.end(); ++it)
+            close(it->fd);
+        
         setupChildProcess(request);
         exit(1);
     }
 
-    close(_inputPipe[0]);
-    close(_outputPipe[1]);
-    close(_inputPipe[1]);
+    close(_inputPipe[0]);  
+    close(_outputPipe[1]); 
+
+    pollfd pfd_out;
+    pfd_out.fd = _outputPipe[0];
+    pfd_out.events = POLLIN;
+	pfd_out.revents = 0;
+    pollFds.push_back(pfd_out);
+
+    if (request.get_method() == "POST")
+    {
+        _bodyToSend = request.get_body();
+        
+        pollfd pfd_in;
+        pfd_in.fd = _inputPipe[1];
+        pfd_in.events = POLLOUT; 
+		pfd_in.revents = 0;
+        pollFds.push_back(pfd_in);
+
+    }
+    else
+    {
+
+        close(_inputPipe[1]);
+        _inputPipe[1] = -1;
+    }
+}
+void CGIProcess::writeToPipe()
+{
+    if (_inputPipe[1] == -1 || _bodyToSend.empty())
+        return;
+
+    ssize_t bytes = write(_inputPipe[1], _bodyToSend.c_str() + _byteSent, 
+                          _bodyToSend.size() - _byteSent);
+    
+    if (bytes > 0)
+    {
+        _byteSent += bytes;
+    }
+
+
+    if (_byteSent >= _bodyToSend.size())
+    {
+        close(_inputPipe[1]);
+        _inputPipe[1] = -1; 
+    }
 }
 
 
@@ -262,7 +304,10 @@ char **CGIProcess::buildEnv(const Request& request)
 
     return envp;
 }
-
+bool CGIProcess::isBodyfinished()
+{
+	return _byteSent >=_bodyToSend.size();
+}
 
 /*
  * setupChildProcess(const Request& request)
@@ -273,53 +318,35 @@ char **CGIProcess::buildEnv(const Request& request)
  */
 void CGIProcess::setupChildProcess(const Request& request)
 {
-    // 🔹 1. Redirigir stdin (pipe entrada) → STDIN del CGI
     dup2(_inputPipe[0], STDIN_FILENO);
 
-    // 🔹 2. Redirigir stdout (pipe salida) → STDOUT del CGI
     dup2(_outputPipe[1], STDOUT_FILENO);
 
-    // 🔹 3. Cerrar todos los pipes (ya no se necesitan tras dup2)
     close(_inputPipe[0]);
     close(_inputPipe[1]);
     close(_outputPipe[0]);
     close(_outputPipe[1]);
 
-	// 🔹 4. Obtener el directorio del script (SIN el nombre del archivo)
-    // Ej: "sgoinfre/.../cgi-bin/test.py" → "sgoinfre/.../cgi-bin"
 	std::string dir = _fullPath.substr(0, _fullPath.find_last_of('/'));
 	if (!dir.empty() && dir[0] == '/')
 	{
 		dir.erase(0,1);
 	}
 
-	// 🔹 5. Crear el directorio
 	if (chdir(dir.c_str()) != 0)
 	{
 		perror("chdir failed");
 		exit(1);
 	}
-	// Si NO haces chdir():
-	// Buscaría en el directorio donde se lanzo el server
-	// Fallaría aunque el archivo exista
-	
-	
-	// 🔹 6. Obtener SOLO el nombre del script
-    // Ej: "sgoinfre/.../cgi-bin/test.py" → "test.py"
     std::string scriptName = _fullPath.substr(_fullPath.find_last_of('/') + 1);
-	
-    // 🔹 7. Preparar argumentos para execve
-    char *argv[3];
+    char *argv[4];
 
-	//SE AÑADE / AL PRINCIIO DE _cgiPass por que si no no funciona
     argv[0] = strdup(("/" + _cgiPass).c_str());  // "/usr/bin/python3"
-    argv[1] = strdup(scriptName.c_str());        // "test.py"
-    argv[2] = NULL;
+	argv[1] = strdup("-u");
+    argv[2] = strdup(scriptName.c_str());        // "test.py"
+    argv[3] = NULL;
 
-    // 🔹 8. Construir entorno CGI
     char **env = buildEnv(request);
-
-	// 🔹 9. Ejecutar CGI
     execve(argv[0], argv, env);
 
     perror("execve failed");
@@ -420,9 +447,10 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 		pos = output.find("\n\n");
 		separator_len = 2;
 	}
-
+	std::cout<<output<<std::endl;
 	if (pos == std::string::npos)
 	{
+		std::cout<<"GGGGGGGGGGGGG"<<std::endl;
 		response.set_statuscode(500);
 		response.set_reasonphrase("Internal Server Error");
 		response.set_body("CGI malformed response");
