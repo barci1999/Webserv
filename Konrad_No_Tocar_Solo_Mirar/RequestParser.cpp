@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/03 15:30:38 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/06 17:59:00 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,6 +133,7 @@ std::string RequestParser::normalize_path(const std::string& path)
 }
 void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 {
+	std::cerr<<line<<std::endl;
 	std::istringstream stream(line);
 	std::string temp;
 	stream >> temp;
@@ -193,7 +194,7 @@ void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 // La función devuelve el objeto Request completamente rellenado.
 Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 {
-
+	std::cout<<rawRequest<<std::endl;
 	size_t headerEnd = rawRequest.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
 	{

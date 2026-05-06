@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/05 17:52:47 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/06 17:40:36 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,30 +273,83 @@ void handle_send(int fd, std::map<int, std::string>& out_buffers,
     disable_pollout(fd, pollFds);
 }
 
-void handle_cgi(size_t& i, int fd, short rev, std::map<int, CGIProcess*>& cgi_map, std::map<int, int>& cgi_to_client,
-    std::map<int, std::string>& out_buffers, std::vector<pollfd>& pollFds)
+void handle_cgi(size_t& i, int fd, short rev, std::map<int, CGIProcess*>& cgi_map, 
+                std::map<int, int>& cgi_to_client, std::map<int, std::string>& out_buffers, 
+                std::vector<pollfd>& pollFds)
 {
+    // 1. Obtener el objeto CGI
+    if (cgi_map.find(fd) == cgi_map.end())
+        return;
     CGIProcess* cgi = cgi_map[fd];
+    int in_fd = cgi->getInputFd();
+    int out_fd = cgi->getFD();
+    // 2. CASO POST: Escritura hacia el CGI
+    if (fd == in_fd && (rev & POLLOUT))
+    {
+        cgi->writeToPipe();
+        if (cgi->isBodyfinished())
+        {
+            // Ya no necesitamos escribir más, quitamos este FD del poll y del mapa
+            cgi_map.erase(fd);
+            cgi_to_client.erase(fd);
+            // close(fd); // Opcional: puedes cerrarlo aquí o al final del objeto
+            pollFds.erase(pollFds.begin() + i--);
+        }
+        return; 
+    }
 
-    if (rev & POLLIN)
-        cgi->readFromPipe();
+    // 3. CASO LECTURA: El CGI nos envía datos
+    if (fd == out_fd && (rev & POLLIN))
+    {
+		cgi->readFromPipe();
+    }
 
-    if (rev & (POLLHUP | POLLERR))
+    // 4. CASO CIERRE/ERROR: El CGI ha terminado (POLLHUP)
+    if (fd == out_fd && (rev & (POLLHUP | POLLERR)))
     {
         cgi->readFromPipe();
 
+        // Construir la respuesta para el cliente
         int client_fd = cgi_to_client[fd];
-        out_buffers[client_fd] =
-            res_to_str(cgi->buildResponse());
+        out_buffers[client_fd] = res_to_str(cgi->buildResponse());
+		std::cout<<out_buffers[client_fd]<<std::endl;
 
+        // Reactivar POLLOUT para el cliente para que el servidor le envíe los datos
         enable_pollout(client_fd, pollFds);
 
-        close(fd);
-        delete cgi;
+        // --- LIMPIEZA CRÍTICA ---
+        
+        // A. Borrar el FD de salida (el actual)
+        cgi_map.erase(out_fd);
+        cgi_to_client.erase(out_fd);
+        close(out_fd);
 
-        cgi_map.erase(fd);
-        cgi_to_client.erase(fd);
+        // B. Borrar el FD de entrada si existía y seguía en el mapa (en caso de error o POST corto)
+        if (in_fd != -1)
+        {
+            if (cgi_map.count(in_fd))
+            {
+                // Si el in_fd todavía está en el pollFds, hay que buscarlo y quitarlo
+                for (size_t j = 0; j < pollFds.size(); ++j)
+                {
+                    if (pollFds[j].fd == in_fd)
+                    {
+                        pollFds.erase(pollFds.begin() + j);
+                        if (j < i) i--; // Ajustar índice si borramos uno anterior
+                        break;
+                    }
+                }
+                cgi_map.erase(in_fd);
+                cgi_to_client.erase(in_fd);
+            }
+            close(in_fd);
+        }
+
+        // C. Eliminar el FD actual (out_fd) del vector pollFds
         pollFds.erase(pollFds.begin() + i--);
+
+        // D. Liberar memoria
+        delete cgi;
     }
 }
 
@@ -359,6 +412,23 @@ void handle_client(size_t& i, int fd, short rev, std::map<int, client>& srvClien
         out_buffers[fd] = res_to_str(resp);
         enable_pollout(fd, pollFds);
     }
+	else 
+    {
+        for (std::map<int, CGIProcess*>::iterator it = cgi_map.begin(); it != cgi_map.end(); ++it)
+        {
+            if (cgi_to_client[it->first] == fd)
+            {
+                CGIProcess* cgi = it->second;
+                int in_fd = cgi->getInputFd();
+                if (in_fd != -1 && cgi_map.find(in_fd) == cgi_map.end())
+                {
+                    cgi_map[in_fd] = cgi;
+                    cgi_to_client[in_fd] = fd;
+                }
+                break;
+            }
+        }
+    }
 }
 
 int pollLoop(std::vector<server> general)
@@ -392,40 +462,47 @@ int pollLoop(std::vector<server> general)
     catch (...) { return 1; }
 
     while (Signal::runnin == 1)
+{
+    int active = poll(pollFds.data(), pollFds.size(), -1);
+    if (active <= 0) break;
+
+    for (size_t i = 0; i < pollFds.size(); i++)
     {
-        int active = poll(pollFds.data(), pollFds.size(), -1);
-        if (active < 0)
-            break;
+        int fd = pollFds[i].fd;
+        short rev = pollFds[i].revents;
 
-        for (size_t i = 0; i < pollFds.size(); i++)
+        if (rev == 0) continue;
+
+        // 1. PRIORIDAD ABSOLUTA: CGIs
+        if (cgi_map.count(fd))
         {
-            int fd = pollFds[i].fd;
-            short rev = pollFds[i].revents;
+            handle_cgi(i, fd, rev, cgi_map, cgi_to_client, out_buffers, pollFds);
+            continue;
+        }
 
-            if (rev == 0)
-                continue;
-            if (rev & POLLOUT)
-            {
-                handle_send(fd, out_buffers, pending_requests, pollFds);
-                continue;
-            }
-            if (cgi_map.count(fd))
-            {
-                handle_cgi(i, fd, rev, cgi_map, cgi_to_client, out_buffers, pollFds);
-                continue;
-            }
-            if (srvListeners.count(fd))
-            {
-                handle_accept(fd, srvListeners, srvClients, pollFds);
-                continue;
-            }
-            if (srvClients.count(fd))
-            {
-                handle_client(i, fd, rev, srvClients, pending_requests, out_buffers,
-                              pollFds, cgi_map, cgi_to_client);
-            }
+        // 2. Aceptación de nuevos clientes
+        if (srvListeners.count(fd))
+        {
+            handle_accept(fd, srvListeners, srvClients, pollFds);
+            continue;
+        }
+
+        // 3. Lectura de clientes (Request)
+        if (rev & POLLIN && srvClients.count(fd))
+        {
+            handle_client(i, fd, rev, srvClients, pending_requests, out_buffers,
+                          pollFds, cgi_map, cgi_to_client);
+            continue;
+        }
+
+        // 4. Envío de respuestas (Solo si hay algo que enviar)
+        if (rev & POLLOUT && out_buffers.count(fd))
+        {
+            handle_send(fd, out_buffers, pending_requests, pollFds);
+            continue;
         }
     }
+}
 	for (std::vector<pollfd>::iterator it = pollFds.begin() ; it != pollFds.end(); ++it)
 	{
 		close(it->fd);

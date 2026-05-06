@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIProcess.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
+/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/05 14:19:21 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/06 21:30:34 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,11 @@ class CGIProcess
 		std::string _buffer;
 		bool _finished;
 
+		//variables para itentar hacer le POST de un cgi
+		
+		std::string _bodyToSend;
+		size_t _byteSent;
+
 		void extractCGIConfig(const Block& best_location, const server& server_config);
 
 		std::string buildFullPath(const Request& request, const server& server_config);
@@ -66,6 +71,9 @@ class CGIProcess
 
 		void execute(const Request& request, const server& server_config,std::vector<pollfd>& pollFds);
 		
+		bool isBodyfinished();
+		void writeToPipe();
+		int getInputFd() {return this->_inputPipe[1];}
 		int getFD() const; //devuelve el fd para poll
 		bool isFinished(); // lee sin bloquear
 		void readFromPipe(); //comprueba si el CGI terminó

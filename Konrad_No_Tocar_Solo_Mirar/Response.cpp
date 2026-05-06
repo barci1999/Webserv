@@ -176,7 +176,12 @@ bool Response::is_method_allowed(const std::string& method, Block& loc) {
 void Response::handle_file_get(const std::string& full_path, const server& config) {
     std::string body;
     if (!is_file(full_path)) return set_error(*this, 403, config);
-    if (!read_file(full_path, body)) return set_error(*this, 500, config);
+    if (!read_file(full_path, body))
+	{ 
+		std::cout<<"GGGGGGGGGGGGG"<<std::endl;
+		return set_error(*this, 500, config);
+	}
+
     
     finalize_response(200, getContentType(full_path), body);
 }
@@ -192,7 +197,7 @@ void Response::handle_directory_get(std::string full_path, const std::string& re
         for (size_t i = 0; i < index.args.size(); ++i) {
             std::string temp = full_path + index.args[i];
             if (file_exist(temp) && is_file(temp) && can_read(temp)) {
-                if (!read_file(temp, body)) return set_error(*this, 500, config);
+                if (!read_file(temp, body)){ std::cout<<"LLLLLLLLLLL"<<std::endl; return set_error(*this, 500, config);}
                 return finalize_response(200, getContentType(temp), body);
             }
         }
@@ -204,7 +209,7 @@ void Response::handle_directory_get(std::string full_path, const std::string& re
 
     if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on") {
         body = generate_autoindex(full_path, req_path);
-        if (body.empty()) return set_error(*this, 500, config);
+        if (body.empty()) {std::cout<<"ZZZZZZZZZZZZZZZZZ"<<std::endl; return set_error(*this, 500, config);}
         return finalize_response(200, "text/html", body);
     }
 
@@ -244,13 +249,14 @@ void Response::handle_upload_post(const Request to_check, Block& loc, const std:
         fd_file = open(full_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     }
 
-    if (fd_file == -1) return set_error(*this, 500, config);
+    if (fd_file == -1) {std::cout << "FFFFFFFFFFFFFF"<<std::endl; return set_error(*this, 500, config);}
 
     size_t total_bits = 0;
     while (total_bits < clean_body.size()) {
         ssize_t w = write(fd_file, clean_body.c_str() + total_bits, clean_body.size() - total_bits);
         if (w <= 0) {
             close(fd_file);
+			std::cout<<"GGGGGGGGGGGGGGGG"<<std::endl;
             return set_error(*this, 500, config);
         }
         total_bits += w;
