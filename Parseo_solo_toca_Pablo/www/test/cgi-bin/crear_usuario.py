@@ -14,13 +14,6 @@ if method == "POST":
         length = int(content_length)
         body = sys.stdin.read(length)
         
-        # --- DEBUG ---
-        with open("debug_cgi.log", "w") as f:
-            f.write(f"Metodo: {method}\n")
-            f.write(f"Length: {length}\n")
-            f.write(f"Body recibido: '{body}'\n")
-        # -------------
-
         params = urllib.parse.parse_qs(body.strip())
         
         nombre = params.get('nombre', ['Desconocido'])[0]
@@ -41,7 +34,6 @@ if method == "POST":
             f.write(f"Registro: {nombre} {apellido}\n")
         
         print(f"<html><body><h1>✅ Creado: {file_path}</h1>")
-        print(f"<p>DEBUG: El body era '{body}'</p></body></html>")
         
     except Exception as e:
         print(f"<h1>❌ Error: {str(e)}</h1>")
