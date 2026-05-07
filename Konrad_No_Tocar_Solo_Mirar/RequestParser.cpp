@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/06 17:59:00 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/07 13:01:56 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,7 +194,6 @@ void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 // La función devuelve el objeto Request completamente rellenado.
 Request &RequestParser::parse(const std::string& rawRequest,Request &request)
 {
-	std::cout<<rawRequest<<std::endl;
 	size_t headerEnd = rawRequest.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
 	{

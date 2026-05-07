@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/06 21:30:22 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/07 18:46:03 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,12 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server& serv
 	Además, guardamos la ruta del script para poder construir la ruta completa
 	y ejecutarlo correctamente.
  */
-bool CGIProcess::isCGI(const Request& request, const server& server_config)
+bool CGIProcess::initCGI(const Request& request, const server& server_config)
 {
 	std::string path = request.get_path();
 
 	Block best_location = find_best_location(path, server_config);
+	std::cout<<best_location.getName()<<std::endl;
 
 	if (best_location.getName().empty())
 		return false;
@@ -79,6 +80,7 @@ bool CGIProcess::isCGI(const Request& request, const server& server_config)
 	{
 		_scriptPath = path;
 		_cgiPass = it->second;
+		std::cout<<_cgiPass<<std::endl;
 		return true;
 	}
 	return false;
@@ -194,11 +196,8 @@ void CGIProcess::execute(const Request& request, const server& server_config, st
 }
 void CGIProcess::writeToPipe()
 {
-    std::cout << "DEBUG: Intentando escribir. Body size: " << _bodyToSend.size() 
-              << " | Bytes sent: " << _byteSent << std::endl;
 
     if (_inputPipe[1] == -1 || _bodyToSend.empty()) {
-        std::cout << "DEBUG: Abortando write: Pipe cerrado o Body vacío" << std::endl;
         return;
     }
 
@@ -207,11 +206,9 @@ void CGIProcess::writeToPipe()
     
     if (bytes > 0) {
         _byteSent += bytes;
-        std::cout << "DEBUG: Escritos " << bytes << " bytes al CGI" << std::endl;
     }
 
     if (_byteSent >= _bodyToSend.size()) {
-        std::cout << "DEBUG: Finalizado. Cerrando pipe de entrada del CGI." << std::endl;
         close(_inputPipe[1]);
         _inputPipe[1] = -1; 
     }
@@ -363,6 +360,7 @@ void CGIProcess::setupChildProcess(const Request& request)
     argv[2] = NULL;
 
     char **env = buildEnv(request);
+	std::cerr<<"GGGG"<<argv[0]<<std::endl;
     execve(argv[0], argv, env);
 
     perror("execve failed");
@@ -464,10 +462,8 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 		pos = output.find("\n\n");
 		separator_len = 2;
 	}
-	std::cout<<output<<std::endl;
 	if (pos == std::string::npos)
 	{
-		std::cout<<"GGGGGGGGGGGGG"<<std::endl;
 		response.set_statuscode(500);
 		response.set_reasonphrase("Internal Server Error");
 		response.set_body("CGI malformed response");

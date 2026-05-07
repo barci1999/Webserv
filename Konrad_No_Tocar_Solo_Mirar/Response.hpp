@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:51:11 by pablalva          #+#    #+#             */
-/*   Updated: 2026/05/05 15:42:46 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/07 18:32:06 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,12 @@ private:
 	std::string _body;
 	
 	void        finalize_response(int status, const std::string& contentType, const std::string& body);
-    std::string build_full_path(const std::string& path, Block& loc, const server& config);
     bool        is_method_allowed(const std::string& method, Block& loc);
     std::string get_error_page_path(unsigned int code, const server& config);
     void        handle_file_get(const std::string& full_path, const server& config);
     void        handle_directory_get(std::string full_path, const std::string& req_path, Block& loc, const server& config);
     void        handle_upload_post(const Request to_check, Block& loc, const std::string& path, const server& config);
-
+	
 public:
 	std::string toHTTPString() const;
 	Response();
@@ -53,6 +52,7 @@ public:
 	Response &operator=(const Response& other);
 	~Response();
 	
+    static std::string build_full_path(const std::string& path, Block& loc, const server& config);
 	void set_error(Response& modifi,unsigned int error,const server& server_config);
 	std::string getContentType(const std::string& to_check);
 	std::string generate_autoindex(const std::string& ful_path,const std::string& request_path);

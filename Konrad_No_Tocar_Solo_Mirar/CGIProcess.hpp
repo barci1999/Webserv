@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/02 21:20:08 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/06 21:30:34 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/07 14:44:00 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ class CGIProcess
 	public:
 		CGIProcess(){};
 		~CGIProcess(){};
-		bool isCGI(const Request& request, const server& location);
+		bool initCGI(const Request& request, const server& location);
 
 		void execute(const Request& request, const server& server_config,std::vector<pollfd>& pollFds);
 		

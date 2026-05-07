@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/06 17:40:36 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/07 15:29:36 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -312,7 +312,6 @@ void handle_cgi(size_t& i, int fd, short rev, std::map<int, CGIProcess*>& cgi_ma
         // Construir la respuesta para el cliente
         int client_fd = cgi_to_client[fd];
         out_buffers[client_fd] = res_to_str(cgi->buildResponse());
-		std::cout<<out_buffers[client_fd]<<std::endl;
 
         // Reactivar POLLOUT para el cliente para que el servidor le envíe los datos
         enable_pollout(client_fd, pollFds);
