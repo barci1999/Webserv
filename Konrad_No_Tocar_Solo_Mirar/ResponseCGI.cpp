@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:21:24 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/07 18:43:41 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/10 15:20:52 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,10 @@ void CGI_Response(Request& request, server& serv, std::vector<pollfd>& pollFds,
 	if (out_fd != -1) {
         cgi_map[out_fd] = cgi;
         cgi_to_client[out_fd] = client_fd;
-        std::cout << "MAP: Guardado out_fd " << out_fd << std::endl;
     }
     if (in_fd != -1) {
         cgi_map[in_fd] = cgi;
         cgi_to_client[in_fd] = client_fd;
-        std::cout << "MAP: Guardado in_fd " << in_fd << std::endl;
     }
 }
 bool isCGI(const Request& to_check)
@@ -157,7 +155,6 @@ bool check_conf_cgi(Request& req,server& server,Response& modyfy)
 bool handleRequest(Request& request,server& serv,std::vector<pollfd>& pollFds,
     std::map<int, CGIProcess*>& cgi_map, std::map<int, int>& cgi_to_client, int client_fd, Response& response)
 {
-	std::cout<<request<<std::endl;
     if (isCGI(request))
     {
 		if(!check_conf_cgi(request,serv,response))

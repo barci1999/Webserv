@@ -26,7 +26,7 @@ Response::Response(const Request to_check, const server server_config) {
     this->_headers.clear();
     this->_body.clear();
 
-    if (this->_statusCode == 200 || this->_statusCode == 201 || this->_statusCode == 204) {
+    if (this->_statusCode == 200 || this->_statusCode == 201 || this->_statusCode == 204 || this->_statusCode == 301) {
         std::string method = to_check.get_method();
         if (method == "POST")            make_Post(to_check, server_config);
         else if (method == "GET")        make_Get(to_check, server_config);
@@ -61,6 +61,20 @@ void Response::make_Get(const Request to_check, const server server_config) {
     Block best_location = find_best_location(path, server_config);
     std::string full_path = build_full_path(path, best_location, server_config);
 
+	Directive reddir = search_directive("return",best_location);
+	if (!reddir.name.empty())
+	{
+		this->set_statuscode(atoi(reddir.args[0].c_str()));
+		this->set_reasonphrase(select_valuePhrase(atoi(reddir.args[0].c_str())));
+		this->_version = "HTTP/1.1";
+		this->_headers.clear();
+		this->addback_headers("Location",reddir.args[1]);
+		this->addback_headers("Content-Length","0");
+		this->addback_headers("Connection","close");
+		return;
+
+	}
+	
     if (!file_exist(full_path)) return set_error(*this, 404, server_config);
     if (!can_read(full_path))   return set_error(*this, 403, server_config);
 
@@ -208,7 +222,7 @@ void Response::handle_directory_get(std::string full_path, const std::string& re
 
     if (!autoindex.name.empty() && !autoindex.args.empty() && autoindex.args[0] == "on") {
         body = generate_autoindex(full_path, req_path);
-        if (body.empty()) {std::cout<<"ZZZZZZZZZZZZZZZZZ"<<std::endl; return set_error(*this, 500, config);}
+        if (body.empty()) {return set_error(*this, 500, config);}
         return finalize_response(200, "text/html", body);
     }
 
@@ -231,7 +245,6 @@ void Response::handle_upload_post(const Request to_check, Block& loc, const std:
     std::string full_path = build_full_path(path, loc, config);
     if (full_path[full_path.size() - 1] != '/') full_path += '/';
     full_path += file_name;
-	std::cout<<full_path<<std::endl;
 
     int fd_file = 0;
     int status_code = 201; // Created
@@ -295,6 +308,7 @@ std::string Response::select_valuePhrase(unsigned int status) {
         case 500: return "Internal Server Error";
         case 501: return "Not Implemented";
         case 505: return "HTTP Version Not Supported";
+		case 301: return "Moved Permanently";
         default:  return "Not Implemented";
     }
 }

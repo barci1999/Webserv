@@ -4,7 +4,7 @@ server {
 	index index.html;
 	host 127.0.0.1;
 
-    client_max_body_size 1000000000;
+    client_max_body_size 10;
 
     error_page 400 Parseo_solo_toca_Pablo/www/error_pages/400.html;
     error_page 403 Parseo_solo_toca_Pablo/www/error_pages/403.html;
@@ -74,7 +74,7 @@ server {
         allowed_methods GET;
     }
 	location /cgi_page {
-		root Parseo_solo_toca_Pablo/www/pages;
+		root /Parseo_solo_toca_Pablo/www/pages;
 		index scripts.html;
 		allowed_methods GET POST;
 	}
@@ -84,6 +84,20 @@ server {
         root Parseo_solo_toca_Pablo/www/upload;
         allowed_methods DELETE;
     }
+
+	location /old {
+		root Parseo_solo_toca_Pablo/www;
+		return 301 /new;
+	}
+
+	location /new {
+		root Parseo_solo_toca_Pablo/www/pages;
+		index redirect.html;
+	}
+	location /external {
+		root Parseo_solo_toca_Pablo/www;
+		return 301 https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1;
+	}
 }
 
 server {

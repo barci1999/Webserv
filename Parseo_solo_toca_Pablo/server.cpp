@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by pablalva          #+#    #+#             */
-/*   Updated: 2026/05/03 18:19:18 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/10 18:48:08 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,10 +82,10 @@ bool server::check_location_block(const Block& loc)
     const std::vector<Directive>& directives = loc.getDirectives();
 	const char* dirs[] = {
 		"root", "index", "autoindex", "allowed_methods",
-		"cgi_extension", "upload_enable", "upload_store", "cgi_pass"
+		"cgi_extension", "upload_enable", "upload_store", "cgi_pass","return"
 	};
 	std::set<std::string> valid_directives;
-	for (size_t i = 0; i < 8; ++i) {
+	for (size_t i = 0; i < 9; ++i) {
 		valid_directives.insert(dirs[i]);
 	}
 	std::set<std::string> seen_directives; 
@@ -142,6 +142,22 @@ bool server::check_location_block(const Block& loc)
                     throw std::runtime_error("cgi_extension arguments must start with a dot '.' -> " + d.args[i]);
             }
         }
+		else if (d.name == "return")
+		{
+			if (d.args.empty()||d.args.size() != 2)
+			{
+				throw std::runtime_error("Return directive invalid number of arguments");
+			}
+			if (!is_valid_number(d.args[0]) || d.args[0] != "301")
+			{
+				throw std::runtime_error("Return directive first argument must be 301");
+			}
+			if (d.args[1].empty())
+			{
+				throw std::runtime_error("Return directive second argument can't be empty");
+			}
+		}
+		
     }
     return true;
 }
@@ -434,7 +450,7 @@ void server::normalize_location(Block& loc)
         for (size_t j = 0; j < directives[i].args.size(); ++j)
         {
             if (!directives[i].args[j].empty() &&
-                directives[i].args[j][0] == '/')
+                directives[i].args[j][0] == '/' && directives[i].name != "return")
             {
                 directives[i].args[j].erase(0, 1);
             }

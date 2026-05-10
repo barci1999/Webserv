@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 19:08:00 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/07 13:01:56 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/10 20:17:23 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,6 @@ std::string RequestParser::normalize_path(const std::string& path)
 }
 void RequestParser::ParseRequestLine(const std::string& line, Request& request)
 {
-	std::cerr<<line<<std::endl;
 	std::istringstream stream(line);
 	std::string temp;
 	stream >> temp;
