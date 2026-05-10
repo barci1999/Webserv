@@ -6,7 +6,7 @@
 /*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/07 18:46:03 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/10 15:20:10 by pablalva         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,6 @@ bool CGIProcess::initCGI(const Request& request, const server& server_config)
 	std::string path = request.get_path();
 
 	Block best_location = find_best_location(path, server_config);
-	std::cout<<best_location.getName()<<std::endl;
-
 	if (best_location.getName().empty())
 		return false;
 
@@ -80,7 +78,6 @@ bool CGIProcess::initCGI(const Request& request, const server& server_config)
 	{
 		_scriptPath = path;
 		_cgiPass = it->second;
-		std::cout<<_cgiPass<<std::endl;
 		return true;
 	}
 	return false;
@@ -360,7 +357,6 @@ void CGIProcess::setupChildProcess(const Request& request)
     argv[2] = NULL;
 
     char **env = buildEnv(request);
-	std::cerr<<"GGGG"<<argv[0]<<std::endl;
     execve(argv[0], argv, env);
 
     perror("execve failed");

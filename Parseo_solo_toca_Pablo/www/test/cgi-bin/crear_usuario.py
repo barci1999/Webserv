@@ -36,6 +36,6 @@ if method == "POST":
         print(f"<html><body><h1>✅ Creado: {file_path}</h1>")
         
     except Exception as e:
-        print(f"<h1>❌ Error: {str(e)}</h1>")
+        print(f"<h1>❌ Error: No se pudo crear el archivo</h1>")
 else:
     print("<h1>Usa POST</h1>")
