@@ -30,7 +30,7 @@ DATA = {
                 ]
             },
             "q2_ok": {
-                "messages": ["🔥 Buena respuesta", "<h2>Ahora una pregunta mas...</h2>"],
+                "messages": ["🔥 Buena respuesta", "<h2>Ahora una pregunta mas... solo una</h2>"],
 				"question": "¿El manga sige en emision o no?",
                 "options": [
                     {"text": "SI", "next": "win", "image": "yes"},
@@ -46,11 +46,11 @@ DATA = {
                 ]
             },
             "win": {
-                "messages": ["🎉 Felicidades eres un Nakama"],
+                "messages": ["🎉 Felicidades eres un Nakama", "Pero no tengo nada para ti asi que disfruta ..."],
                 "image": "homer_bailando"
             },
             "lose": {
-                "messages": ["💀 Game Over"],
+                "messages": ["💀 Game Over", "Como dijeron tus padres:", "No esperaba nada de ti y aun asi me decepcionaste"],
                 "image": "homer_arbusto"
             }
         }
@@ -71,7 +71,7 @@ DATA = {
                 ]
             },
             "q2_ok": {
-                "messages": ["<h1>Buena respuesta</h1>"],
+                "messages": ["<h1>No me lo esperaba, pero buena respuesta</h1>", "<h2> Veamos si ha sido suerte o es que sabes</h2>"],
 				"question": "¿El manga sige en emision o no?",
                 "options": [
                     {"text": "SI", "next": "lose", "image": "yes"},
@@ -79,15 +79,15 @@ DATA = {
                 ]
             },
             "q2_fail": {
-                "messages": ["<h1>Error</h1>"],
+                "messages": ["<h1>Puedo entender que falles, pero no era tan dificil</h1>", "<h2>Veamos si en la siguiente tienes suerte</h2>"],
 				"question": "¿El manga sige en emision o no?",
                 "options": [
                     {"text": "SI", "next": "lose", "image": "yes"},
                     {"text": "NO", "next": "win", "image": "no"}
                 ]
             },
-            "win": {"messages": ["<h1>Ganaste</h1>"], "image": "homer_bailando"},
-            "lose": {"messages": ["💀 Perdiste"], "image": "homer_arbusto"}
+            "win": {"messages": ["<h1>Ganaste</h1>","<h2>No se si ha sido suerte o te leiste el manga.</h2>", "<h2>Si es así lo siento</h2>", "<h2>Pero sea como sea toma esto de recompensa</h2>"], "image": "homer_bailando"},
+            "lose": {"messages": ["💀 Game over", "<h2>No se si es mejor que siguiese</h2>", "<h2>o que terminase tal y como lo hizo</2>"], "image": "homer_arbusto"}
         }
     }
 }

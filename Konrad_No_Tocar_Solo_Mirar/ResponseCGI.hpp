@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/15 15:02:17 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/04 18:00:47 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/11 19:34:14 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,6 @@
 #include "../Parseo_solo_toca_Pablo/server.hpp"
 #include "../pollLoop.hpp"
 #include <vector>
-
-//QUE TIENE QUE VER LA SQUERY CON EL CGI BUSCAR, POR QUE PABLO NO LAS USA
 
 bool handleRequest(Request& request,server& serv,std::vector<pollfd>& pollFds,
     std::map<int, CGIProcess*>& cgi_map, std::map<int, int>& cgi_to_client, int client_fd, Response& response);
