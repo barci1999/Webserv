@@ -6,7 +6,7 @@
 /*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 18:45:47 by ksudyn            #+#    #+#             */
-/*   Updated: 2026/05/11 15:36:51 by ksudyn           ###   ########.fr       */
+/*   Updated: 2026/05/11 19:23:45 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,10 @@
 /*
  * extractCGIConfig(const Block& best_location, const server& server_config)
  * ------------------------------------------------------------------------
-	Se busca cgi_extension y cgi_pass y se guarda en la variables, se usa el contenedor map para guardar datos
-	Aqui buscamos dentro de cada location esas variables y si existen y no estan vacias,
-	guardamos los argumentos usando el for recorriendo los argumentos que hay
+	Lee la configuración para saber qué programas usar. Por ejemplo: si ve un archivo .py,
+    anota que debe usar python3. Es como un diccionario que empareja el tipo de archivo
+    con su 'traductor' correspondiente.
+    El orden en el archivo .conf importa. La primera extensión se empareja con el primer ejecutable
 */
 void CGIProcess::extractCGIConfig(const Block& best_location, const server& server_config)
 {
@@ -56,10 +57,9 @@ void CGIProcess::extractCGIConfig(const Block& best_location, const server& serv
 /*
  * isCGI(const Request& request, const Block& server_config)
  * ---------------------------------------------------------
- 	Determina si la request debe ejecutarse como CGI.
- 	Aquí buscamos la extensión y obtenemos el ejecutable correspondiente.
-	Además, guardamos la ruta del script para poder construir la ruta completa
-	y ejecutarlo correctamente.
+ 	Es el 'filtro' de entrada. Mira la extensión del archivo que pide el cliente (como .php)
+    y decide: '¿Esto es un programa o un archivo normal?'.
+    Si es un programa, prepara los datos para ejecutarlo.
  */
 bool CGIProcess::initCGI(const Request& request, const server& server_config)
 {
@@ -82,24 +82,17 @@ bool CGIProcess::initCGI(const Request& request, const server& server_config)
 	}
 	return false;
 }
-// El sistema asume que el archivo de configuración es coherente.
-// Si el orden entre cgi_extension y cgi_pass no coincide,
-// el comportamiento será incorrecto, ya que el emparejamiento se hace por posición.
-// Si nos pasan .py .php y en la extension usr/bin/php usr/bin/python no funcionaria.
-
-
 
 //////////////////////////////////////////////
 // 🔹 PATHS Y ARCHIVOS
 //////////////////////////////////////////////
 
-//CREAMOS EL FULLPATH
 /*
  * buildFullPath(const Request& request, const server& server_config)
  * ------------------------------------------------------------------
- * Construye la ruta absoluta del script.
- * Usa root de la location o del server.
- * Elimina el prefijo de la location y concatena.
+    Convierte la dirección de la web en una dirección real de tu ordenador.
+    Si el cliente pide /cgi-bin/hola.py,
+    esta función calcula que el archivo está realmente en /usuarios/tu_nombre/proyecto/www/hola.py.
  */
 std::string CGIProcess::buildFullPath(const Request& request, const server& server_config)
 {
@@ -140,10 +133,10 @@ std::string CGIProcess::buildFullPath(const Request& request, const server& serv
 /*
  * execute(const Request& request, const server& server_config)
  * ------------------------------------------------------------
- * Lanza la ejecución de un CGI de forma NO BLOQUEANTE.
- * Lanza el CGI de forma no bloqueante.
- * Crea pipes, hace fork y ejecuta el hijo.
- * El padre solo escribe (POST) y continúa.
+    Crea un proceso hijo (un clon del servidor) para que ejecute el programa (Python/PHP).
+    Usamos 'pipes' (tuberías) para enviarle datos y recibir el resultado.
+    Al ser no bloqueante, el servidor no se queda esperando a que el programa termine;
+    simplemente le dice al poll() que le avise cuando haya noticias.
  */
 void CGIProcess::execute(const Request& request, const server& server_config, std::vector<pollfd>& pollFds)
 {
@@ -215,8 +208,9 @@ void CGIProcess::writeToPipe()
 /*
  * createPipes()
  * --------------
- * Crea los pipes de comunicación entre proceso padre e hijo.
- * Configura lectura/escritura en modo no bloqueante.
+    Recoge el resultado del programa poco a poco.
+    Si el programa es lento y va enviando los datos por partes,
+    esta función los va guardando en un buzón (_buffer) sin detener el resto del servidor.
  */
 void CGIProcess::createPipes()
 {
@@ -518,7 +512,6 @@ Response CGIProcess::parseCGIResponse(const std::string& output)
 
 	// AQUÍ SE GENRAL EL HTTP
 	response.set_version("HTTP/1.1");
-	//response.set_statuscode(200);
 
 	response.addback_headers("Content-Length", toString(bodyPart.size()));
 	response.addback_headers("Connection", "close");

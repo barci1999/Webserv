@@ -108,8 +108,31 @@ For a server configuration, you will have to specify a server object and list at
 
 ## Documentation
 
-# CGI 
-    https://datatracker.ietf.org/doc/html/rfc3875#section-6.1
+- **CGI RFC 3875:** [https://datatracker.ietf.org/doc/html/rfc3875#section-6.1](https://datatracker.ietf.org/doc/html/rfc3875#section-6.1)
+- **HTTP/1.1 RFC 2616:** [https://datatracker.ietf.org/doc/html/rfc2616](https://datatracker.ietf.org/doc/html/rfc2616)
 
+
+## 📚 Resources
+
+### References
+
+* **Beej's Guide to Network Programming:** Essential for socket management and multiplexing with `poll()`.
+* **RFC 2616 (HTTP/1.1):** Official standards for request/response structures and status codes.
+* **RFC 3875 (CGI/1.1):** Essential for implementing the Common Gateway Interface and environment variable requirements.
+* **NGINX Documentation:** Used as a reference for the configuration file parser and location logic.
+
+### AI Usage Disclosure
+
+In accordance with 42 curriculum requirements, AI (Gemini/ChatGPT) was used during the development of this project for the following purposes:
+
+* **Architecture Design:** Help in designing the non-blocking event loop using `poll()` to ensure simultaneous I/O.
+* **CGI Workflow & Validation:** Used to verify the non-blocking logic of `CGIProcess::execute` and `readFromPipe()`, ensuring that communication via pipes (using `O_NONBLOCK` and `poll`) does not stall the main loop.
+* **Process Management:** Clarified the use of `fork()`, `dup2()` for I/O redirection, and the necessity of specific environment variables (like `REDIRECT_STATUS` for PHP) in the `buildEnv` function.
+* **Problem Solving:** Debugging the "partial send" issue and understanding why `errno` should not be used to drive control flow to comply with evaluation rules.
+* **Code Refactoring:** Ensuring the `handle_send` and `CGIProcess` functions correctly manage memory and buffers after each I/O operation.
+* **Testing:** Designing stress test scenarios (like the large 34MB file test and `limit-rate` simulations) to verify server stability.
+
+*The team ensures that all final implementation and logic were manually integrated and thoroughly understood through rigorous testing and debugging.*
+
+---
 ```bash
-make
