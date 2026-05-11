@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pollLoop.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pablalva <pablalva@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ksudyn <ksudyn@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 14:21:33 by rodralva          #+#    #+#             */
-/*   Updated: 2026/05/10 19:58:43 by pablalva         ###   ########.fr       */
+/*   Updated: 2026/05/11 17:13:20 by ksudyn           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,35 +242,68 @@ void disable_pollout(int fd, std::vector<pollfd>& pollFds)
             pollFds[i].events &= ~POLLOUT;
 }
 
-void handle_send(int fd, std::map<int, std::string>& out_buffers,
+void handle_send(size_t& i, int fd, std::map<int, std::string>& out_buffers,
     std::map<int, Request>& pending_requests, std::vector<pollfd>& pollFds)
 {
-    if (!out_buffers.count(fd))
+    // 1. Verificación de seguridad
+    if (out_buffers.find(fd) == out_buffers.end())
         return;
 
-    send(fd, out_buffers[fd].c_str(), out_buffers[fd].size(), 0);
+    std::string& response = out_buffers[fd];
 
+    // 2. Único intento de envío (sin bucles while)
+    // El cuarto argumento '0' es estándar; MSG_NOSIGNAL evita que el programa muera si el socket se cierra
+    ssize_t sent = send(fd, response.c_str(), response.size(), 0);
+
+    // 3. Gestión de error o desconexión (CUALQUIER valor <= 0 es salida)
+    // No usamos errno para decidir, simplemente limpiamos si falla
+    if (sent <= 0)
+    {
+        close(fd);
+        out_buffers.erase(fd);
+        pending_requests.erase(fd);
+        pollFds.erase(pollFds.begin() + i--); // i-- es vital porque estamos dentro de un for en el loop
+        return;
+    }
+
+    // 4. LOG (Solo la primera vez que empezamos a enviar)
+    // Extraemos el status_code ANTES de recortar el buffer por primera vez
     if (pending_requests.count(fd))
     {
         Request& req = pending_requests[fd];
-        int status_code = 200;
-        std::string& buffer = out_buffers[fd];
-        size_t first_space = buffer.find(' ');
+        int status_code = 200; // Por defecto
         
+        // Buscamos el código en la primera línea de la respuesta (HTTP/1.1 XXX ...)
+        size_t first_space = response.find(' ');
         if (first_space != std::string::npos) {
-            size_t second_space = buffer.find(' ', first_space + 1);
+            size_t second_space = response.find(' ', first_space + 1);
             if (second_space != std::string::npos) {
-                std::string code_str = buffer.substr(first_space + 1, second_space - first_space - 1);
+                std::string code_str = response.substr(first_space + 1, second_space - first_space - 1);
                 status_code = std::atoi(code_str.c_str());
             }
         }
-        log_request(req.get_method(), req.get_path(), req.get_version(), status_code);
         
-        pending_requests.erase(fd);
+        log_request(req.get_method(), req.get_path(), req.get_version(), status_code);
+        pending_requests.erase(fd); // Borramos la request para no volver a loguear en el siguiente trozo
     }
 
-    out_buffers.erase(fd);
-    disable_pollout(fd, pollFds);
+    // 5. RECORTAR EL BUFFER (La clave de la multiplexación)
+    // Solo eliminamos lo que el kernel realmente ha aceptado
+    response.erase(0, sent);
+
+    // 6. FINALIZACIÓN
+    // Solo cuando no queda nada por enviar, dejamos de vigilar POLLOUT
+    if (response.empty())
+    {
+        out_buffers.erase(fd);
+        disable_pollout(fd, pollFds);
+        
+        // OPCIONAL: Si tu servidor no soporta Keep-Alive, deberías cerrar aquí:
+        // close(fd);
+        // pollFds.erase(pollFds.begin() + i--);
+    }
+    // Si NO está vacío, la función termina. El main loop (poll) volverá a 
+    // detectar POLLOUT cuando el socket tenga espacio, y seguiremos enviando.
 }
 
 void handle_cgi(size_t& i, int fd, short rev, std::map<int, CGIProcess*>& cgi_map, 
@@ -385,8 +418,19 @@ void handle_client(size_t& i, int fd, short rev, std::map<int, client>& srvClien
 
     char buf[4096];
     int b = read(fd, buf, sizeof(buf));
-    if (b <= 0)
+    if (b == 0) 
+    { // El cliente cerró la conexión de forma limpia
+        std::cout << "Cliente desconectado" << std::endl;
+        // Debes llamar a tu lógica de limpieza (la misma que tienes en POLLHUP)
+        close(fd);
+        srvClients.erase(fd);
+        pollFds.erase(pollFds.begin() + i--); 
         return;
+    }
+if (b < 0) {
+    // Aquí compruebas si es un error real o solo que no hay más datos (EAGAIN)
+    return; 
+}
 
     cl.request.append(buf, b);
 
@@ -491,14 +535,14 @@ int pollLoop(std::vector<server> general)
         {
             handle_client(i, fd, rev, srvClients, pending_requests, out_buffers,
                           pollFds, cgi_map, cgi_to_client);
-            continue;
+            //continue;
         }
 
         // 4. Envío de respuestas (Solo si hay algo que enviar)
         if (rev & POLLOUT && out_buffers.count(fd))
         {
-            handle_send(fd, out_buffers, pending_requests, pollFds);
-            continue;
+            handle_send(i, fd, out_buffers, pending_requests, pollFds);
+            //continue;
         }
     }
 }
